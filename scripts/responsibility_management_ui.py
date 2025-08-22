@@ -1,6 +1,15 @@
+# Modified responsibility_management_ui.py
+# Changes:
+# - Widened AddResponsibilityDialog by 25% (from 600 to 750 width).
+# - Added "Copy from Parent" button in AddResponsibilityDialog to copy inherited contacts as editable rows.
+# - Added Up and Down buttons in ResponsibilityManagementDialog to move responsibilities in the tree.
+# - Modified load_responsibilities to support sorting by sort_order (requires adding sort_order column to responsibilities table).
+# - Added update_sort_order method to persist order changes in the database.
+
 import sqlite3
 import os
 import re
+from collections import defaultdict
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
     QRadioButton, QPushButton, QTreeWidget, QTreeWidgetItem,
@@ -15,7 +24,7 @@ class AddResponsibilityDialog(QDialog):
     def __init__(self, parent=None, parent_id=None, parent_name=None, inherited_contacts=None):
         super().__init__(parent)
         self.setWindowTitle("Add Child Responsibility")
-        self.resize(600, 500)
+        self.resize(750, 500)  # Increased width by 25% for easier email capture
         self.parent_id = parent_id
         self.parent_name = parent_name or "None"
         self.inherited_contacts = inherited_contacts or []
@@ -98,6 +107,14 @@ class AddResponsibilityDialog(QDialog):
         self.delete_contact_btn.clicked.connect(self.delete_contact)
         contact_buttons.addWidget(self.add_contact_btn)
         contact_buttons.addWidget(self.delete_contact_btn)
+
+        # Add "Copy from Parent" button if there is a parent
+        if self.parent_id:
+            self.copy_btn = QPushButton("Copy from Parent", self)
+            self.copy_btn.clicked.connect(self.copy_from_parent)
+            self.copy_btn.setToolTip("Copy contacts from parent as editable entries")
+            contact_buttons.addWidget(self.copy_btn)
+
         layout.addLayout(contact_buttons)
 
         # Action buttons
@@ -131,6 +148,15 @@ class AddResponsibilityDialog(QDialog):
             QMessageBox.warning(self, "Invalid Action", "Cannot delete inherited contacts.")
             return
         self.contacts_table.removeRow(row)
+
+    def copy_from_parent(self):
+        for contact in self.inherited_contacts:
+            row = self.contacts_table.rowCount()
+            self.contacts_table.insertRow(row)
+            self.contacts_table.setItem(row, 0, QTableWidgetItem(contact["name"]))
+            self.contacts_table.setItem(row, 1, QTableWidgetItem(contact["title"] or ""))
+            self.contacts_table.setItem(row, 2, QTableWidgetItem(contact["telephone"] or ""))
+            self.contacts_table.setItem(row, 3, QTableWidgetItem(contact["email"]))
 
     def get_data(self):
         name = self.name_edit.text().strip()
@@ -175,7 +201,6 @@ class ResponsibilityManagementDialog(QDialog):
         # Action buttons
         action_buttons = QHBoxLayout()
         self.add_btn = QPushButton("Add", self)
-        self.add_btn.setToolTip("Add a new child responsibility")
         self.add_btn.clicked.connect(self.open_add_dialog)
         self.edit_btn = QPushButton("Edit", self)
         self.edit_btn.setToolTip("Edit the selected responsibility")
@@ -183,9 +208,17 @@ class ResponsibilityManagementDialog(QDialog):
         self.delete_btn = QPushButton("Delete", self)
         self.delete_btn.setToolTip("Delete the selected responsibility")
         self.delete_btn.clicked.connect(self.delete_responsibility)
+        self.up_btn = QPushButton("Up", self)
+        self.up_btn.setToolTip("Move selected responsibility up")
+        self.up_btn.clicked.connect(self.move_up)
+        self.down_btn = QPushButton("Down", self)
+        self.down_btn.setToolTip("Move selected responsibility down")
+        self.down_btn.clicked.connect(self.move_down)
         action_buttons.addWidget(self.add_btn)
         action_buttons.addWidget(self.edit_btn)
         action_buttons.addWidget(self.delete_btn)
+        action_buttons.addWidget(self.up_btn)
+        action_buttons.addWidget(self.down_btn)
         action_buttons.addStretch()
         layout.addLayout(action_buttons)
 
@@ -221,28 +254,34 @@ class ResponsibilityManagementDialog(QDialog):
             db_path = os.path.join(BASE_DIR, "fruitless.db")
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            cursor.execute("SELECT id, name, parent_id, is_posting_level FROM responsibilities")
-            self.responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3]} for row in cursor.fetchall()]
+            cursor.execute("SELECT id, name, parent_id, is_posting_level, sort_order FROM responsibilities")
+            self.responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3], "sort_order": row[4] or 0} for row in cursor.fetchall()]
             conn.close()
 
             # Log loaded responsibilities for debugging
             print(f"Loaded responsibilities: {self.responsibilities}")
 
-            # Build tree
-            id_to_item = {}
+            # Group by parent
+            children_by_parent = defaultdict(list)
             for resp in self.responsibilities:
-                item = QTreeWidgetItem([resp["name"]])
-                item.setData(0, Qt.UserRole, resp["id"])
-                font = QFont("Arial", 10)
-                font.setBold(resp["is_posting_level"] == 0)  # Bold only for non-posting
-                item.setFont(0, font)
-                id_to_item[resp["id"]] = item
-                if resp["parent_id"] is None:
-                    self.tree.addTopLevelItem(item)
-                else:
-                    parent_item = id_to_item.get(resp["parent_id"])
-                    if parent_item:
-                        parent_item.addChild(item)
+                children_by_parent[resp["parent_id"]].append(resp)
+
+            # Sort each group by sort_order
+            for key in children_by_parent:
+                children_by_parent[key].sort(key=lambda x: x["sort_order"])
+
+            # Build tree recursively
+            def build_tree(parent_item, parent_id=None):
+                for resp in children_by_parent[parent_id]:
+                    item = QTreeWidgetItem([resp["name"]])
+                    item.setData(0, Qt.UserRole, resp["id"])
+                    font = QFont("Arial", 10)
+                    font.setBold(resp["is_posting_level"] == 0)  # Bold only for non-posting
+                    item.setFont(0, font)
+                    parent_item.addChild(item)
+                    build_tree(item, resp["id"])
+
+            build_tree(self.tree.invisibleRootItem())
             self.tree.expandAll()
         except sqlite3.Error as e:
             QMessageBox.critical(self, "Database Error", f"Failed to load responsibilities: {e}")
@@ -297,6 +336,50 @@ class ResponsibilityManagementDialog(QDialog):
 
     def delete_responsibility(self):
         delete_responsibility(self)
+
+    def move_up(self):
+        selected_item = self.tree.currentItem()
+        if not selected_item:
+            return
+        parent = selected_item.parent() or self.tree.invisibleRootItem()
+        index = parent.indexOfChild(selected_item)
+        if index > 0:
+            parent.takeChild(index)
+            parent.insertChild(index - 1, selected_item)
+            self.tree.setCurrentItem(selected_item)
+            self.update_sort_order(parent)
+
+    def move_down(self):
+        selected_item = self.tree.currentItem()
+        if not selected_item:
+            return
+        parent = selected_item.parent() or self.tree.invisibleRootItem()
+        index = parent.indexOfChild(selected_item)
+        if index < parent.childCount() - 1:
+            parent.takeChild(index)
+            parent.insertChild(index + 1, selected_item)
+            self.tree.setCurrentItem(selected_item)
+            self.update_sort_order(parent)
+
+    def update_sort_order(self, parent_item):
+        try:
+            db_path = os.path.join(BASE_DIR, "fruitless.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            if parent_item == self.tree.invisibleRootItem():
+                for i in range(self.tree.topLevelItemCount()):
+                    item = self.tree.topLevelItem(i)
+                    resp_id = item.data(0, Qt.UserRole)
+                    cursor.execute("UPDATE responsibilities SET sort_order = ? WHERE id = ?", (i, resp_id))
+            else:
+                for i in range(parent_item.childCount()):
+                    item = parent_item.child(i)
+                    resp_id = item.data(0, Qt.UserRole)
+                    cursor.execute("UPDATE responsibilities SET sort_order = ? WHERE id = ?", (i, resp_id))
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to update sort order: {e}")
 
     def clear_form(self):
         self.contacts_table.setRowCount(0)

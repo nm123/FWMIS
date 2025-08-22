@@ -70,16 +70,23 @@ def add_responsibility(dialog, data):
         new_id = (max_id or 0) + 1
         print(f"Generated new_id: {new_id}")
 
+        # Get next sort_order for siblings
+        cursor.execute("SELECT MAX(sort_order) FROM responsibilities WHERE parent_id IS ?",
+                      (parent_id,) if parent_id else (None,))
+        max_sort_order = cursor.fetchone()[0]
+        new_sort_order = (max_sort_order or -1) + 1  # Start at 0 if no siblings
+        print(f"Assigned sort_order: {new_sort_order}")
+
         # Clear any existing data for this ID (safety check)
         cursor.execute("DELETE FROM contacts WHERE responsibility_id = ?", (new_id,))
         cursor.execute("DELETE FROM responsibilities WHERE id = ?", (new_id,))
 
-        # Insert responsibility
+        # Insert responsibility with sort_order
         cursor.execute(
-            "INSERT INTO responsibilities (id, name, parent_id, is_posting_level) VALUES (?, ?, ?, ?)",
-            (new_id, name, parent_id, is_posting_level)
+            "INSERT INTO responsibilities (id, name, parent_id, is_posting_level, sort_order) VALUES (?, ?, ?, ?, ?)",
+            (new_id, name, parent_id, is_posting_level, new_sort_order)
         )
-        print(f"Inserted responsibility: id={new_id}, name='{name}'")
+        print(f"Inserted responsibility: id={new_id}, name='{name}', sort_order={new_sort_order}")
 
         # Insert contacts (exactly as provided)
         inserted_contacts = []
@@ -94,11 +101,11 @@ def add_responsibility(dialog, data):
         conn.commit()
 
         # Verify insertion
-        cursor.execute("SELECT name FROM responsibilities WHERE id = ?", (new_id,))
+        cursor.execute("SELECT name, sort_order FROM responsibilities WHERE id = ?", (new_id,))
         inserted_name = cursor.fetchone()
         cursor.execute("SELECT name, title, telephone, email FROM contacts WHERE responsibility_id = ?", (new_id,))
         inserted_contacts = cursor.fetchall()
-        print(f"After insertion, responsibility ID {new_id}: name='{inserted_name[0] if inserted_name else None}', contacts={inserted_contacts}")
+        print(f"After insertion, responsibility ID {new_id}: name='{inserted_name[0] if inserted_name else None}', sort_order={inserted_name[1] if inserted_name else None}, contacts={inserted_contacts}")
 
         # Log action
         try:
