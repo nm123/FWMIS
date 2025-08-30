@@ -4,7 +4,7 @@ import os
 import re
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
 from PyQt5.QtCore import Qt
-from utils import BASE_DIR, get_subtree_resp_ids, is_valid_email, save_audit_log
+from Utilities.utils import BASE_DIR, DB_PATH, get_subtree_resp_ids, is_valid_email, save_audit_log
 
 def add_responsibility(dialog, data):
     name = data["name"].strip()
@@ -50,8 +50,8 @@ def add_responsibility(dialog, data):
             return
 
     try:
-        db_path = os.path.join(BASE_DIR, "fruitless.db")
-        conn = sqlite3.connect(db_path)
+        from Utilities.utils import DB_PATH
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Set journal mode to WAL to prevent locks
@@ -142,8 +142,8 @@ def edit_responsibility(dialog):
 
     resp_id = selected_item.data(0, Qt.UserRole)
     try:
-        db_path = os.path.join(BASE_DIR, "fruitless.db")
-        conn = sqlite3.connect(db_path)
+        from Utilities.utils import DB_PATH
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Set journal mode to WAL
@@ -192,6 +192,9 @@ def edit_responsibility(dialog):
             edit_dialog.contacts_table.setItem(row, 2, QTableWidgetItem(contact["telephone"]))
             edit_dialog.contacts_table.setItem(row, 3, QTableWidgetItem(contact["email"]))
 
+        # Add an empty row for new contact entry
+        edit_dialog.contacts_table.insertRow(edit_dialog.contacts_table.rowCount())
+
         if edit_dialog.exec_():
             data = edit_dialog.get_data()
             name = data["name"].strip()
@@ -234,7 +237,8 @@ def edit_responsibility(dialog):
                     QMessageBox.warning(edit_dialog, "Invalid Input", f"Invalid email format: {contact['email']}")
                     return
 
-            conn = sqlite3.connect(db_path)
+            from Utilities.utils import DB_PATH
+            conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
             # Check for duplicate name
@@ -312,8 +316,8 @@ def delete_responsibility(dialog):
 
     # Check for dependent cases
     try:
-        db_path = os.path.join(BASE_DIR, "fruitless.db")
-        conn = sqlite3.connect(db_path)
+        from Utilities.utils import DB_PATH
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Set journal mode to WAL

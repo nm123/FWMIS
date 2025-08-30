@@ -1,0 +1,35 @@
+2025-08-29 16:07:41,679 - ERROR - Failed to load email templates: no such column: subject
+2025-08-29 16:07:41,687 - ERROR - Failed to load email templates: no such column: subject
+2025-08-29 17:03:47,514 - ERROR - Failed to load email templates: no such column: subject
+2025-08-29 17:03:47,521 - ERROR - Failed to load email templates: no such column: subject
+2025-08-30 17:00:05,373 - ERROR - Failed to load lists: no such table: lists
+2025-08-30 17:00:05,394 - ERROR - Failed to load lists: no such table: lists
+2025-08-30 17:00:18,665 - ERROR - Failed to add list: no such table: lists
+2025-08-30 20:18:43,184 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:22:51,387 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:23:21,727 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:25:07,709 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:28:51,187 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:31:41,673 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:34:15,292 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:35:45,330 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:41:50,121 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:44:37,031 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:47:07,696 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 20:58:33,454 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:02:48,427 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:05:51,588 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:07:51,209 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:10:28,390 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:11:34,582 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:14:08,544 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:14:38,462 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:19:27,764 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:25:10,977 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:39:33,081 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:43:00,487 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 21:53:57,714 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 22:11:49,087 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 22:16:02,071 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 22:20:16,078 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-08-30 22:22:59,874 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported

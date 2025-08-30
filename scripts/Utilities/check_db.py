@@ -6,8 +6,8 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import BASE_DIR
 
 def check_database():
-    db_path = os.path.join(BASE_DIR, "fruitless.db")
-    conn = sqlite3.connect(db_path)
+    from Utilities.utils import DB_PATH
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Check categories
@@ -20,9 +20,18 @@ def check_database():
 
     # Check responsibilities
     try:
-        cursor.execute("SELECT id, name FROM responsibilities")
+        cursor.execute("PRAGMA table_info(responsibilities)")
+        resp_columns = cursor.fetchall()
+        print(f"Responsibilities table columns: {[col[1] for col in resp_columns]}")
+
+        cursor.execute("SELECT id, name, parent_id, is_posting_level FROM responsibilities")
         responsibilities = cursor.fetchall()
         print(f"Responsibilities ({len(responsibilities)}): {responsibilities}")
+
+        # Check posting level responsibilities
+        cursor.execute("SELECT id, name FROM responsibilities WHERE is_posting_level = 1")
+        posting_resps = cursor.fetchall()
+        print(f"Posting Level Responsibilities ({len(posting_resps)}): {posting_resps}")
     except sqlite3.OperationalError as e:
         print(f"Error checking responsibilities: {e}")
 
@@ -40,8 +49,13 @@ def check_database():
     except sqlite3.OperationalError as e:
         print(f"Error checking email templates: {e}")
 
-    # Check cases
+    # Check cases table schema
     try:
+        cursor.execute("PRAGMA table_info(cases)")
+        case_columns = cursor.fetchall()
+        print(f"Cases table columns: {[col[1] for col in case_columns]}")
+        print(f"Cases table full info: {case_columns}")
+
         cursor.execute("SELECT id, transaction_no, bas_payment_no, category, responsibility_id, amount, status FROM cases")
         cases = cursor.fetchall()
         print(f"Cases ({len(cases)}): {cases}")

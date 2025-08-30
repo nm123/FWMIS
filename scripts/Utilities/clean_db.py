@@ -13,8 +13,8 @@ except ImportError:
     BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
     print(f"Warning: utils.py not found, using fallback BASE_DIR: {BASE_DIR}")
 
-db_path = os.path.join(BASE_DIR, "fruitless.db")
-conn = sqlite3.connect(db_path)
+from Utilities.utils import DB_PATH
+conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 cursor.execute("PRAGMA journal_mode=WAL;")
 cursor.execute("DELETE FROM contacts WHERE responsibility_id = 28")

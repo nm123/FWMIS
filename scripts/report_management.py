@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QFileDialog,
 )
 from PyQt5.QtCore import Qt
-from utils import load_categories, load_responsibilities, load_cases, create_year_folder
+from Utilities.utils import load_categories, load_responsibilities, load_cases, create_year_folder, get_subtree_resp_ids, DB_PATH
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet

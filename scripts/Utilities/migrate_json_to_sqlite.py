@@ -5,7 +5,7 @@ from utils import BASE_DIR, init_db
 
 def migrate_json_to_sqlite():
     init_db()
-    conn = sqlite3.connect(os.path.join(BASE_DIR, "fruitless.db"))
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Migrate cases
@@ -27,7 +27,7 @@ def migrate_json_to_sqlite():
                     case.get("date_reported"), case.get("description"), case.get("bas_payment_no"),
                     case.get("bas_payment_date"), case.get("persal_no"), case.get("category"),
                     case.get("responsibility_id"), case.get("amount"), case.get("source_document", ""),
-                    case.get("minutes", ""), case.get("evidence", ""), case.get("status", "Alleged"),
+                    case.get("minutes", ""), case.get("evidence", ""), case.get("status", "Awaiting Evidence"),
                     case.get("list", "Checklist"),
                     case["assessment"]["assessed_by"] if case.get("assessment") else None,
                     case["assessment"]["assessment_date"] if case.get("assessment") else None,

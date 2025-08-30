@@ -5,10 +5,10 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import BASE_DIR
 
 def create_contacts_table():
-    db_path = os.path.join(BASE_DIR, "fruitless.db")
-    print(f"Using database path: {db_path}")
+    from Utilities.utils import DB_PATH
+    print(f"Using database path: {DB_PATH}")
     try:
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Create contacts table

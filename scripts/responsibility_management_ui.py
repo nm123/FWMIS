@@ -1,11 +1,3 @@
-# Modified responsibility_management_ui.py
-# Changes:
-# - Widened AddResponsibilityDialog by 25% (from 600 to 750 width).
-# - Added "Copy from Parent" button in AddResponsibilityDialog to copy inherited contacts as editable rows.
-# - Added Up and Down buttons in ResponsibilityManagementDialog to move responsibilities in the tree.
-# - Modified load_responsibilities to support sorting by sort_order (requires adding sort_order column to responsibilities table).
-# - Added update_sort_order method to persist order changes in the database.
-
 import sqlite3
 import os
 import re
@@ -18,7 +10,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from responsibility_management_actions import add_responsibility, edit_responsibility, delete_responsibility
-from utils import BASE_DIR, is_valid_email
+from Utilities.utils import BASE_DIR, is_valid_email, DB_PATH
 
 class AddResponsibilityDialog(QDialog):
     def __init__(self, parent=None, parent_id=None, parent_name=None, inherited_contacts=None):
@@ -79,256 +71,250 @@ class AddResponsibilityDialog(QDialog):
         self.contacts_table.setColumnWidth(3, 200)  # Email
         self.contacts_table.setSelectionMode(QTableWidget.SingleSelection)
         self.contacts_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.contacts_table.setEditTriggers(QTableWidget.DoubleClicked)  # Enable direct editing
+        self.contacts_table.setEditTriggers(QTableWidget.AllEditTriggers)  # Enable editing on any trigger
+        self.contacts_table.setToolTip("Click on cells to edit contacts. Use Add/Remove buttons or double-click to edit.")
         contacts_layout.addWidget(self.contacts_table)
         contacts_group.setLayout(contacts_layout)
         layout.addWidget(contacts_group)
 
-        # Populate inherited contacts (non-editable)
+        # Buttons
+        button_layout = QHBoxLayout()
+        self.copy_button = QPushButton("Copy from Parent")
+        self.copy_button.clicked.connect(self.copy_from_parent)
+        self.add_contact_button = QPushButton("Add Contact")
+        self.add_contact_button.clicked.connect(self.add_contact_row)
+        self.remove_contact_button = QPushButton("Remove Contact")
+        self.remove_contact_button.clicked.connect(self.remove_contact_row)
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.accept)
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self.reject)
+        button_layout.addWidget(self.copy_button)
+        button_layout.addWidget(self.add_contact_button)
+        button_layout.addWidget(self.remove_contact_button)
+        button_layout.addWidget(self.ok_button)
+        button_layout.addWidget(self.cancel_button)
+        layout.addLayout(button_layout)
+
+        # Populate inherited contacts
         for contact in self.inherited_contacts:
             row = self.contacts_table.rowCount()
             self.contacts_table.insertRow(row)
             self.contacts_table.setItem(row, 0, QTableWidgetItem(contact["name"]))
             self.contacts_table.setItem(row, 1, QTableWidgetItem(contact["title"] or ""))
             self.contacts_table.setItem(row, 2, QTableWidgetItem(contact["telephone"] or ""))
-            self.contacts_table.setItem(row, 3, QTableWidgetItem(contact["email"]))
-            for col in range(4):
-                item = self.contacts_table.item(row, col)
-                if item:
-                    item.setFont(QFont("Arial", 10, QFont.StyleItalic))
-                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Disable editing for inherited
-                    item.setToolTip("Inherited from parent")
-
-        # Contact buttons
-        contact_buttons = QHBoxLayout()
-        self.add_contact_btn = QPushButton("Add Contact", self)
-        self.add_contact_btn.clicked.connect(self.add_contact)
-        self.delete_contact_btn = QPushButton("Delete Contact", self)
-        self.delete_contact_btn.clicked.connect(self.delete_contact)
-        contact_buttons.addWidget(self.add_contact_btn)
-        contact_buttons.addWidget(self.delete_contact_btn)
-
-        # Add "Copy from Parent" button if there is a parent
-        if self.parent_id:
-            self.copy_btn = QPushButton("Copy from Parent", self)
-            self.copy_btn.clicked.connect(self.copy_from_parent)
-            self.copy_btn.setToolTip("Copy contacts from parent as editable entries")
-            contact_buttons.addWidget(self.copy_btn)
-
-        layout.addLayout(contact_buttons)
-
-        # Action buttons
-        action_buttons = QHBoxLayout()
-        self.save_btn = QPushButton("Save", self)
-        self.save_btn.clicked.connect(self.accept)
-        self.cancel_btn = QPushButton("Cancel", self)
-        self.cancel_btn.clicked.connect(self.reject)
-        action_buttons.addStretch()
-        action_buttons.addWidget(self.save_btn)
-        action_buttons.addWidget(self.cancel_btn)
-        layout.addLayout(action_buttons)
-
-    def add_contact(self):
-        row = self.contacts_table.rowCount()
-        self.contacts_table.insertRow(row)
-        self.contacts_table.setItem(row, 0, QTableWidgetItem(""))
-        self.contacts_table.setItem(row, 1, QTableWidgetItem(""))
-        self.contacts_table.setItem(row, 2, QTableWidgetItem(""))
-        self.contacts_table.setItem(row, 3, QTableWidgetItem(""))
-        self.contacts_table.selectRow(row)
-        self.contacts_table.editItem(self.contacts_table.item(row, 0))  # Start editing first column
-
-    def delete_contact(self):
-        selected = self.contacts_table.selectedItems()
-        if not selected:
-            QMessageBox.warning(self, "No Selection", "Please select a contact to delete.")
-            return
-        row = self.contacts_table.currentRow()
-        if row < len(self.inherited_contacts):
-            QMessageBox.warning(self, "Invalid Action", "Cannot delete inherited contacts.")
-            return
-        self.contacts_table.removeRow(row)
+            self.contacts_table.setItem(row, 3, QTableWidgetItem(contact["email"] or ""))
 
     def copy_from_parent(self):
+        # Clear existing contacts first
+        self.contacts_table.setRowCount(0)
+        # Then copy from parent
         for contact in self.inherited_contacts:
             row = self.contacts_table.rowCount()
             self.contacts_table.insertRow(row)
             self.contacts_table.setItem(row, 0, QTableWidgetItem(contact["name"]))
             self.contacts_table.setItem(row, 1, QTableWidgetItem(contact["title"] or ""))
             self.contacts_table.setItem(row, 2, QTableWidgetItem(contact["telephone"] or ""))
-            self.contacts_table.setItem(row, 3, QTableWidgetItem(contact["email"]))
+            self.contacts_table.setItem(row, 3, QTableWidgetItem(contact["email"] or ""))
+
+    def add_contact_row(self):
+        row = self.contacts_table.rowCount()
+        self.contacts_table.insertRow(row)
+
+    def remove_contact_row(self):
+        selected = self.contacts_table.selectedItems()
+        if selected:
+            row = self.contacts_table.row(selected[0])
+            self.contacts_table.removeRow(row)
 
     def get_data(self):
-        name = self.name_edit.text().strip()
-        is_posting_level = self.posting_yes.isChecked()
         contacts = []
         for row in range(self.contacts_table.rowCount()):
             name_item = self.contacts_table.item(row, 0)
             title_item = self.contacts_table.item(row, 1)
             telephone_item = self.contacts_table.item(row, 2)
             email_item = self.contacts_table.item(row, 3)
-            name_text = name_item.text().strip() if name_item else ""
-            title = title_item.text().strip() if title_item else ""
-            telephone = telephone_item.text().strip() if telephone_item else ""
-            email = email_item.text().strip() if email_item else ""
-            # Only include non-inherited contacts (editable rows)
-            if row >= len(self.inherited_contacts) and name_text and title and email:
-                contacts.append({"name": name_text, "title": title, "telephone": telephone, "email": email})
-        data = {
-            "name": name,
+            name = name_item.text() if name_item else ""
+            title = title_item.text() if title_item else ""
+            telephone = telephone_item.text() if telephone_item else ""
+            email = email_item.text() if email_item else ""
+            if name:
+                if email and not is_valid_email(email):
+                    QMessageBox.warning(self, "Invalid Email", f"Invalid email format: {email}")
+                    return
+                contacts.append({"name": name, "title": title, "telephone": telephone, "email": email})
+        return {
+            "name": self.name_edit.text().strip(),
             "parent_id": self.parent_id,
-            "is_posting_level": is_posting_level,
-            "contacts": contacts,
-            "inherited_contacts": self.inherited_contacts
+            "is_posting_level": self.posting_yes.isChecked(),
+            "contacts": contacts
         }
-        print(f"AddResponsibilityDialog.get_data: {data}")
-        return data
 
 class ResponsibilityManagementDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Manage Responsibilities")
-        self.resize(1000, 800)
-        self.responsibilities = []
+        self.resize(1000, 700)
         self.setup_ui()
         self.load_responsibilities()
 
     def setup_ui(self):
-        layout = QVBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.setSpacing(10)
         layout.setContentsMargins(10, 10, 10, 10)
 
-        # Action buttons
-        action_buttons = QHBoxLayout()
-        self.add_btn = QPushButton("Add", self)
-        self.add_btn.clicked.connect(self.open_add_dialog)
-        self.edit_btn = QPushButton("Edit", self)
-        self.edit_btn.setToolTip("Edit the selected responsibility")
-        self.edit_btn.clicked.connect(self.edit_responsibility)
-        self.delete_btn = QPushButton("Delete", self)
-        self.delete_btn.setToolTip("Delete the selected responsibility")
-        self.delete_btn.clicked.connect(self.delete_responsibility)
-        self.up_btn = QPushButton("Up", self)
-        self.up_btn.setToolTip("Move selected responsibility up")
-        self.up_btn.clicked.connect(self.move_up)
-        self.down_btn = QPushButton("Down", self)
-        self.down_btn.setToolTip("Move selected responsibility down")
-        self.down_btn.clicked.connect(self.move_down)
-        action_buttons.addWidget(self.add_btn)
-        action_buttons.addWidget(self.edit_btn)
-        action_buttons.addWidget(self.delete_btn)
-        action_buttons.addWidget(self.up_btn)
-        action_buttons.addWidget(self.down_btn)
-        action_buttons.addStretch()
-        layout.addLayout(action_buttons)
-
-        # Tree for responsibilities
-        self.tree = QTreeWidget(self)
+        # Tree widget for responsibilities
+        self.tree = QTreeWidget()
         self.tree.setHeaderLabel("Responsibilities")
-        self.tree.setColumnCount(1)
-        self.tree.itemSelectionChanged.connect(self.load_selected_responsibility)
-        layout.addWidget(self.tree)
+        self.tree.itemClicked.connect(self.load_responsibility)
+        layout.addWidget(self.tree, 2)
+
+        # Form for responsibility details
+        form_widget = QVBoxLayout()
+        form_layout = QFormLayout()
+        form_layout.setSpacing(10)
+        form_layout.setContentsMargins(10, 10, 10, 10)
+
+        self.name_edit = QLineEdit()
+        self.name_edit.setToolTip("Enter a unique responsibility name, max 100 characters")
+        form_layout.addRow("Name:", self.name_edit)
+
+        # Posting level radio buttons
+        posting_group = QGroupBox("Posting Level")
+        posting_layout = QHBoxLayout()
+        self.posting_yes = QRadioButton("Posting Level")
+        self.posting_no = QRadioButton("Non-Posting Level")
+        self.posting_no.setChecked(True)
+        posting_layout.addWidget(self.posting_yes)
+        posting_layout.addWidget(self.posting_no)
+        posting_group.setLayout(posting_layout)
+        form_layout.addRow(posting_group)
+
+        form_widget.addLayout(form_layout)
 
         # Contacts table
         contacts_group = QGroupBox("Contacts")
         contacts_layout = QVBoxLayout()
-        self.contacts_table = QTableWidget(self)
+        self.contacts_table = QTableWidget()
         self.contacts_table.setColumnCount(4)
         self.contacts_table.setHorizontalHeaderLabels(["Name", "Title", "Telephone", "Email"])
         header = self.contacts_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
-        self.contacts_table.setColumnWidth(0, 150)  # Name
-        self.contacts_table.setColumnWidth(1, 100)  # Title
-        self.contacts_table.setColumnWidth(2, 120)  # Telephone
-        self.contacts_table.setColumnWidth(3, 200)  # Email
+        self.contacts_table.setColumnWidth(0, 150)
+        self.contacts_table.setColumnWidth(1, 100)
+        self.contacts_table.setColumnWidth(2, 120)
+        self.contacts_table.setColumnWidth(3, 200)
         self.contacts_table.setSelectionMode(QTableWidget.SingleSelection)
         self.contacts_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.contacts_table.setEditTriggers(QTableWidget.NoEditTriggers)  # Read-only
+        self.contacts_table.setEditTriggers(QTableWidget.AllEditTriggers)
+        self.contacts_table.setToolTip("Click on cells to edit contacts. Use Add/Remove buttons or double-click to edit.")
         contacts_layout.addWidget(self.contacts_table)
         contacts_group.setLayout(contacts_layout)
-        layout.addWidget(contacts_group)
+        form_widget.addWidget(contacts_group)
+
+        # Buttons
+        button_layout = QHBoxLayout()
+        self.add_button = QPushButton("Add")
+        self.add_button.clicked.connect(self.add_responsibility)
+        self.edit_button = QPushButton("Edit")
+        self.edit_button.clicked.connect(self.edit_responsibility)
+        self.delete_button = QPushButton("Delete")
+        self.delete_button.clicked.connect(self.delete_responsibility)
+        self.up_button = QPushButton("Up")
+        self.up_button.clicked.connect(self.move_up)
+        self.down_button = QPushButton("Down")
+        self.down_button.clicked.connect(self.move_down)
+        button_layout.addWidget(self.add_button)
+        button_layout.addWidget(self.edit_button)
+        button_layout.addWidget(self.delete_button)
+        button_layout.addWidget(self.up_button)
+        button_layout.addWidget(self.down_button)
+        form_widget.addLayout(button_layout)
+
+        layout.addLayout(form_widget, 1)
+        self.setLayout(layout)
 
     def load_responsibilities(self):
         self.tree.clear()
         try:
-            db_path = os.path.join(BASE_DIR, "fruitless.db")
-            conn = sqlite3.connect(db_path)
+            conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT id, name, parent_id, is_posting_level, sort_order FROM responsibilities")
-            self.responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3], "sort_order": row[4] or 0} for row in cursor.fetchall()]
+            cursor.execute("SELECT id, name, parent_id, is_posting_level, sort_order FROM responsibilities ORDER BY sort_order")
+            responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3]} for row in cursor.fetchall()]
             conn.close()
-
-            # Log loaded responsibilities for debugging
-            print(f"Loaded responsibilities: {self.responsibilities}")
-
-            # Group by parent
-            children_by_parent = defaultdict(list)
-            for resp in self.responsibilities:
-                children_by_parent[resp["parent_id"]].append(resp)
-
-            # Sort each group by sort_order
-            for key in children_by_parent:
-                children_by_parent[key].sort(key=lambda x: x["sort_order"])
-
-            # Build tree recursively
-            def build_tree(parent_item, parent_id=None):
-                for resp in children_by_parent[parent_id]:
-                    item = QTreeWidgetItem([resp["name"]])
-                    item.setData(0, Qt.UserRole, resp["id"])
-                    font = QFont("Arial", 10)
-                    font.setBold(resp["is_posting_level"] == 0)  # Bold only for non-posting
-                    item.setFont(0, font)
-                    parent_item.addChild(item)
-                    build_tree(item, resp["id"])
-
-            build_tree(self.tree.invisibleRootItem())
-            self.tree.expandAll()
         except sqlite3.Error as e:
             QMessageBox.critical(self, "Database Error", f"Failed to load responsibilities: {e}")
-
-    def load_selected_responsibility(self):
-        self.contacts_table.setRowCount(0)
-        selected_item = self.tree.currentItem()
-        if not selected_item:
             return
-        resp_id = selected_item.data(0, Qt.UserRole)
-        try:
-            db_path = os.path.join(BASE_DIR, "fruitless.db")
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            cursor.execute("SELECT name, title, telephone, email FROM contacts WHERE responsibility_id = ?", (resp_id,))
-            for row in cursor.fetchall():
-                row_count = self.contacts_table.rowCount()
-                self.contacts_table.insertRow(row_count)
-                self.contacts_table.setItem(row_count, 0, QTableWidgetItem(row[0]))
-                self.contacts_table.setItem(row_count, 1, QTableWidgetItem(row[1] or ""))
-                self.contacts_table.setItem(row_count, 2, QTableWidgetItem(row[2] or ""))
-                self.contacts_table.setItem(row_count, 3, QTableWidgetItem(row[3]))
-            conn.close()
-        except sqlite3.Error as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load contacts: {e}")
 
-    def open_add_dialog(self):
+        parent_map = defaultdict(list)
+        for resp in responsibilities:
+            parent_map[resp["parent_id"]].append(resp)
+
+        def add_items(parent_item, parent_id):
+            for resp in sorted(parent_map[parent_id], key=lambda x: x.get("sort_order", 0)):
+                item = QTreeWidgetItem([resp["name"]])
+                item.setData(0, Qt.UserRole, resp["id"])
+                if parent_id is None:
+                    self.tree.addTopLevelItem(item)
+                else:
+                    parent_item.addChild(item)
+                add_items(item, resp["id"])
+
+        add_items(None, None)
+
+    def load_responsibility(self, item):
+        resp_id = item.data(0, Qt.UserRole)
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT name, is_posting_level FROM responsibilities WHERE id = ?", (resp_id,))
+            result = cursor.fetchone()
+            if result:
+                self.name_edit.setText(result[0])
+                if result[1]:
+                    self.posting_yes.setChecked(True)
+                else:
+                    self.posting_no.setChecked(True)
+            cursor.execute("SELECT name, title, telephone, email FROM contacts WHERE responsibility_id = ?", (resp_id,))
+            contacts = [{"name": row[0], "title": row[1], "telephone": row[2], "email": row[3]} for row in cursor.fetchall()]
+            conn.close()
+
+            self.contacts_table.setRowCount(0)
+            for contact in contacts:
+                row = self.contacts_table.rowCount()
+                self.contacts_table.insertRow(row)
+                self.contacts_table.setItem(row, 0, QTableWidgetItem(contact["name"]))
+                self.contacts_table.setItem(row, 1, QTableWidgetItem(contact["title"] or ""))
+                self.contacts_table.setItem(row, 2, QTableWidgetItem(contact["telephone"] or ""))
+                self.contacts_table.setItem(row, 3, QTableWidgetItem(contact["email"] or ""))
+        except sqlite3.Error as e:
+            QMessageBox.critical(self, "Database Error", f"Failed to load responsibility details: {e}")
+
+    def add_responsibility(self):
         selected_item = self.tree.currentItem()
-        parent_id = None
-        parent_name = "None"
+        parent_id = selected_item.data(0, Qt.UserRole) if selected_item else None
+        parent_name = selected_item.text(0) if selected_item else None
         inherited_contacts = []
-        if selected_item:
-            parent_id = selected_item.data(0, Qt.UserRole)
-            parent_name = selected_item.text(0)
+        if parent_id:
             try:
-                db_path = os.path.join(BASE_DIR, "fruitless.db")
-                conn = sqlite3.connect(db_path)
+                conn = sqlite3.connect(DB_PATH)
                 cursor = conn.cursor()
-                cursor.execute("SELECT name, title, telephone, email FROM contacts WHERE responsibility_id = ?", (parent_id,))
-                inherited_contacts = [{"name": row[0], "title": row[1] or "", "telephone": row[2] or "", "email": row[3]} for row in cursor.fetchall()]
+                current_id = parent_id
+                while current_id:
+                    cursor.execute("SELECT name, title, telephone, email FROM contacts WHERE responsibility_id = ?", (current_id,))
+                    inherited_contacts.extend([{"name": row[0], "title": row[1], "telephone": row[2], "email": row[3]} for row in cursor.fetchall()])
+                    cursor.execute("SELECT parent_id FROM responsibilities WHERE id = ?", (current_id,))
+                    result = cursor.fetchone()
+                    current_id = result[0] if result else None
                 conn.close()
             except sqlite3.Error as e:
-                QMessageBox.critical(self, "Database Error", f"Failed to load parent contacts: {e}")
+                QMessageBox.critical(self, "Database Error", f"Failed to load inherited contacts: {e}")
                 return
+
         dialog = AddResponsibilityDialog(self, parent_id, parent_name, inherited_contacts)
         if dialog.exec_():
             data = dialog.get_data()
+            data["inherited_contacts"] = inherited_contacts
             add_responsibility(self, data)
 
     def edit_responsibility(self):
@@ -363,8 +349,8 @@ class ResponsibilityManagementDialog(QDialog):
 
     def update_sort_order(self, parent_item):
         try:
-            db_path = os.path.join(BASE_DIR, "fruitless.db")
-            conn = sqlite3.connect(db_path)
+            from Utilities.utils import DB_PATH
+            conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             if parent_item == self.tree.invisibleRootItem():
                 for i in range(self.tree.topLevelItemCount()):
@@ -385,7 +371,6 @@ class ResponsibilityManagementDialog(QDialog):
         self.contacts_table.setRowCount(0)
 
     def refresh_tree(self):
-        # Save current selection and expansion state
         selected_id = None
         expanded_ids = []
         current_item = self.tree.currentItem()
@@ -395,10 +380,8 @@ class ResponsibilityManagementDialog(QDialog):
             item = self.tree.topLevelItem(i)
             self._collect_expanded(item, expanded_ids)
 
-        # Reload responsibilities
         self.load_responsibilities()
 
-        # Restore selection and expansion state
         if selected_id:
             self._restore_selection(selected_id)
         for exp_id in expanded_ids:
