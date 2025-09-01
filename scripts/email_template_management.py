@@ -11,7 +11,8 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 from PyQt5.QtCore import Qt
-from Utilities.utils import save_email_templates, load_email_templates, DB_PATH
+from scripts.Utilities.email_utils import save_email_templates, load_email_templates
+from scripts.Utilities.config import DB_PATH
 
 class ManageEmailTemplatesDialog(QDialog):
     def __init__(self, parent=None):

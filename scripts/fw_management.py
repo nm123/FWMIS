@@ -1,4 +1,6 @@
 import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -8,19 +10,27 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 from PyQt5.QtCore import Qt
-from case_management import AddNewCaseDialog, ViewCasesDialog, ManageCasesDialog, ToDoListDialog
-from category_management import ManageCategoriesDialog
-from list_management import ManageListsDialog
-from email_template_management import ManageEmailTemplatesDialog
-from responsibility_management_ui import ResponsibilityManagementDialog
-from report_management import ReportManagementDialog
-from financial_year_management import FinancialYearManagementDialog
+from scripts.case_management import AddNewCaseDialog, ViewCasesDialog, EditCasesDialog, ToDoListDialog, ViewDeletedCasesDialog
+from scripts.case_management_modules.bulk_case_entry import BulkCaseEntryWizard
+from scripts.case_management_modules.write_off_submission_dialog import WriteOffSubmissionDialog
+from scripts.case_management_modules.write_off_management_dialog import WriteOffManagementDialog
+from scripts.category_management import ManageCategoriesDialog
+from scripts.list_management import ManageListsDialog
+from scripts.email_template_management import ManageEmailTemplatesDialog
+from scripts.responsibility_management_ui import ResponsibilityManagementDialog
+from scripts.report_management import ReportManagementDialog
+from scripts.financial_year_management import FinancialYearManagementDialog
+from scripts.Utilities.config import initialize_shared_documents_table
 
 class FWManagementApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Fruitless and Wasteful Expenditure Management")
         self.showMaximized()  # Open in full-screen mode
+
+        # Initialize database tables
+        initialize_shared_documents_table()
+
         self.setup_ui()
         self.setup_menu()
 
@@ -46,12 +56,28 @@ class FWManagementApp(QMainWindow):
         add_case_action = QAction("Add New Case", self)
         add_case_action.triggered.connect(self.add_new_case)
         cases_menu.addAction(add_case_action)
+
+        bulk_case_action = QAction("Bulk Case Entry", self)
+        bulk_case_action.triggered.connect(self.bulk_case_entry)
+        cases_menu.addAction(bulk_case_action)
+
         view_cases_action = QAction("View Cases", self)
         view_cases_action.triggered.connect(self.view_cases)
         cases_menu.addAction(view_cases_action)
         edit_cases_action = QAction("Edit Cases", self)
         edit_cases_action.triggered.connect(self.manage_cases)  # Reusing existing method
         cases_menu.addAction(edit_cases_action)
+
+        cases_menu.addSeparator()  # Add separator
+
+        # Write-off management
+        create_write_off_action = QAction("Create Write-Off Submission", self)
+        create_write_off_action.triggered.connect(self.create_write_off_submission)
+        cases_menu.addAction(create_write_off_action)
+
+        manage_write_off_action = QAction("Manage Write-Off Submissions", self)
+        manage_write_off_action.triggered.connect(self.manage_write_off_submissions)
+        cases_menu.addAction(manage_write_off_action)
 
         # To-Do List as standalone main menu
         todo_menu = menubar.addMenu("To-Do List")
@@ -116,6 +142,13 @@ class FWManagementApp(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to open Add New Case dialog: {str(e)}")
 
+    def bulk_case_entry(self):
+        try:
+            wizard = BulkCaseEntryWizard(self)
+            wizard.exec_()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open Bulk Case Entry wizard: {str(e)}")
+
     def view_cases(self):
         try:
             dialog = ViewCasesDialog(self)
@@ -125,10 +158,10 @@ class FWManagementApp(QMainWindow):
 
     def manage_cases(self):
         try:
-            dialog = ManageCasesDialog(self)
+            dialog = EditCasesDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Manage Cases dialog: {str(e)}")
+            QMessageBox.critical(self, "Error", f"Failed to open Edit Cases dialog: {str(e)}")
 
     def todo_list(self):
         try:
@@ -194,11 +227,26 @@ class FWManagementApp(QMainWindow):
     def view_deleted_cases(self):
         """View cases in the Deleted Cases list"""
         try:
-            from case_management import ViewDeletedCasesDialog
             dialog = ViewDeletedCasesDialog(self)
             dialog.exec_()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to open Deleted Cases view: {str(e)}")
+
+    def create_write_off_submission(self):
+        """Create a new write-off submission"""
+        try:
+            dialog = WriteOffSubmissionDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open Write-Off Submission dialog: {str(e)}")
+
+    def manage_write_off_submissions(self):
+        """Manage existing write-off submissions"""
+        try:
+            dialog = WriteOffManagementDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open Write-Off Management dialog: {str(e)}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

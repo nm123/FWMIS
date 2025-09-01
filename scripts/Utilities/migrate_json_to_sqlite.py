@@ -1,10 +1,10 @@
 import json
 import os
 import sqlite3
-from utils import BASE_DIR, init_db
+from utils import BASE_DIR, DB_PATH
 
 def migrate_json_to_sqlite():
-    init_db()
+    # Database initialization is handled by utils.py when importing DB_PATH
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 

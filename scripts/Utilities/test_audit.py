@@ -1,8 +1,10 @@
 import sqlite3
 import json
 from datetime import datetime
-
-DB_PATH = '../../data/fruitless.db'
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from utils import DB_PATH
 
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()

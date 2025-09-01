@@ -4,7 +4,10 @@ import os
 import re
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
 from PyQt5.QtCore import Qt
-from Utilities.utils import BASE_DIR, DB_PATH, get_subtree_resp_ids, is_valid_email, save_audit_log
+from scripts.Utilities.config import BASE_DIR, DB_PATH
+from scripts.Utilities.tree_utils import get_subtree_resp_ids
+from scripts.Utilities.validation_utils import is_valid_email
+from scripts.Utilities.audit_utils import save_audit_log
 
 def add_responsibility(dialog, data):
     name = data["name"].strip()
@@ -50,7 +53,7 @@ def add_responsibility(dialog, data):
             return
 
     try:
-        from Utilities.utils import DB_PATH
+        from scripts.Utilities.config import DB_PATH
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
@@ -142,7 +145,7 @@ def edit_responsibility(dialog):
 
     resp_id = selected_item.data(0, Qt.UserRole)
     try:
-        from Utilities.utils import DB_PATH
+        from scripts.Utilities.config import DB_PATH
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
@@ -237,7 +240,7 @@ def edit_responsibility(dialog):
                     QMessageBox.warning(edit_dialog, "Invalid Input", f"Invalid email format: {contact['email']}")
                     return
 
-            from Utilities.utils import DB_PATH
+            from scripts.Utilities.config import DB_PATH
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
@@ -316,7 +319,7 @@ def delete_responsibility(dialog):
 
     # Check for dependent cases
     try:
-        from Utilities.utils import DB_PATH
+        from scripts.Utilities.config import DB_PATH
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 

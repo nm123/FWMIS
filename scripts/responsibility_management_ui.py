@@ -9,8 +9,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from responsibility_management_actions import add_responsibility, edit_responsibility, delete_responsibility
-from Utilities.utils import BASE_DIR, is_valid_email, DB_PATH
+from scripts.responsibility_management_actions import add_responsibility, edit_responsibility, delete_responsibility
+from scripts.Utilities.config import BASE_DIR, DB_PATH
+from scripts.Utilities.validation_utils import is_valid_email
 
 class AddResponsibilityDialog(QDialog):
     def __init__(self, parent=None, parent_id=None, parent_name=None, inherited_contacts=None):
@@ -154,7 +155,7 @@ class ResponsibilityManagementDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Manage Responsibilities")
-        self.resize(1000, 700)
+        self.resize(2000, 700)
         self.setup_ui()
         self.load_responsibilities()
 
@@ -167,7 +168,7 @@ class ResponsibilityManagementDialog(QDialog):
         self.tree = QTreeWidget()
         self.tree.setHeaderLabel("Responsibilities")
         self.tree.itemClicked.connect(self.load_responsibility)
-        layout.addWidget(self.tree, 2)
+        layout.addWidget(self.tree, 3)  # Increased from 2 to 3 for more tree space
 
         # Form for responsibility details
         form_widget = QVBoxLayout()
@@ -240,14 +241,14 @@ class ResponsibilityManagementDialog(QDialog):
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             cursor.execute("SELECT id, name, parent_id, is_posting_level, sort_order FROM responsibilities ORDER BY sort_order")
-            responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3]} for row in cursor.fetchall()]
+            self.responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3], "sort_order": row[4]} for row in cursor.fetchall()]
             conn.close()
         except sqlite3.Error as e:
             QMessageBox.critical(self, "Database Error", f"Failed to load responsibilities: {e}")
             return
 
         parent_map = defaultdict(list)
-        for resp in responsibilities:
+        for resp in self.responsibilities:
             parent_map[resp["parent_id"]].append(resp)
 
         def add_items(parent_item, parent_id):

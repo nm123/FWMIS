@@ -17,7 +17,8 @@ from PyQt5.QtWidgets import (
     QCheckBox,
 )
 from PyQt5.QtCore import Qt
-from Utilities.utils import save_categories, load_categories, DB_PATH
+from scripts.Utilities.category_utils import save_categories, load_categories
+from scripts.Utilities.config import DB_PATH
 import sqlite3
 import logging
 

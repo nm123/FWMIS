@@ -7,13 +7,12 @@ scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(scripts_dir)
 
 try:
-    from utils import BASE_DIR
+    from utils import BASE_DIR, DB_PATH
 except ImportError:
     # Fallback if utils.py is missing
     BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
-    print(f"Warning: utils.py not found, using fallback BASE_DIR: {BASE_DIR}")
-
-from Utilities.utils import DB_PATH
+    DB_PATH = os.path.join(BASE_DIR, 'fruitless.db')
+    print(f"Warning: utils.py not found, using fallback paths")
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 cursor.execute("PRAGMA journal_mode=WAL;")

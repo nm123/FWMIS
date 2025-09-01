@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from utils import BASE_DIR
 
 def check_database():
-    from Utilities.utils import DB_PATH
+    from utils import DB_PATH
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 

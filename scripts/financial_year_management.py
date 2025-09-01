@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QColor
-from Utilities.utils import DB_PATH
+from scripts.Utilities.config import DB_PATH
 
 # Color constants for consistent theming
 COLOR_OPEN = QColor(144, 238, 144)      # Light green
