@@ -1,12 +1,13 @@
 import sys
 import os
 import sqlite3
-# Add parent directory (scripts) to Python path
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from utils import BASE_DIR
+
+# Define DB_PATH directly
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+DB_PATH = os.path.join(DATA_DIR, 'fruitless.db')
 
 def check_database():
-    from utils import DB_PATH
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 

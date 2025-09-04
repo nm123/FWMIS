@@ -826,7 +826,7 @@ class EditCasesDialog(QDialog):
         list_label.setFixedWidth(30)
         self.list_filter_combo = QComboBox()
         self.list_filter_combo.addItems([
-            "All Cases", "Checklist", "Lead Schedule",
+            "All Cases", "Checklist", "Lead Schedule", "To-Do List",
             "Recovered", "Write-Off Recommended", "Written Off", "Deleted Cases"
         ])
         self.list_filter_combo.setCurrentText("All Cases")
@@ -849,9 +849,9 @@ class EditCasesDialog(QDialog):
         splitter.addWidget(self.resp_tree)
 
         self.case_table = QTableWidget()
-        self.case_table.setColumnCount(6)
+        self.case_table.setColumnCount(7)
         self.case_table.setHorizontalHeaderLabels([
-            "Case No", "Date Reported", "Category", "Amount", "List", "Status"
+            "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"
         ])
 
         # Enable double-click to view case details (same as ViewCasesDialog)
@@ -870,6 +870,7 @@ class EditCasesDialog(QDialog):
         self.case_table.setColumnWidth(3, 120)  # Amount
         self.case_table.setColumnWidth(4, 120)  # List
         self.case_table.setColumnWidth(5, 120)  # Status
+        self.case_table.setColumnWidth(6, 80)   # To-Do
 
         # Set row height for better readability
         self.case_table.verticalHeader().setDefaultSectionSize(25)
@@ -961,6 +962,9 @@ class EditCasesDialog(QDialog):
             base_conditions.append("list = 'Checklist'")
         elif selected_list == "Lead Schedule":
             base_conditions.append("list = 'Lead Schedule'")
+        elif selected_list == "To-Do List":
+            # Show both actual To-Do List cases and GJ cases with outstanding actions
+            base_conditions.append("(list = 'To-Do List' OR bas_journal_no IS NOT NULL)")
         # For "All Cases", we don't add any additional list condition
 
         # Add responsibility filter if provided
@@ -970,14 +974,18 @@ class EditCasesDialog(QDialog):
             params.extend(resp_ids)
 
         where_clause = " AND ".join(base_conditions)
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status FROM cases WHERE {where_clause}"
+        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
         for row_data in cursor.fetchall():
             row = self.case_table.rowCount()
             self.case_table.insertRow(row)
             for col, data in enumerate(row_data):
-                self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
+                if col == 6:  # To-Do column (bas_journal_no)
+                    todo_value = "Yes" if data else "No"
+                    self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                else:
+                    self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
         conn.close()
 
     def show_case_details(self, item):
@@ -1021,6 +1029,9 @@ class EditCasesDialog(QDialog):
         elif selected_list == "Lead Schedule":
             # Lead Schedule excludes finalized cases
             base_conditions.append("list = 'Lead Schedule' AND is_finalized = 0")
+        elif selected_list == "To-Do List":
+            # Show both actual To-Do List cases and GJ cases with outstanding actions
+            base_conditions.append("(list = 'To-Do List' OR bas_journal_no IS NOT NULL)")
         elif selected_list == "Recovered":
             base_conditions.append("list = 'Recovered'")
         elif selected_list == "Write-Off Recommended":
@@ -1033,14 +1044,18 @@ class EditCasesDialog(QDialog):
             base_conditions.append("list != 'Deleted Cases'")
 
         where_clause = " AND ".join(base_conditions)
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status FROM cases WHERE {where_clause}"
+        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
         for row_data in cursor.fetchall():
             row = self.case_table.rowCount()
             self.case_table.insertRow(row)
             for col, data in enumerate(row_data):
-                self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
+                if col == 6:  # To-Do column (bas_journal_no)
+                    todo_value = "Yes" if data else "No"
+                    self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                else:
+                    self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
         conn.close()
 
     def filter_responsibilities(self, text):

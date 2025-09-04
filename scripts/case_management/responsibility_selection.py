@@ -21,6 +21,7 @@ class ResponsibilitySelectionDialog(QDialog):
         self.setWindowTitle("Select Responsibility")
         self.setFixedSize(800, 600)
         self.selected_responsibility = None
+        self.responsibilities = []  # Initialize to prevent AttributeError
         self.setup_ui()
         self.load_responsibilities()
 
@@ -172,6 +173,7 @@ class ResponsibilitySelectionDialog(QDialog):
 
         add_filtered_items(None, None)
         self.tree.expandAll()
+        self.tree.update()
 
     def on_item_double_clicked(self, item, column):
         """Handle double-click on tree item with validation"""

@@ -95,9 +95,9 @@ class EditCasesDialog(QDialog):
         splitter.addWidget(self.resp_tree)
 
         self.case_table = QTableWidget()
-        self.case_table.setColumnCount(6)
+        self.case_table.setColumnCount(7)
         self.case_table.setHorizontalHeaderLabels([
-            "Case No", "Date Reported", "Category", "Amount", "List", "Status"
+            "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"
         ])
 
         # Enable double-click to view case details
@@ -116,6 +116,7 @@ class EditCasesDialog(QDialog):
         self.case_table.setColumnWidth(3, 120)  # Amount
         self.case_table.setColumnWidth(4, 120)  # List
         self.case_table.setColumnWidth(5, 120)  # Status
+        self.case_table.setColumnWidth(6, 80)   # To-Do
 
         # Set row height for better readability
         self.case_table.verticalHeader().setDefaultSectionSize(25)
@@ -215,14 +216,20 @@ class EditCasesDialog(QDialog):
             params.extend(resp_ids)
 
         where_clause = " AND ".join(base_conditions)
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status FROM cases WHERE {where_clause}"
+        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
         for row_data in cursor.fetchall():
             row = self.case_table.rowCount()
             self.case_table.insertRow(row)
             for col, data in enumerate(row_data):
-                self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
+                if col == 6:  # To-Do column (check both bas_payment_no and bas_journal_no)
+                    bas_payment_no = row_data[6] if len(row_data) > 6 else None
+                    bas_journal_no = row_data[7] if len(row_data) > 7 else None
+                    todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
+                    self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
+                    self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
         conn.close()
 
     def show_case_details(self, item):
@@ -268,14 +275,20 @@ class EditCasesDialog(QDialog):
             base_conditions.append("list != 'Deleted Cases'")
 
         where_clause = " AND ".join(base_conditions)
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status FROM cases WHERE {where_clause}"
+        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
         for row_data in cursor.fetchall():
             row = self.case_table.rowCount()
             self.case_table.insertRow(row)
             for col, data in enumerate(row_data):
-                self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
+                if col == 6:  # To-Do column (check both bas_payment_no and bas_journal_no)
+                    bas_payment_no = row_data[6] if len(row_data) > 6 else None
+                    bas_journal_no = row_data[7] if len(row_data) > 7 else None
+                    todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
+                    self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
+                    self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
         conn.close()
 
     def filter_responsibilities(self, text):

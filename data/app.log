@@ -33,3 +33,42 @@
 2025-08-30 22:16:02,071 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
 2025-08-30 22:20:16,078 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
 2025-08-30 22:22:59,874 - ERROR - Failed to save audit log: Error binding parameter 2: type 'dict' is not supported
+2025-09-03 17:12:51,970 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:34,935 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:34,951 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:34,968 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:34,984 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,001 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,018 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,036 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,053 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,071 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,088 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,105 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,121 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,142 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,160 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,180 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,199 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,219 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,238 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,258 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,276 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,294 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,311 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,327 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,348 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,369 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,385 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,404 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,422 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,441 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,460 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,478 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,496 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,516 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,541 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,577 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,612 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,639 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-03 17:17:35,661 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable

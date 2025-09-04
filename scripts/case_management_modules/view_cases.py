@@ -47,7 +47,7 @@ class ViewCasesDialog(QDialog):
         list_label.setFixedWidth(30)
         self.list_filter_combo = QComboBox()
         self.list_filter_combo.addItems([
-            "All Cases", "Checklist", "Lead Schedule",
+            "All Cases", "Checklist", "Lead Schedule", "To-Do List",
             "Recovered", "Write-Off Recommended", "Written Off", "Deleted Cases"
         ])
         self.list_filter_combo.setCurrentText("All Cases")
@@ -70,9 +70,9 @@ class ViewCasesDialog(QDialog):
         splitter.addWidget(self.resp_tree)
 
         self.case_table = QTableWidget()
-        self.case_table.setColumnCount(6)
+        self.case_table.setColumnCount(7)
         self.case_table.setHorizontalHeaderLabels([
-            "Case No", "Date Reported", "Category", "Amount", "List", "Status"
+            "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"
         ])
 
         # Enable double-click to view case details
@@ -91,6 +91,7 @@ class ViewCasesDialog(QDialog):
         self.case_table.setColumnWidth(3, 120)  # Amount
         self.case_table.setColumnWidth(4, 120)  # List
         self.case_table.setColumnWidth(5, 120)  # Status
+        self.case_table.setColumnWidth(6, 80)   # To-Do
 
         # Set row height for better readability
         self.case_table.verticalHeader().setDefaultSectionSize(25)
@@ -178,7 +179,7 @@ class ViewCasesDialog(QDialog):
         # Add list filter condition
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            # Checklist shows ALL cases except deleted ones (never exclude finalized)
+            # Checklist shows ALL cases except deleted and To-Do List ones
             base_conditions.append("(list = 'Checklist' OR list = 'Lead Schedule' OR list = 'Recovered' OR list = 'Write-Off Recommended' OR list = 'Written Off')")
         elif selected_list == "Lead Schedule":
             # Lead Schedule excludes finalized cases
@@ -189,6 +190,9 @@ class ViewCasesDialog(QDialog):
             base_conditions.append("list = 'Write-Off Recommended'")
         elif selected_list == "Written Off":
             base_conditions.append("list = 'Written Off'")
+        elif selected_list == "To-Do List":
+            # Show both actual To-Do List cases and GJ cases with outstanding actions
+            base_conditions.append("(list = 'To-Do List' OR bas_journal_no IS NOT NULL)")
         elif selected_list == "Deleted Cases":
             base_conditions.append("list = 'Deleted Cases'")
         # For "All Cases", we don't add any additional list condition
@@ -200,14 +204,22 @@ class ViewCasesDialog(QDialog):
             params.extend(resp_ids)
 
         where_clause = " AND ".join(base_conditions)
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status FROM cases WHERE {where_clause}"
+        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
         for row_data in cursor.fetchall():
             row = self.case_table.rowCount()
             self.case_table.insertRow(row)
             for col, data in enumerate(row_data):
-                self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
+                if col == 6:  # To-Do column (check both bas_payment_no and bas_journal_no)
+                    bas_payment_no = row_data[6] if len(row_data) > 6 else None
+                    bas_journal_no = row_data[7] if len(row_data) > 7 else None
+                    todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
+                    self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
+                    # Handle NULL values properly
+                    display_value = str(data) if data is not None else ""
+                    self.case_table.setItem(row, col, QTableWidgetItem(display_value))
         conn.close()
 
     def show_case_details(self, item):
@@ -254,7 +266,7 @@ class CaseDetailsDialog(QDialog):
         case_info_layout.addRow("Category:", QLabel(self.case_data[9] if self.case_data[9] else "N/A"))
         case_info_layout.addRow("Amount:", QLabel(f"R {self.case_data[11]:,.2f}" if self.case_data[11] else "N/A"))
         case_info_layout.addRow("List:", QLabel(self.case_data[16] if self.case_data[16] else "N/A"))
-        case_info_layout.addRow("Status:", QLabel(self.case_data[17] if self.case_data[17] else "N/A"))
+        case_info_layout.addRow("Status:", QLabel(self.case_data[15] if self.case_data[15] else "N/A"))
 
         scroll_layout.addRow(case_info_group)
 
@@ -275,6 +287,8 @@ class CaseDetailsDialog(QDialog):
 
         financial_layout.addRow("BAS Payment No:", QLabel(self.case_data[6] if self.case_data[6] else "N/A"))
         financial_layout.addRow("BAS Payment Date:", QLabel(self.case_data[7] if self.case_data[7] else "N/A"))
+        financial_layout.addRow("BAS Journal No:", QLabel(self.case_data[29] if len(self.case_data) > 29 and self.case_data[29] else "N/A"))
+        financial_layout.addRow("BAS Journal Date:", QLabel(self.case_data[30] if len(self.case_data) > 30 and self.case_data[30] else "N/A"))
         financial_layout.addRow("Persal No:", QLabel(self.case_data[8] if self.case_data[8] else "N/A"))
 
         scroll_layout.addRow(financial_group)

@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QScrollArea,
     QGroupBox,
+    QCalendarWidget,
 )
 from PyQt5.QtCore import QDate, Qt
 from scripts.Utilities.config import DB_PATH
@@ -192,10 +193,34 @@ class EditCaseDialog(QDialog):
         self.bas_payment_no_edit = QLineEdit()
         form_layout.addRow(self.bas_label, self.bas_payment_no_edit)
 
+        # BAS Payment Date with manual date picker
+        bas_payment_date_layout = QHBoxLayout()
         self.bas_date_label = QLabel("BAS Payment Date:")
-        self.bas_payment_date_edit = QDateEdit(QDate.currentDate())
-        self.bas_payment_date_edit.setCalendarPopup(True)
-        form_layout.addRow(self.bas_date_label, self.bas_payment_date_edit)
+        self.bas_payment_date_edit = QLineEdit()
+        self.bas_payment_date_edit.setPlaceholderText("YYYY-MM-DD")
+        self.bas_payment_date_button = QPushButton("...")
+        self.bas_payment_date_button.setFixedWidth(30)
+        self.bas_payment_date_button.clicked.connect(self.select_bas_payment_date)
+        bas_payment_date_layout.addWidget(self.bas_payment_date_edit)
+        bas_payment_date_layout.addWidget(self.bas_payment_date_button)
+        form_layout.addRow(self.bas_date_label, bas_payment_date_layout)
+
+        # BAS Journal fields
+        self.bas_journal_label = QLabel("BAS Journal No:")
+        self.bas_journal_no_edit = QLineEdit()
+        form_layout.addRow(self.bas_journal_label, self.bas_journal_no_edit)
+
+        # BAS Journal Date with manual date picker
+        bas_journal_date_layout = QHBoxLayout()
+        self.bas_journal_date_label = QLabel("BAS Journal Date:")
+        self.bas_journal_date_edit = QLineEdit()
+        self.bas_journal_date_edit.setPlaceholderText("YYYY-MM-DD")
+        self.bas_journal_date_button = QPushButton("...")
+        self.bas_journal_date_button.setFixedWidth(30)
+        self.bas_journal_date_button.clicked.connect(self.select_bas_journal_date)
+        bas_journal_date_layout.addWidget(self.bas_journal_date_edit)
+        bas_journal_date_layout.addWidget(self.bas_journal_date_button)
+        form_layout.addRow(self.bas_journal_date_label, bas_journal_date_layout)
 
         # Persal No field
         self.persal_label = QLabel("Persal No:")
@@ -334,7 +359,17 @@ class EditCaseDialog(QDialog):
         if self.case_data[6]:  # bas_payment_no
             self.bas_payment_no_edit.setText(self.case_data[6])
         if self.case_data[7]:  # bas_payment_date
-            self.bas_payment_date_edit.setDate(QDate.fromString(self.case_data[7], "yyyy-MM-dd"))
+            self.bas_payment_date_edit.setText(self.case_data[7])
+        else:
+            self.bas_payment_date_edit.clear()  # Clear date if NULL
+
+        # Set BAS Journal fields
+        if len(self.case_data) > 29 and self.case_data[29]:  # bas_journal_no
+            self.bas_journal_no_edit.setText(self.case_data[29])
+        if len(self.case_data) > 30 and self.case_data[30]:  # bas_journal_date
+            self.bas_journal_date_edit.setText(self.case_data[30])
+        else:
+            self.bas_journal_date_edit.clear()  # Clear date if NULL
 
         # Set Persal No
         if self.case_data[8]:  # persal_no
@@ -440,6 +475,8 @@ class EditCaseDialog(QDialog):
                 self.bas_date_label.setVisible(bas_comp)
             if hasattr(self, 'bas_payment_date_edit'):
                 self.bas_payment_date_edit.setVisible(bas_comp)
+            if hasattr(self, 'bas_payment_date_button'):
+                self.bas_payment_date_button.setVisible(bas_comp)
 
             # Update Persal field visibility and labels
             if hasattr(self, 'persal_label'):
@@ -505,6 +542,94 @@ class EditCaseDialog(QDialog):
         if file_path:
             self.evidence_edit.setText(file_path)
 
+    def select_bas_payment_date(self):
+        """Open calendar dialog for BAS Payment Date selection"""
+        from PyQt5.QtWidgets import QCalendarWidget, QDialog, QVBoxLayout, QHBoxLayout, QPushButton
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Select BAS Payment Date")
+        dialog.setFixedSize(300, 250)
+
+        layout = QVBoxLayout(dialog)
+
+        calendar = QCalendarWidget()
+        current_text = self.bas_payment_date_edit.text().strip()
+        if current_text:
+            try:
+                calendar.setSelectedDate(QDate.fromString(current_text, "yyyy-MM-dd"))
+            except:
+                calendar.setSelectedDate(QDate.currentDate())
+        else:
+            calendar.setSelectedDate(QDate.currentDate())
+
+        layout.addWidget(calendar)
+
+        button_layout = QHBoxLayout()
+        ok_button = QPushButton("OK")
+        cancel_button = QPushButton("Cancel")
+
+        def on_ok():
+            selected_date = calendar.selectedDate()
+            self.bas_payment_date_edit.setText(selected_date.toString("yyyy-MM-dd"))
+            dialog.accept()
+
+        def on_cancel():
+            dialog.reject()
+
+        ok_button.clicked.connect(on_ok)
+        cancel_button.clicked.connect(on_cancel)
+
+        button_layout.addStretch()
+        button_layout.addWidget(ok_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
+
+        dialog.exec_()
+
+    def select_bas_journal_date(self):
+        """Open calendar dialog for BAS Journal Date selection"""
+        from PyQt5.QtWidgets import QCalendarWidget, QDialog, QVBoxLayout, QHBoxLayout, QPushButton
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Select BAS Journal Date")
+        dialog.setFixedSize(300, 250)
+
+        layout = QVBoxLayout(dialog)
+
+        calendar = QCalendarWidget()
+        current_text = self.bas_journal_date_edit.text().strip()
+        if current_text:
+            try:
+                calendar.setSelectedDate(QDate.fromString(current_text, "yyyy-MM-dd"))
+            except:
+                calendar.setSelectedDate(QDate.currentDate())
+        else:
+            calendar.setSelectedDate(QDate.currentDate())
+
+        layout.addWidget(calendar)
+
+        button_layout = QHBoxLayout()
+        ok_button = QPushButton("OK")
+        cancel_button = QPushButton("Cancel")
+
+        def on_ok():
+            selected_date = calendar.selectedDate()
+            self.bas_journal_date_edit.setText(selected_date.toString("yyyy-MM-dd"))
+            dialog.accept()
+
+        def on_cancel():
+            dialog.reject()
+
+        ok_button.clicked.connect(on_ok)
+        cancel_button.clicked.connect(on_cancel)
+
+        button_layout.addStretch()
+        button_layout.addWidget(ok_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
+
+        dialog.exec_()
+
     def save_case(self):
         try:
             bas_payment_no = self.bas_payment_no_edit.text().strip()
@@ -546,11 +671,18 @@ class EditCaseDialog(QDialog):
                 QMessageBox.warning(self, "Invalid Input", "Please select a responsibility.")
                 return
 
-            # Convert dates to strings
+            # Convert dates to strings, handling NULL dates
             date_incurred_str = self.date_incurred_edit.date().toString("yyyy-MM-dd")
             date_identified_str = self.date_identified_edit.date().toString("yyyy-MM-dd")
             date_reported_str = self.date_reported_edit.date().toString("yyyy-MM-dd")
-            bas_payment_date_str = self.bas_payment_date_edit.date().toString("yyyy-MM-dd")
+
+            # Handle BAS dates - use NULL if text field is empty
+            bas_payment_date_text = self.bas_payment_date_edit.text().strip()
+            bas_payment_date_str = bas_payment_date_text if bas_payment_date_text else None
+
+            bas_journal_date_text = self.bas_journal_date_edit.text().strip()
+            bas_journal_date_str = bas_journal_date_text if bas_journal_date_text else None
+
             assessment_date_str = self.assessment_date_edit.date().toString("yyyy-MM-dd")
 
             # Create case dictionary
@@ -568,7 +700,9 @@ class EditCaseDialog(QDialog):
                 "date_reported": str(date_reported_str),
                 "description": self.description_edit.toPlainText().strip(),
                 "bas_payment_no": bas_payment_no,
-                "bas_payment_date": str(bas_payment_date_str),
+                "bas_payment_date": bas_payment_date_str,
+                "bas_journal_no": self.bas_journal_no_edit.text().strip(),
+                "bas_journal_date": bas_journal_date_str,
                 "persal_no": persal_no,
                 "category": category_text,
                 "responsibility_id": self.selected_responsibility_id,
@@ -607,14 +741,14 @@ class EditCaseDialog(QDialog):
             cursor.execute("""
                 UPDATE cases SET
                     date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
-                    bas_payment_no = ?, bas_payment_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
+                    bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
                     source_document = ?, minutes = ?, evidence_path = ?, attachments = ?, status = ?, list = ?, assessment_assessed_by = ?,
                     assessment_date = ?, assessment_result = ?, fy_id = ?, period_id = ?, criminal_charges = ?, disciplinary_process = ?,
                     loss_recovery = ?, prevention_steps = ?, original_list = ?
                 WHERE transaction_no = ?
             """, (
                 case["date_incurred"], case["date_identified"], case["date_reported"],
-                case["description"], case["bas_payment_no"], case["bas_payment_date"], case["persal_no"],
+                case["description"], case["bas_payment_no"], case["bas_payment_date"], case["bas_journal_no"], case["bas_journal_date"], case["persal_no"],
                 case["category"], case["responsibility_id"], case["amount"], case["source_document"],
                 case["minutes"], case["evidence_path"], case["attachments"], case["status"], case["list"],
                 case["assessment_assessed_by"], case["assessment_date"], case["assessment_result"],

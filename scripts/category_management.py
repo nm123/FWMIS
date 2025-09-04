@@ -37,6 +37,7 @@ class ManageCategoriesDialog(QDialog):
         # Tree widget for displaying categories
         self.tree = QTreeWidget()
         self.tree.setHeaderLabel("Categories")
+        self.tree.itemDoubleClicked.connect(self.on_tree_double_click)
         layout.addWidget(self.tree, 2)
 
         # Buttons panel
@@ -59,6 +60,13 @@ class ManageCategoriesDialog(QDialog):
         button_layout.addWidget(self.delete_button)
 
         button_layout.addStretch()
+
+        self.select_button = QPushButton("Select Category")
+        self.select_button.clicked.connect(self.select_category)
+        self.select_button.setMinimumHeight(35)
+        self.select_button.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
+        button_layout.addWidget(self.select_button)
+
         layout.addWidget(button_widget, 1)
 
         self.setLayout(layout)
@@ -192,6 +200,18 @@ class ManageCategoriesDialog(QDialog):
             except sqlite3.Error as e:
                 logging.error(f"Failed to delete category: {e}")
                 QMessageBox.critical(self, "Error", f"Failed to delete category: {str(e)}")
+
+    def select_category(self):
+        """Select the currently selected category and close the dialog"""
+        selected_category = self.get_selected_category()
+        if selected_category:
+            self.accept()
+        else:
+            QMessageBox.warning(self, "No Selection", "Please select a category to choose.")
+
+    def on_tree_double_click(self, item, column):
+        """Handle double-click on tree item to select category"""
+        self.select_category()
 
     def would_create_cycle(self, parent_id, categories, editing_id=None):
         """Check if assigning parent_id would create a circular reference."""

@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 from PyQt5.QtCore import Qt
-from scripts.case_management import AddNewCaseDialog, ViewCasesDialog, EditCasesDialog, ToDoListDialog, ViewDeletedCasesDialog
+from scripts.case_management import AddNewCaseDialog, ViewCasesDialog, EditCasesDialog, ToDoListDialog, ViewDeletedCasesDialog, import_undisclosed_cases
 from scripts.case_management_modules.bulk_case_entry import BulkCaseEntryWizard
 from scripts.case_management_modules.write_off_submission_dialog import WriteOffSubmissionDialog
 from scripts.case_management_modules.write_off_management_dialog import WriteOffManagementDialog
@@ -60,6 +60,12 @@ class FWManagementApp(QMainWindow):
         bulk_case_action = QAction("Bulk Case Entry", self)
         bulk_case_action.triggered.connect(self.bulk_case_entry)
         cases_menu.addAction(bulk_case_action)
+
+        import_cases_action = QAction("Import Undisclosed Cases", self)
+        import_cases_action.triggered.connect(self.import_undisclosed_cases)
+        cases_menu.addAction(import_cases_action)
+
+        cases_menu.addSeparator()  # Add separator
 
         view_cases_action = QAction("View Cases", self)
         view_cases_action.triggered.connect(self.view_cases)
@@ -148,6 +154,12 @@ class FWManagementApp(QMainWindow):
             wizard.exec_()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to open Bulk Case Entry wizard: {str(e)}")
+
+    def import_undisclosed_cases(self):
+        try:
+            import_undisclosed_cases(self)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open Import Undisclosed Cases dialog: {str(e)}")
 
     def view_cases(self):
         try:
