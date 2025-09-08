@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.audit_utils import save_audit_log
@@ -201,7 +202,7 @@ class CaseDetailsDialog(QDialog):
         case_info_layout.addRow("Date Identified:", QLabel(self.case_data[3] if self.case_data[3] else "N/A"))
         case_info_layout.addRow("Date Reported:", QLabel(self.case_data[4] if self.case_data[4] else "N/A"))
         case_info_layout.addRow("Category:", QLabel(self.case_data[9] if self.case_data[9] else "N/A"))
-        case_info_layout.addRow("Amount:", QLabel(f"R {self.case_data[11]:,.2f}" if self.case_data[11] else "N/A"))
+        case_info_layout.addRow("Amount:", QLabel(format_currency_amount(self.case_data[11]) if self.case_data[11] else "N/A"))
         case_info_layout.addRow("List:", QLabel(self.case_data[16] if self.case_data[16] else "N/A"))
         case_info_layout.addRow("Status:", QLabel(self.case_data[17] if self.case_data[17] else "N/A"))
 

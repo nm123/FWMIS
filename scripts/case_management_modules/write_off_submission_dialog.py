@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.financial_utils import get_financial_year
 
@@ -146,7 +147,8 @@ class WriteOffSubmissionDialog(QDialog):
                 # Case details
                 self.cases_table.setItem(row, 1, QTableWidgetItem(transaction_no))
                 self.cases_table.setItem(row, 2, QTableWidgetItem(category or "N/A"))
-                self.cases_table.setItem(row, 3, QTableWidgetItem(f"R {amount:,.2f}" if amount else "N/A"))
+                amount_item = format_currency_amount(amount, right_align=True)
+                self.cases_table.setItem(row, 3, amount_item)
                 self.cases_table.setItem(row, 4, QTableWidgetItem(determination_date or "N/A"))
 
                 # Store case data for later use
@@ -187,7 +189,7 @@ class WriteOffSubmissionDialog(QDialog):
 
         self.selected_cases = selected_cases
         self.total_cases_label.setText(str(len(selected_cases)))
-        self.total_amount_label.setText(f"R {total_amount:,.2f}")
+        self.total_amount_label.setText(format_currency_amount(total_amount))
 
     def create_submission(self):
         """Create the write-off submission"""
@@ -241,7 +243,7 @@ class WriteOffSubmissionDialog(QDialog):
             QMessageBox.information(self, "Success",
                                   f"Write-off submission {submission_id} created successfully!\n\n"
                                   f"Cases: {len(self.selected_cases)}\n"
-                                  f"Total Amount: R {self.get_total_amount():,.2f}")
+                                  f"Total Amount: {format_currency_amount(self.get_total_amount())}")
 
             self.accept()
 

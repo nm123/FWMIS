@@ -33,6 +33,7 @@ from scripts.Utilities.responsibility_utils import load_posting_responsibilities
 from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.list_utils import load_lists
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
+from scripts.Utilities.utils import format_currency_amount
 from collections import defaultdict
 from .responsibility_selection import ResponsibilitySelectionDialog
 
@@ -984,6 +985,12 @@ class EditCasesDialog(QDialog):
                 if col == 6:  # To-Do column (bas_journal_no)
                     todo_value = "Yes" if data else "No"
                     self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                elif col == 3:  # Amount column
+                    amount_item = format_currency_amount(data, right_align=True)
+                    self.case_table.setItem(row, col, amount_item)
+                elif col == 3:  # Amount column
+                    amount_item = format_currency_amount(data, right_align=True)
+                    self.case_table.setItem(row, col, amount_item)
                 else:
                     self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
         conn.close()

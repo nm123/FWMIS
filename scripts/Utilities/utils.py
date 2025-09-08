@@ -11,6 +11,37 @@ from .responsibility_utils import load_responsibilities, load_posting_responsibi
 from .list_utils import load_lists, save_lists
 from .case_utils import load_cases
 
+def format_currency_amount(amount, include_currency=False, right_align=False):
+    """
+    Format a currency amount consistently throughout the application.
+
+    Args:
+        amount: Numeric amount to format
+        include_currency: Whether to include 'R' prefix (default: False)
+        right_align: Whether this is for a table item that should be right-aligned
+
+    Returns:
+        If right_align=True: QTableWidgetItem with right alignment
+        If right_align=False: Formatted string
+    """
+    if amount is None or amount == 0:
+        formatted = "0.00"
+    else:
+        abs_amount = abs(amount)
+        if include_currency:
+            formatted = f"R {abs_amount:,.2f}"
+        else:
+            formatted = f"{abs_amount:,.2f}"
+
+    if right_align:
+        from PyQt5.QtWidgets import QTableWidgetItem
+        from PyQt5.QtCore import Qt
+        item = QTableWidgetItem(formatted)
+        item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        return item
+    else:
+        return formatted
+
 # Re-export all functions and variables for backward compatibility
 __all__ = [
     'BASE_DIR', 'DATA_DIR', 'DB_PATH', 'logging',
@@ -19,5 +50,5 @@ __all__ = [
     'get_subtree_resp_ids', 'load_categories', 'save_categories',
     'load_email_templates', 'save_email_templates',
     'load_responsibilities', 'load_posting_responsibilities',
-    'load_lists', 'save_lists', 'load_cases'
+    'load_lists', 'save_lists', 'load_cases', 'format_currency_amount'
 ]

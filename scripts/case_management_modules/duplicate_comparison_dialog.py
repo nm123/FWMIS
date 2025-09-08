@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.utils import format_currency_amount
 
 
 class DuplicateComparisonDialog(QDialog):
@@ -93,10 +94,10 @@ class DuplicateComparisonDialog(QDialog):
         new_details = f"""
 Responsibility: {self.new_transaction['responsibility']}
 Type: {self.new_transaction['type']}
-Amount: R{abs(self.new_transaction['amount']):,.2f}
+Amount: {format_currency_amount(self.new_transaction['amount'])}
 Date: {self.new_transaction['date'].strftime('%Y-%m-%d')}
 Description: {self.new_transaction['description']}
-Category: {getattr(self, 'category_name', 'N/A')}
+Category: {self.new_transaction.get('category_name', 'N/A')}
 """.strip()
 
         self.new_details.setPlainText(new_details)
@@ -124,8 +125,8 @@ Category: {getattr(self, 'category_name', 'N/A')}
 
             # Amount
             amount = case.get('amount', 0)
-            amount_str = f"R{amount:,.2f}" if amount else ""
-            self.existing_table.setItem(row, 4, QTableWidgetItem(amount_str))
+            amount_item = format_currency_amount(amount, right_align=True)
+            self.existing_table.setItem(row, 4, amount_item)
 
             # Status
             self.existing_table.setItem(row, 5, QTableWidgetItem(case.get('status', '')))
@@ -209,7 +210,7 @@ class CaseDetailsDialog(QDialog):
         form_layout.addRow("Responsibility:", QLabel(resp_name))
 
         amount = self.case_data.get('amount', 0)
-        form_layout.addRow("Amount:", QLabel(f"R{amount:,.2f}" if amount else "N/A"))
+        form_layout.addRow("Amount:", QLabel(format_currency_amount(amount) if amount else "N/A"))
 
         form_layout.addRow("Status:", QLabel(self.case_data.get('status', 'N/A')))
         form_layout.addRow("List:", QLabel(self.case_data.get('list', 'N/A')))

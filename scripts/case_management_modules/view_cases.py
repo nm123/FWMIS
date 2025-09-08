@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from collections import defaultdict
@@ -216,6 +217,9 @@ class ViewCasesDialog(QDialog):
                     bas_journal_no = row_data[7] if len(row_data) > 7 else None
                     todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
                     self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                elif col == 3:  # Amount column
+                    amount_item = format_currency_amount(data, right_align=True)
+                    self.case_table.setItem(row, col, amount_item)
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     # Handle NULL values properly
                     display_value = str(data) if data is not None else ""
@@ -264,7 +268,7 @@ class CaseDetailsDialog(QDialog):
         case_info_layout.addRow("Date Identified:", QLabel(self.case_data[3] if self.case_data[3] else "N/A"))
         case_info_layout.addRow("Date Reported:", QLabel(self.case_data[4] if self.case_data[4] else "N/A"))
         case_info_layout.addRow("Category:", QLabel(self.case_data[9] if self.case_data[9] else "N/A"))
-        case_info_layout.addRow("Amount:", QLabel(f"R {self.case_data[11]:,.2f}" if self.case_data[11] else "N/A"))
+        case_info_layout.addRow("Amount:", QLabel(format_currency_amount(self.case_data[11]) if self.case_data[11] else "N/A"))
         case_info_layout.addRow("List:", QLabel(self.case_data[16] if self.case_data[16] else "N/A"))
         case_info_layout.addRow("Status:", QLabel(self.case_data[15] if self.case_data[15] else "N/A"))
 

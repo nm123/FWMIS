@@ -29,6 +29,7 @@ from PyQt5.QtCore import QDate, Qt
 from scripts.Utilities.config import DB_PATH, initialize_shared_documents_table
 from scripts.Utilities.financial_utils import get_financial_year, generate_transaction_no
 from scripts.Utilities.audit_utils import save_audit_log
+from scripts.Utilities.utils import format_currency_amount
 
 
 class BulkCaseEntryWizard(QWizard):
@@ -269,7 +270,8 @@ class CaseEntryPage(QWizardPage):
         self.cases_table.insertRow(row)
         self.cases_table.setItem(row, 0, QTableWidgetItem(case_no))
         self.cases_table.setItem(row, 1, QTableWidgetItem(description))
-        self.cases_table.setItem(row, 2, QTableWidgetItem(amount))
+        amount_item = format_currency_amount(amount, right_align=True)
+        self.cases_table.setItem(row, 2, amount_item)
         self.cases_table.setItem(row, 3, QTableWidgetItem(status))
 
         # Store case data
@@ -358,7 +360,8 @@ class ReviewPage(QWizardPage):
             self.review_table.insertRow(row)
             self.review_table.setItem(row, 0, QTableWidgetItem(case["transaction_no"]))
             self.review_table.setItem(row, 1, QTableWidgetItem(case["description"]))
-            self.review_table.setItem(row, 2, QTableWidgetItem(str(case["amount"])))
+            amount_item = format_currency_amount(case["amount"], right_align=True)
+            self.review_table.setItem(row, 2, amount_item)
             self.review_table.setItem(row, 3, QTableWidgetItem(case["status"]))
 
     def validatePage(self):

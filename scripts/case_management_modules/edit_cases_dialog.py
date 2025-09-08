@@ -21,6 +21,7 @@ from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.financial_utils import get_financial_year
+from scripts.Utilities.utils import format_currency_amount
 from collections import defaultdict
 from .edit_case_dialog import EditCaseDialog
 
@@ -228,6 +229,9 @@ class EditCasesDialog(QDialog):
                     bas_journal_no = row_data[7] if len(row_data) > 7 else None
                     todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
                     self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                elif col == 3:  # Amount column
+                    amount_item = format_currency_amount(data, right_align=True)
+                    self.case_table.setItem(row, col, amount_item)
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
         conn.close()
@@ -287,6 +291,9 @@ class EditCasesDialog(QDialog):
                     bas_journal_no = row_data[7] if len(row_data) > 7 else None
                     todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
                     self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
+                elif col == 3:  # Amount column
+                    amount_item = format_currency_amount(data, right_align=True)
+                    self.case_table.setItem(row, col, amount_item)
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
         conn.close()

@@ -19,6 +19,7 @@ from scripts.category_management import ManageCategoriesDialog
 from scripts.responsibility_management_ui import ResponsibilityManagementDialog
 from scripts.responsibility_management_actions import edit_responsibility_by_name
 from .duplicate_comparison_dialog import DuplicateComparisonDialog
+from scripts.Utilities.utils import format_currency_amount
 
 
 class BASParser:
@@ -172,7 +173,7 @@ class BASParser:
         credit_count = len([t for t in self.transactions if t['is_credit']])
         total_amount = sum(abs(t['amount']) for t in self.transactions)
 
-        return f"Found {total_count} transactions ({debit_count} debits, {credit_count} credits) totaling R{total_amount:,.2f}"
+        return f"Found {total_count} transactions ({debit_count} debits, {credit_count} credits) totaling {format_currency_amount(total_amount)}"
 
 
 class ImportWorker(QThread):
@@ -239,16 +240,10 @@ class ImportWorker(QThread):
             if fy_id is None:
                 print(f"DEBUG: *** CRITICAL ERROR *** FY {fy} not found in database!")
                 print(f"DEBUG: This will cause cases to be imported with invalid fy_id")
-                # Try to find any FY that might work
-                cursor.execute("SELECT id, start_year, end_year FROM financial_years ORDER BY id DESC LIMIT 1")
-                latest_fy = cursor.fetchone()
-                if latest_fy:
-                    print(f"DEBUG: Latest available FY: ID {latest_fy[0]} = {latest_fy[1]}-{latest_fy[2]}")
-                    fy_id = latest_fy[0]  # Use latest available FY as fallback
-                    print(f"DEBUG: Using fallback FY ID: {fy_id}")
-                else:
-                    print(f"DEBUG: *** NO FINANCIAL YEARS EXIST IN DATABASE ***")
-                    return None  # Cannot proceed without any FY
+                conn.close()
+                raise Exception(f"Financial Year {fy} not found in database. Please ensure the financial year is properly set up in Financial Year Management before importing cases.")
+            else:
+                print(f"DEBUG: Found FY {fy} with ID: {fy_id}")
 
             # Get period ID for the transaction date
             period_id = None
@@ -262,6 +257,20 @@ class ImportWorker(QThread):
                 """, (fy_id, date_str, date_str))
                 period_result = cursor.fetchone()
                 period_id = period_result[0] if period_result else None
+
+                # If no period found for this date, try to find the most recent open period for this FY
+                if period_id is None:
+                    cursor.execute("""
+                        SELECT id FROM periods
+                        WHERE fy_id = ? AND status = 'open'
+                        ORDER BY period_number DESC LIMIT 1
+                    """, (fy_id,))
+                    open_period_result = cursor.fetchone()
+                    if open_period_result:
+                        period_id = open_period_result[0]
+                        print(f"DEBUG: Using open period {period_id} for FY {fy_id} as fallback")
+                    else:
+                        print(f"DEBUG: No open periods found for FY {fy_id}, using period_id = None")
 
             # Get responsibility ID
             resp_id = None
@@ -662,6 +671,9 @@ class ImportUndisclosedCasesDialog(QDialog):
             row = self.transactions_table.rowCount()
             self.transactions_table.insertRow(row)
 
+            # Check if transaction is marked for removal
+            is_marked_for_removal = transaction.get('marked_for_removal', False)
+
             # Responsibility - make it visually distinct as clickable
             resp_item = QTableWidgetItem(transaction['responsibility'])
             resp_item.setToolTip("Double-click to edit this responsibility")
@@ -669,16 +681,25 @@ class ImportUndisclosedCasesDialog(QDialog):
             font = resp_item.font()
             font.setUnderline(True)  # Underline to show it's a link
             resp_item.setFont(font)
+
+            # Apply removal styling if marked for removal
+            if is_marked_for_removal:
+                resp_item.setBackground(Qt.red)
+                resp_item.setForeground(Qt.white)
+                resp_item.setToolTip("This transaction is marked for removal")
+
             self.transactions_table.setItem(row, 0, resp_item)
 
             # Type
             self.transactions_table.setItem(row, 1, QTableWidgetItem(transaction['type']))
 
-            # Amount
+            # Amount - right aligned with comma formatting
             amount_str = f"R{abs(transaction['amount']):,.2f}"
             if transaction['is_credit']:
                 amount_str = f"({amount_str})"  # Show credits in parentheses
-            self.transactions_table.setItem(row, 2, QTableWidgetItem(amount_str))
+            amount_item = QTableWidgetItem(amount_str)
+            amount_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.transactions_table.setItem(row, 2, amount_item)
 
             # Date
             self.transactions_table.setItem(row, 3, QTableWidgetItem(transaction['date'].strftime('%Y-%m-%d')))
@@ -708,10 +729,17 @@ class ImportUndisclosedCasesDialog(QDialog):
                 else:
                     dup_status = "No Duplicates"
 
+            # Override status if marked for removal
+            if is_marked_for_removal:
+                dup_status = "Marked for Removal"
+
             dup_item = QTableWidgetItem(dup_status)
             if has_duplicates:
                 dup_item.setBackground(Qt.yellow)  # Highlight duplicates in yellow
                 dup_item.setForeground(Qt.black)
+            elif is_marked_for_removal:
+                dup_item.setBackground(Qt.red)
+                dup_item.setForeground(Qt.white)
             self.transactions_table.setItem(row, 6, dup_item)
 
             # Also highlight the entire row if it has duplicates
@@ -721,6 +749,14 @@ class ImportUndisclosedCasesDialog(QDialog):
                     if item:
                         item.setBackground(Qt.yellow)
                         item.setForeground(Qt.black)
+
+            # Apply removal styling to entire row if marked for removal
+            if is_marked_for_removal:
+                for col in range(self.transactions_table.columnCount()):
+                    item = self.transactions_table.item(row, col)
+                    if item:
+                        item.setBackground(Qt.red)
+                        item.setForeground(Qt.white)
 
             # Case Number
             case_number = "Not Assigned"
@@ -737,6 +773,13 @@ class ImportUndisclosedCasesDialog(QDialog):
             view_btn = QPushButton("Details")
             view_btn.clicked.connect(lambda checked, trans=transaction: self.view_transaction_details(trans))
             actions_layout.addWidget(view_btn)
+
+            # Compare Duplicates button (only if duplicates exist)
+            if has_duplicates:
+                compare_btn = QPushButton("Compare")
+                compare_btn.clicked.connect(lambda checked, trans=transaction, dups=result['duplicates']: self.compare_duplicates(trans, dups))
+                compare_btn.setStyleSheet("QPushButton { background-color: #FF9800; color: white; }")
+                actions_layout.addWidget(compare_btn)
 
             self.transactions_table.setCellWidget(row, 8, actions_widget)
 
@@ -802,6 +845,17 @@ class ImportUndisclosedCasesDialog(QDialog):
                 """, (fy_id_check,))
                 fy_details = cursor.fetchone()
                 print(f"DEBUG: FY ID {fy_id_check}: {fy_details} has {count} cases")
+
+            # Check for orphaned cases in non-existent financial years
+            orphaned_fy_ids = []
+            for fy_id_check, count in all_fy_cases:
+                cursor.execute("""
+                    SELECT start_year, end_year FROM financial_years WHERE id = ?
+                """, (fy_id_check,))
+                fy_details = cursor.fetchone()
+                if fy_details is None and count > 0:
+                    orphaned_fy_ids.append(fy_id_check)
+                    print(f"DEBUG: Found orphaned FY ID {fy_id_check} with {count} cases")
 
             # If no cases in current FY, try to find cases in other FYs that match the transaction dates
             if fy_id and not any(row[0] == fy_id for row in all_fy_cases):
@@ -935,10 +989,26 @@ class ImportUndisclosedCasesDialog(QDialog):
                 print(f"DEBUG: Amount range for responsibility: {min_amt_str} - {max_amt_str} (transaction: {transaction_amount:.2f})")
 
             if resp_id:
-                # Use more flexible matching criteria
-                transaction_amount = abs(transaction['amount'])
+                # Only return exact matches (same responsibility, category, amount, FY)
+                # Debug: Check the transaction amount type and value
+                print(f"DEBUG: Transaction amount raw: {transaction['amount']} (type: {type(transaction['amount'])})")
 
-                # Try exact match first
+                # Ensure amount is numeric
+                try:
+                    if isinstance(transaction['amount'], str):
+                        # Remove currency symbols and clean the string
+                        amount_str = transaction['amount'].replace('R', '').replace(',', '').strip()
+                        transaction_amount = abs(float(amount_str))
+                    else:
+                        transaction_amount = abs(float(transaction['amount']))
+                except (ValueError, TypeError) as e:
+                    print(f"DEBUG: Error converting amount: {e}")
+                    transaction_amount = 0.0
+
+                print(f"DEBUG: Using transaction amount: {transaction_amount:.2f}")
+                duplicates = []
+
+                # First try exact match in current FY
                 cursor.execute("""
                     SELECT * FROM cases
                     WHERE responsibility_id = ?
@@ -948,60 +1018,35 @@ class ImportUndisclosedCasesDialog(QDialog):
                       AND list != 'Deleted Cases'
                 """, (resp_id, self.category['name'], transaction_amount, fy_id))
 
-                duplicates = []
                 rows = cursor.fetchall()
-                print(f"DEBUG: Exact match query found {len(rows)} duplicates")
+                print(f"DEBUG: Exact match in current FY {fy_id} found {len(rows)} duplicates")
                 if len(rows) > 0:
                     print(f"DEBUG: Exact match sample: {rows[0][1]} | {rows[0][9]} | {rows[0][11]:.2f}")
+                    duplicates.extend(rows)
                 else:
-                    print(f"DEBUG: Exact match query parameters: resp_id={resp_id}, category='{self.category['name']}', amount={transaction_amount:.2f}, fy_id={fy_id}")
+                    # If no matches in current FY, check orphaned FYs
+                    for orphaned_fy_id in orphaned_fy_ids:
+                        print(f"DEBUG: Checking orphaned FY {orphaned_fy_id} for duplicates")
+                        cursor.execute("""
+                            SELECT * FROM cases
+                            WHERE responsibility_id = ?
+                              AND category = ?
+                              AND ABS(amount - ?) < 0.01
+                              AND fy_id = ?
+                              AND list != 'Deleted Cases'
+                        """, (resp_id, self.category['name'], transaction_amount, orphaned_fy_id))
 
-                # If no exact matches, try broader search (same responsibility and amount within same FY)
-                if not rows:
-                    cursor.execute("""
-                        SELECT * FROM cases
-                        WHERE responsibility_id = ?
-                          AND ABS(amount - ?) < 0.01
-                          AND fy_id = ?
-                          AND list != 'Deleted Cases'
-                    """, (resp_id, transaction_amount, fy_id))
+                        orphaned_rows = cursor.fetchall()
+                        print(f"DEBUG: Exact match in orphaned FY {orphaned_fy_id} found {len(orphaned_rows)} duplicates")
+                        if len(orphaned_rows) > 0:
+                            print(f"DEBUG: Orphaned FY match sample: {orphaned_rows[0][1]} | {orphaned_rows[0][9]} | {orphaned_rows[0][11]:.2f}")
+                            duplicates.extend(orphaned_rows)
+                            break  # Stop after finding matches in first orphaned FY
 
-                    broader_rows = cursor.fetchall()
-                    print(f"DEBUG: Broader match query found {len(broader_rows)} duplicates")
-                    if len(broader_rows) > 0:
-                        print(f"DEBUG: Broader match sample: {broader_rows[0][1]} | {broader_rows[0][11]:.2f}")
-                    rows.extend(broader_rows)
+                    if not duplicates:
+                        print(f"DEBUG: No exact matches found for: resp_id={resp_id}, category='{self.category['name']}', amount={transaction_amount:.2f}, fy_id={fy_id} or orphaned FYs")
 
-                # If still no matches, try even broader search (just responsibility and FY)
-                if not rows:
-                    cursor.execute("""
-                        SELECT * FROM cases
-                        WHERE responsibility_id = ?
-                          AND fy_id = ?
-                          AND list != 'Deleted Cases'
-                    """, (resp_id, fy_id))
-
-                    resp_only_rows = cursor.fetchall()
-                    print(f"DEBUG: Responsibility-only match query found {len(resp_only_rows)} duplicates")
-                    if len(resp_only_rows) > 0:
-                        print(f"DEBUG: Resp-only match sample: {resp_only_rows[0][1]} | {resp_only_rows[0][9]} | {resp_only_rows[0][11]:.2f}")
-                    rows.extend(resp_only_rows)
-
-                # If still no matches in current FY, try ALL financial years (fallback)
-                if not rows:
-                    cursor.execute("""
-                        SELECT * FROM cases
-                        WHERE responsibility_id = ?
-                          AND list != 'Deleted Cases'
-                    """, (resp_id,))
-
-                    all_fy_rows = cursor.fetchall()
-                    print(f"DEBUG: All-FY responsibility match query found {len(all_fy_rows)} duplicates")
-                    if len(all_fy_rows) > 0:
-                        print(f"DEBUG: All-FY match sample: {all_fy_rows[0][1]} | FY:{all_fy_rows[0][21]} | {all_fy_rows[0][9]} | {all_fy_rows[0][11]:.2f}")
-                    rows.extend(all_fy_rows)
-
-                print(f"DEBUG: Total duplicates found: {len(rows)}")
+                print(f"DEBUG: Total exact duplicates found: {len(duplicates)}")
 
                 for row in rows:
                     case_dict = {
@@ -1092,6 +1137,25 @@ class ImportUndisclosedCasesDialog(QDialog):
         dialog = ResponsibilityManagementDialog(self)
         dialog.exec_()
         # Refresh validation status after potential changes
+
+    def compare_duplicates(self, transaction, duplicates):
+        """Open duplicate comparison dialog"""
+        # Create a copy of the transaction with category name for display
+        transaction_copy = transaction.copy()
+        transaction_copy['category_name'] = self.category['name'] if self.category else 'N/A'
+
+        dialog = DuplicateComparisonDialog(transaction_copy, duplicates, self)
+        if dialog.exec_():
+            resolution = dialog.get_resolution()
+            if resolution == 'remove':
+                # Mark transaction for removal
+                transaction['marked_for_removal'] = True
+                # Update table display
+                self.populate_transactions_table()
+                QMessageBox.information(
+                    self, "Transaction Removed",
+                    "The transaction has been marked for removal from the import list."
+                )
 
     def check_duplicates(self):
         """Check for duplicate cases based on responsibility matching"""
@@ -1430,16 +1494,23 @@ class ImportUndisclosedCasesDialog(QDialog):
             self.perform_import()
 
     def perform_import(self):
-        print(f"DEBUG: Starting import with {len(self.transactions)} transactions")
-        for i, t in enumerate(self.transactions[:3]):  # Show first 3 for debugging
+        # Filter out transactions marked for removal
+        transactions_to_import = [t for t in self.transactions if not t.get('marked_for_removal', False)]
+
+        if not transactions_to_import:
+            QMessageBox.warning(self, "No Transactions", "All transactions have been marked for removal. Nothing to import.")
+            return
+
+        print(f"DEBUG: Starting import with {len(transactions_to_import)} transactions (filtered from {len(self.transactions)})")
+        for i, t in enumerate(transactions_to_import[:3]):  # Show first 3 for debugging
             print(f"DEBUG: Transaction {i+1}: {t['responsibility']} - {t['amount']} - Case: {t.get('case_number', 'No case number')}")
 
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
         self.import_button.setEnabled(False)
 
-        self.worker = ImportWorker(self.transactions, self.category,
-                                  self.date_from, self.date_to, self.bas_file_path)
+        self.worker = ImportWorker(transactions_to_import, self.category,
+                                   self.date_from, self.date_to, self.bas_file_path)
         self.worker.progress.connect(self.update_progress)
         self.worker.finished.connect(self.import_finished)
         self.worker.error.connect(self.import_error)
@@ -1590,8 +1661,8 @@ class TransactionDetailsDialog(QDialog):
         form_layout.addRow("Type:", QLabel(self.transaction['type']))
         form_layout.addRow("Transaction Number:", QLabel(self.transaction['number']))
 
-        amount = abs(self.transaction['amount'])
-        amount_str = f"R{amount:,.2f}"
+        amount = self.transaction['amount']
+        amount_str = format_currency_amount(amount)
         if self.transaction['is_credit']:
             amount_str += " (Credit)"
         else:

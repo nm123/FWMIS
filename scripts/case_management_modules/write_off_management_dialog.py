@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.financial_utils import get_financial_year
 
@@ -102,7 +103,8 @@ class WriteOffManagementDialog(QDialog):
                     self.submissions_table.setItem(row, 3, QTableWidgetItem("0"))
 
                 # Total amount
-                self.submissions_table.setItem(row, 4, QTableWidgetItem(f"R {total_amount:,.2f}" if total_amount else "R 0.00"))
+                amount_item = format_currency_amount(total_amount, right_align=True)
+                self.submissions_table.setItem(row, 4, amount_item)
 
                 # Actions button
                 actions_widget = self.create_actions_widget(sub_id, submission_id, status)
@@ -310,7 +312,7 @@ class WriteOffManagementDialog(QDialog):
                 details += f"Created: {created_date}\n"
                 details += f"Status: {status}\n"
                 details += f"Total Cases: {len([r for r in results if r[6] is not None])}\n"
-                details += f"Total Amount: R {total_amount:,.2f}\n\n"
+                details += f"Total Amount: {format_currency_amount(total_amount)}\n\n"
 
                 if notes:
                     details += f"Notes: {notes}\n\n"
@@ -318,7 +320,7 @@ class WriteOffManagementDialog(QDialog):
                 details += "Cases in Submission:\n"
                 for result in results:
                     if result[6]:  # transaction_no
-                        details += f"  - {result[6]} ({result[7] or 'N/A'}): R {result[8] or 0:,.2f}\n"
+                        details += f"  - {result[6]} ({result[7] or 'N/A'}): {format_currency_amount(result[8] or 0)}\n"
 
                 QMessageBox.information(self, "Submission Details", details)
 

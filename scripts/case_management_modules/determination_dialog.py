@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QDate, Qt
 from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.financial_utils import get_financial_year
 
@@ -44,7 +45,7 @@ class DeterminationDialog(QDialog):
 
         case_layout.addRow("Case No:", QLabel(self.transaction_no))
         case_layout.addRow("Category:", QLabel(self.case_data[9] if self.case_data[9] else "N/A"))
-        case_layout.addRow("Amount:", QLabel(f"R {self.case_data[11]:,.2f}" if self.case_data[11] else "N/A"))
+        case_layout.addRow("Amount:", QLabel(format_currency_amount(self.case_data[11]) if self.case_data[11] else "N/A"))
         case_layout.addRow("Status:", QLabel(self.case_data[17] if self.case_data[17] else "N/A"))
 
         layout.addWidget(case_group)
