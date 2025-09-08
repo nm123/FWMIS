@@ -1022,7 +1022,39 @@ class ImportUndisclosedCasesDialog(QDialog):
                 print(f"DEBUG: Exact match in current FY {fy_id} found {len(rows)} duplicates")
                 if len(rows) > 0:
                     print(f"DEBUG: Exact match sample: {rows[0][1]} | {rows[0][9]} | {rows[0][11]:.2f}")
-                    duplicates.extend(rows)
+                    # Convert all rows to dictionaries
+                    for row in rows:
+                        case_dict = {
+                            'id': row[0],
+                            'transaction_no': row[1],
+                            'date_incurred': row[2],
+                            'date_identified': row[3],
+                            'date_reported': row[4],
+                            'description': row[5],
+                            'bas_payment_no': row[6],
+                            'bas_payment_date': row[7],
+                            'persal_no': row[8],
+                            'category': row[9],
+                            'responsibility_id': row[10],
+                            'amount': row[11],
+                            'source_document': row[12],
+                            'minutes': row[13],
+                            'evidence_path': row[14],
+                            'attachments': row[15],
+                            'status': row[16],
+                            'list': row[17],
+                            'assessment_assessed_by': row[18],
+                            'assessment_date': row[19],
+                            'assessment_result': row[20],
+                            'fy_id': row[21],
+                            'period_id': row[22],
+                            'criminal_charges': row[23],
+                            'disciplinary_process': row[24],
+                            'loss_recovery': row[25],
+                            'prevention_steps': row[26],
+                            'original_list': row[27]
+                        }
+                        duplicates.append(case_dict)
                 else:
                     # If no matches in current FY, check orphaned FYs
                     for orphaned_fy_id in orphaned_fy_ids:
@@ -1040,46 +1072,45 @@ class ImportUndisclosedCasesDialog(QDialog):
                         print(f"DEBUG: Exact match in orphaned FY {orphaned_fy_id} found {len(orphaned_rows)} duplicates")
                         if len(orphaned_rows) > 0:
                             print(f"DEBUG: Orphaned FY match sample: {orphaned_rows[0][1]} | {orphaned_rows[0][9]} | {orphaned_rows[0][11]:.2f}")
-                            duplicates.extend(orphaned_rows)
+                            # Convert orphaned rows to dictionaries too
+                            for row in orphaned_rows:
+                                case_dict = {
+                                    'id': row[0],
+                                    'transaction_no': row[1],
+                                    'date_incurred': row[2],
+                                    'date_identified': row[3],
+                                    'date_reported': row[4],
+                                    'description': row[5],
+                                    'bas_payment_no': row[6],
+                                    'bas_payment_date': row[7],
+                                    'persal_no': row[8],
+                                    'category': row[9],
+                                    'responsibility_id': row[10],
+                                    'amount': row[11],
+                                    'source_document': row[12],
+                                    'minutes': row[13],
+                                    'evidence_path': row[14],
+                                    'attachments': row[15],
+                                    'status': row[16],
+                                    'list': row[17],
+                                    'assessment_assessed_by': row[18],
+                                    'assessment_date': row[19],
+                                    'assessment_result': row[20],
+                                    'fy_id': row[21],
+                                    'period_id': row[22],
+                                    'criminal_charges': row[23],
+                                    'disciplinary_process': row[24],
+                                    'loss_recovery': row[25],
+                                    'prevention_steps': row[26],
+                                    'original_list': row[27]
+                                }
+                                duplicates.append(case_dict)
                             break  # Stop after finding matches in first orphaned FY
 
                     if not duplicates:
                         print(f"DEBUG: No exact matches found for: resp_id={resp_id}, category='{self.category['name']}', amount={transaction_amount:.2f}, fy_id={fy_id} or orphaned FYs")
 
                 print(f"DEBUG: Total exact duplicates found: {len(duplicates)}")
-
-                for row in rows:
-                    case_dict = {
-                        'id': row[0],
-                        'transaction_no': row[1],
-                        'date_incurred': row[2],
-                        'date_identified': row[3],
-                        'date_reported': row[4],
-                        'description': row[5],
-                        'bas_payment_no': row[6],
-                        'bas_payment_date': row[7],
-                        'persal_no': row[8],
-                        'category': row[9],
-                        'responsibility_id': row[10],
-                        'amount': row[11],
-                        'source_document': row[12],
-                        'minutes': row[13],
-                        'evidence_path': row[14],
-                        'attachments': row[15],
-                        'status': row[16],
-                        'list': row[17],
-                        'assessment_assessed_by': row[18],
-                        'assessment_date': row[19],
-                        'assessment_result': row[20],
-                        'fy_id': row[21],
-                        'period_id': row[22],
-                        'criminal_charges': row[23],
-                        'disciplinary_process': row[24],
-                        'loss_recovery': row[25],
-                        'prevention_steps': row[26],
-                        'original_list': row[27]
-                    }
-                    duplicates.append(case_dict)
 
                 conn.close()
                 return duplicates
