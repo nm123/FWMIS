@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
     QPushButton, QDateEdit, QFileDialog, QMessageBox, QWidget,
     QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
-    QProgressBar, QGroupBox, QTextEdit, QComboBox, QCheckBox
+    QProgressBar, QGroupBox, QTextEdit, QComboBox, QCheckBox, QGridLayout
 )
 from PyQt5.QtCore import QDate, Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -20,6 +20,7 @@ from scripts.responsibility_management_ui import ResponsibilityManagementDialog
 from scripts.responsibility_management_actions import edit_responsibility_by_name
 from .duplicate_comparison_dialog import DuplicateComparisonDialog
 from scripts.Utilities.utils import format_currency_amount
+from scripts.Utilities.ui_theme import apply_theme, create_professional_button, create_professional_groupbox, setup_professional_table, create_status_label
 
 
 class BASParser:
@@ -197,24 +198,36 @@ class ImportWorker(QThread):
             print(f"DEBUG: ImportWorker starting with {total} transactions")
 
             for i, transaction in enumerate(self.transactions):
-                self.progress.emit(int((i / total) * 100), f"Importing case {i+1} of {total}...")
-                print(f"DEBUG: Processing transaction {i+1}: {transaction.get('case_number', 'No case number')}")
+                try:
+                    self.progress.emit(int((i / total) * 100), f"Importing case {i+1} of {total}...")
+                    print(f"DEBUG: Processing transaction {i+1}: {transaction.get('case_number', 'No case number')}")
 
-                # Import the transaction as a case
-                case_number = self._import_transaction(transaction)
-                if case_number:
-                    imported_cases.append(case_number)
-                    print(f"DEBUG: Successfully imported case: {case_number}")
-                else:
-                    print(f"DEBUG: Failed to import transaction {i+1}")
+                    # Import the transaction as a case
+                    case_number = self._import_transaction(transaction)
+                    if case_number:
+                        imported_cases.append(case_number)
+                        print(f"DEBUG: Successfully imported case: {case_number}")
+                    else:
+                        print(f"DEBUG: Failed to import transaction {i+1}")
+                        # Continue with other transactions even if one fails
+                        continue
+
+                except Exception as e:
+                    print(f"DEBUG: Error importing transaction {i+1}: {e}")
+                    import traceback
+                    print(f"DEBUG: Transaction error traceback: {traceback.format_exc()}")
+                    # Continue with other transactions
+                    continue
 
             print(f"DEBUG: Import completed. Successfully imported {len(imported_cases)} cases")
             self.progress.emit(100, "Import completed successfully")
             self.finished.emit(imported_cases)
 
         except Exception as e:
-            print(f"DEBUG: ImportWorker error: {e}")
-            self.error.emit(str(e))
+            print(f"DEBUG: ImportWorker critical error: {e}")
+            import traceback
+            print(f"DEBUG: ImportWorker traceback: {traceback.format_exc()}")
+            self.error.emit(f"Critical import error: {str(e)}")
 
     def _import_transaction(self, transaction):
         """Import a single transaction as a case"""
@@ -443,8 +456,9 @@ class ImportWorker(QThread):
 class ImportUndisclosedCasesDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Import Undisclosed Cases from BAS Report")
-        self.setFixedSize(1400, 800)
+        self.setWindowTitle("🎯 FWMIS - Import Undisclosed Cases from BAS Report")
+        self.setFixedSize(1450, 900)
+        self.setWindowIconText("📊")
 
         self.parser = BASParser()
         self.transactions = []
@@ -456,154 +470,492 @@ class ImportUndisclosedCasesDialog(QDialog):
         self.setup_ui()
 
     def setup_ui(self):
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #f8f9fa;
+            }
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #dee2e6;
+                border-radius: 8px;
+                margin-top: 1ex;
+                background-color: white;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 10px 0 10px;
+                color: #495057;
+                font-size: 14px;
+            }
+            QLabel {
+                color: #495057;
+                font-size: 13px;
+            }
+            QLineEdit, QDateEdit, QComboBox {
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                padding: 8px;
+                background-color: white;
+                font-size: 13px;
+            }
+            QLineEdit:focus, QDateEdit:focus, QComboBox:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            }
+            QPushButton {
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-size: 13px;
+                font-weight: 500;
+                border: none;
+                min-width: 100px;
+            }
+            QPushButton:enabled {
+                background-color: #007bff;
+                color: white;
+            }
+            QPushButton:enabled:hover {
+                background-color: #0056b3;
+            }
+            QPushButton:disabled {
+                background-color: #6c757d;
+                color: #adb5bd;
+            }
+        """)
+
         layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+
+        # Header section
+        header_layout = QHBoxLayout()
+        header_label = QLabel("📊 Import Undisclosed Cases")
+        header_label.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: bold;
+                color: #343a40;
+                margin-bottom: 5px;
+            }
+        """)
+        header_layout.addWidget(header_label)
+        header_layout.addStretch()
+        layout.addLayout(header_layout)
 
         # File selection section
-        file_group = QGroupBox("BAS Report File")
+        file_group = QGroupBox("📁 BAS Report File Selection")
+        file_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #007bff;
+                border-radius: 8px;
+                margin-top: 1ex;
+                background-color: white;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 10px 0 10px;
+                color: #007bff;
+                font-size: 14px;
+            }
+        """)
         file_layout = QHBoxLayout()
+        file_layout.setSpacing(10)
 
         self.file_path_edit = QLineEdit()
-        self.file_path_edit.setPlaceholderText("Select BAS report file...")
+        self.file_path_edit.setPlaceholderText("Click Browse to select BAS report file (.txt)...")
         self.file_path_edit.setReadOnly(True)
+        self.file_path_edit.setMinimumHeight(35)
 
-        self.browse_button = QPushButton("Browse")
+        self.browse_button = QPushButton("📂 Browse")
         self.browse_button.clicked.connect(self.browse_file)
+        self.browse_button.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-size: 13px;
+                font-weight: 500;
+                min-width: 100px;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+        """)
 
-        file_layout.addWidget(self.file_path_edit)
+        file_layout.addWidget(self.file_path_edit, 1)
         file_layout.addWidget(self.browse_button)
         file_group.setLayout(file_layout)
         layout.addWidget(file_group)
 
-        # Category and date selection
-        selection_group = QGroupBox("Import Settings")
-        selection_layout = QHBoxLayout()
+        # Import settings section
+        settings_group = QGroupBox("⚙️ Import Configuration")
+        settings_layout = QGridLayout()
+        settings_layout.setSpacing(15)
 
         # Category selection
-        category_layout = QVBoxLayout()
-        category_layout.addWidget(QLabel("Category:"))
-        self.category_button = QPushButton("Select Category")
+        category_label = QLabel("📋 Category:")
+        category_label.setStyleSheet("font-weight: bold;")
+        self.category_button = QPushButton("🎯 Select Category")
         self.category_button.clicked.connect(self.select_category)
+        self.category_button.setMinimumHeight(35)
         self.category_label = QLabel("No category selected")
-        category_layout.addWidget(self.category_button)
-        category_layout.addWidget(self.category_label)
-        selection_layout.addLayout(category_layout)
-
-        # Case destination info
-        destination_layout = QVBoxLayout()
-        destination_layout.addWidget(QLabel("Cases will be posted to:"))
-        self.destination_info = QLabel()
-        self.destination_info.setStyleSheet("""
+        self.category_label.setStyleSheet("""
             QLabel {
-                background-color: #e8f5e8;
-                border: 1px solid #4CAF50;
-                border-radius: 3px;
-                padding: 5px;
-                color: #2E7D32;
-                font-weight: bold;
+                background-color: #fff3cd;
+                border: 1px solid #ffeaa7;
+                border-radius: 4px;
+                padding: 8px;
+                color: #856404;
+                font-style: italic;
             }
         """)
-        self.destination_info.setText("📋 List: Checklist\n📊 Status: Alleged")
-        self.destination_info.setToolTip("All imported cases will be assigned to the Checklist with Alleged status")
-        destination_layout.addWidget(self.destination_info)
-        selection_layout.addLayout(destination_layout)
 
         # Date range selection
-        date_layout = QVBoxLayout()
-        date_layout.addWidget(QLabel("Date Range:"))
+        date_label = QLabel("📅 Date Range:")
+        date_label.setStyleSheet("font-weight: bold;")
 
         date_range_layout = QHBoxLayout()
+        date_range_layout.setSpacing(10)
+
+        from_label = QLabel("From:")
+        from_label.setMinimumWidth(40)
         self.date_from_edit = QDateEdit()
         self.date_from_edit.setDate(QDate.currentDate().addMonths(-1))
         self.date_from_edit.setCalendarPopup(True)
+        self.date_from_edit.setMinimumHeight(35)
+
+        to_label = QLabel("To:")
+        to_label.setMinimumWidth(25)
         self.date_to_edit = QDateEdit()
         self.date_to_edit.setDate(QDate.currentDate())
         self.date_to_edit.setCalendarPopup(True)
+        self.date_to_edit.setMinimumHeight(35)
 
-        date_range_layout.addWidget(QLabel("From:"))
+        date_range_layout.addWidget(from_label)
         date_range_layout.addWidget(self.date_from_edit)
-        date_range_layout.addWidget(QLabel("To:"))
+        date_range_layout.addWidget(to_label)
         date_range_layout.addWidget(self.date_to_edit)
-        date_layout.addLayout(date_range_layout)
-        selection_layout.addLayout(date_layout)
+        date_range_layout.addStretch()
 
         # Parse button
-        self.parse_button = QPushButton("Parse File")
+        self.parse_button = QPushButton("🔍 Parse File")
         self.parse_button.clicked.connect(self.parse_file)
         self.parse_button.setEnabled(False)
-        selection_layout.addWidget(self.parse_button)
+        self.parse_button.setMinimumHeight(40)
+        self.parse_button.setStyleSheet("""
+            QPushButton {
+                background-color: #17a2b8;
+                color: white;
+                border-radius: 6px;
+                padding: 12px 20px;
+                font-size: 14px;
+                font-weight: bold;
+                min-width: 120px;
+            }
+            QPushButton:hover:enabled {
+                background-color: #138496;
+            }
+            QPushButton:disabled {
+                background-color: #6c757d;
+                color: #adb5bd;
+            }
+        """)
 
-        selection_layout.addStretch()
-        selection_group.setLayout(selection_layout)
-        layout.addWidget(selection_group)
+        # Layout arrangement
+        settings_layout.addWidget(category_label, 0, 0)
+        settings_layout.addWidget(self.category_button, 0, 1)
+        settings_layout.addWidget(self.category_label, 0, 2, 1, 2)
+
+        settings_layout.addWidget(date_label, 1, 0)
+        settings_layout.addLayout(date_range_layout, 1, 1, 1, 3)
+
+        settings_layout.addWidget(self.parse_button, 2, 1, 1, 2, Qt.AlignCenter)
+
+        settings_group.setLayout(settings_layout)
+        layout.addWidget(settings_group)
 
         # Results section
-        results_group = QGroupBox("Parsed Transactions")
+        results_group = QGroupBox("📋 Transaction Analysis & Processing")
+        results_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #6f42c1;
+                border-radius: 8px;
+                margin-top: 1ex;
+                background-color: white;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 10px 0 10px;
+                color: #6f42c1;
+                font-size: 14px;
+            }
+        """)
         results_layout = QVBoxLayout()
+        results_layout.setSpacing(10)
 
-        self.results_label = QLabel("No file parsed yet")
-        results_layout.addWidget(self.results_label)
-
-        # Transactions table
-        self.transactions_table = QTableWidget()
-        self.transactions_table.setColumnCount(9)
-        self.transactions_table.setHorizontalHeaderLabels([
-            "Responsibility", "Type", "Amount", "Date", "Description", "Resp Status", "Dup Status", "Case Number", "Actions"
-        ])
-        header = self.transactions_table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.Interactive)
-        self.transactions_table.setColumnWidth(0, 180)  # Responsibility
-        self.transactions_table.setColumnWidth(1, 60)   # Type
-        self.transactions_table.setColumnWidth(2, 100)  # Amount
-        self.transactions_table.setColumnWidth(3, 100)  # Date
-        self.transactions_table.setColumnWidth(4, 200)  # Description
-        self.transactions_table.setColumnWidth(5, 100)  # Resp Status
-        self.transactions_table.setColumnWidth(6, 100)  # Dup Status
-        self.transactions_table.setColumnWidth(7, 120)  # Case Number
-        self.transactions_table.setColumnWidth(8, 120)  # Actions
-
-        # Connect double-click signal for editing responsibilities
-        self.transactions_table.itemDoubleClicked.connect(self.on_table_double_click)
-
-        results_layout.addWidget(self.transactions_table)
-        results_group.setLayout(results_layout)
-        layout.addWidget(results_group)
+        # Status display
+        status_layout = QHBoxLayout()
+        self.results_label = QLabel("⏳ Ready to parse BAS file...")
+        self.results_label.setStyleSheet("""
+            QLabel {
+                background-color: #e9ecef;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                padding: 10px;
+                color: #495057;
+                font-size: 13px;
+                font-weight: 500;
+            }
+        """)
+        self.results_label.setMinimumHeight(40)
+        status_layout.addWidget(self.results_label)
+        results_layout.addLayout(status_layout)
 
         # Progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
-        layout.addWidget(self.progress_bar)
+        self.progress_bar.setMinimumHeight(25)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: 2px solid #ced4da;
+                border-radius: 4px;
+                text-align: center;
+                background-color: #f8f9fa;
+            }
+            QProgressBar::chunk {
+                background-color: #007bff;
+                border-radius: 2px;
+            }
+        """)
+        results_layout.addWidget(self.progress_bar)
 
-        # Buttons
-        button_layout = QHBoxLayout()
+        # Transactions table
+        table_container = QWidget()
+        table_layout = QVBoxLayout()
+        table_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.manage_resp_button = QPushButton("Manage Responsibilities")
+        table_header = QLabel("📊 Parsed Transactions:")
+        table_header.setStyleSheet("""
+            QLabel {
+                font-size: 14px;
+                font-weight: bold;
+                color: #495057;
+                margin-bottom: 5px;
+            }
+        """)
+        table_layout.addWidget(table_header)
+
+        self.transactions_table = QTableWidget()
+        self.transactions_table.setColumnCount(9)
+        self.transactions_table.setHorizontalHeaderLabels([
+            "🏢 Responsibility", "🔢 Type", "💰 Amount", "📅 Date", "📝 Description",
+            "✅ Resp Status", "🔍 Dup Status", "🎫 Case Number", "⚡ Actions"
+        ])
+        self.transactions_table.setStyleSheet("""
+            QTableWidget {
+                gridline-color: #dee2e6;
+                selection-background-color: #007bff;
+                selection-color: white;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+            }
+            QHeaderView::section {
+                background-color: #f8f9fa;
+                padding: 8px;
+                border: 1px solid #dee2e6;
+                font-weight: bold;
+                color: #495057;
+                font-size: 12px;
+            }
+            QTableWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #f1f3f4;
+            }
+            QTableWidget::item:selected {
+                background-color: #007bff;
+                color: white;
+            }
+        """)
+
+        header = self.transactions_table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Interactive)
+        header.setStretchLastSection(True)
+        self.transactions_table.setColumnWidth(0, 200)  # Responsibility
+        self.transactions_table.setColumnWidth(1, 70)   # Type
+        self.transactions_table.setColumnWidth(2, 110)  # Amount
+        self.transactions_table.setColumnWidth(3, 110)  # Date
+        self.transactions_table.setColumnWidth(4, 220)  # Description
+        self.transactions_table.setColumnWidth(5, 110)  # Resp Status
+        self.transactions_table.setColumnWidth(6, 110)  # Dup Status
+        self.transactions_table.setColumnWidth(7, 130)  # Case Number
+
+        # Connect double-click signal for editing responsibilities
+        self.transactions_table.itemDoubleClicked.connect(self.on_table_double_click)
+
+        # Set minimum row height to accommodate buttons
+        self.transactions_table.verticalHeader().setDefaultSectionSize(60)
+
+        table_layout.addWidget(self.transactions_table)
+        table_container.setLayout(table_layout)
+        results_layout.addWidget(table_container)
+
+        results_group.setLayout(results_layout)
+        layout.addWidget(results_group)
+
+        # Action buttons section
+        actions_group = QGroupBox("🎯 Import Actions")
+        actions_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #dc3545;
+                border-radius: 8px;
+                margin-top: 1ex;
+                background-color: white;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 10px 0 10px;
+                color: #dc3545;
+                font-size: 14px;
+            }
+        """)
+        actions_layout = QVBoxLayout()
+        actions_layout.setSpacing(15)
+
+        # Workflow buttons
+        workflow_layout = QHBoxLayout()
+        workflow_layout.setSpacing(12)
+
+        self.manage_resp_button = QPushButton("👥 Manage Responsibilities")
         self.manage_resp_button.clicked.connect(self.manage_responsibilities)
         self.manage_resp_button.setEnabled(False)
+        self.manage_resp_button.setMinimumHeight(40)
+        self.manage_resp_button.setStyleSheet("""
+            QPushButton {
+                background-color: #6f42c1;
+                color: white;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-size: 13px;
+                font-weight: 500;
+                min-width: 160px;
+            }
+            QPushButton:hover:enabled {
+                background-color: #5a32a3;
+            }
+        """)
 
-        self.check_duplicates_button = QPushButton("Check Duplicates")
+        self.check_duplicates_button = QPushButton("🔍 Check Duplicates")
         self.check_duplicates_button.clicked.connect(self.check_duplicates)
         self.check_duplicates_button.setEnabled(False)
+        self.check_duplicates_button.setMinimumHeight(40)
+        self.check_duplicates_button.setStyleSheet("""
+            QPushButton {
+                background-color: #fd7e14;
+                color: white;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-size: 13px;
+                font-weight: 500;
+                min-width: 140px;
+            }
+            QPushButton:hover:enabled {
+                background-color: #e8680f;
+            }
+        """)
 
-        self.assign_case_numbers_button = QPushButton("Assign Case Numbers")
+        self.assign_case_numbers_button = QPushButton("🎫 Assign Case Numbers")
         self.assign_case_numbers_button.clicked.connect(self.assign_case_numbers)
         self.assign_case_numbers_button.setEnabled(False)
-        self.assign_case_numbers_button.setStyleSheet("QPushButton { background-color: #2196F3; color: white; font-weight: bold; }")
+        self.assign_case_numbers_button.setMinimumHeight(45)
+        self.assign_case_numbers_button.setStyleSheet("""
+            QPushButton {
+                background-color: #2196F3;
+                color: white;
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-size: 14px;
+                font-weight: bold;
+                min-width: 180px;
+            }
+            QPushButton:hover:enabled {
+                background-color: #1976d2;
+            }
+            QPushButton:disabled {
+                background-color: #90caf9;
+                color: #e3f2fd;
+            }
+        """)
 
-        self.import_button = QPushButton("Import Cases")
+        workflow_layout.addWidget(self.manage_resp_button)
+        workflow_layout.addWidget(self.check_duplicates_button)
+        workflow_layout.addWidget(self.assign_case_numbers_button)
+        workflow_layout.addStretch()
+
+        actions_layout.addLayout(workflow_layout)
+
+        # Final action buttons
+        final_actions_layout = QHBoxLayout()
+        final_actions_layout.addStretch()
+
+        self.import_button = QPushButton("🚀 Import Cases")
         self.import_button.clicked.connect(self.import_cases)
         self.import_button.setEnabled(False)
-        self.import_button.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
+        self.import_button.setMinimumHeight(50)
+        self.import_button.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                border-radius: 8px;
+                padding: 14px 24px;
+                font-size: 16px;
+                font-weight: bold;
+                min-width: 160px;
+            }
+            QPushButton:hover:enabled {
+                background-color: #218838;
+                transform: translateY(-1px);
+            }
+            QPushButton:pressed {
+                background-color: #1e7e34;
+            }
+            QPushButton:disabled {
+                background-color: #6c757d;
+                color: #adb5bd;
+            }
+        """)
 
-        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button = QPushButton("❌ Cancel")
         self.cancel_button.clicked.connect(self.reject)
+        self.cancel_button.setMinimumHeight(45)
+        self.cancel_button.setStyleSheet("""
+            QPushButton {
+                background-color: #6c757d;
+                color: white;
+                border-radius: 6px;
+                padding: 12px 20px;
+                font-size: 14px;
+                font-weight: 500;
+                min-width: 120px;
+            }
+            QPushButton:hover {
+                background-color: #5a6268;
+            }
+        """)
 
-        button_layout.addWidget(self.manage_resp_button)
-        button_layout.addWidget(self.check_duplicates_button)
-        button_layout.addWidget(self.assign_case_numbers_button)
-        button_layout.addStretch()
-        button_layout.addWidget(self.import_button)
-        button_layout.addWidget(self.cancel_button)
-        layout.addLayout(button_layout)
+        final_actions_layout.addWidget(self.import_button)
+        final_actions_layout.addWidget(self.cancel_button)
+
+        actions_layout.addLayout(final_actions_layout)
+        actions_group.setLayout(actions_layout)
+        layout.addWidget(actions_group)
 
     def browse_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -620,7 +972,18 @@ class ImportUndisclosedCasesDialog(QDialog):
             selected = dialog.get_selected_category()
             if selected:
                 self.category = selected
-                self.category_label.setText(f"Selected: {selected['name']}")
+                self.category_label.setText(f"✅ {selected['name']}")
+                self.category_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #d4edda;
+                        border: 2px solid #28a745;
+                        border-radius: 6px;
+                        padding: 8px;
+                        color: #155724;
+                        font-weight: bold;
+                        font-size: 13px;
+                    }
+                """)
                 self.parse_button.setEnabled(bool(self.bas_file_path))
 
     def parse_file(self):
@@ -656,6 +1019,7 @@ class ImportUndisclosedCasesDialog(QDialog):
             # Enable next steps
             self.manage_resp_button.setEnabled(True)
             self.check_duplicates_button.setEnabled(True)
+            # Note: Import button will be enabled after duplicate check or case number assignment
 
         except Exception as e:
             QMessageBox.critical(self, "Parse Error", f"Failed to parse BAS file:\n{str(e)}")
@@ -771,12 +1135,16 @@ class ImportUndisclosedCasesDialog(QDialog):
 
             # View Details button
             view_btn = QPushButton("Details")
+            view_btn.setMinimumHeight(35)
+            view_btn.setMinimumWidth(70)
             view_btn.clicked.connect(lambda checked, trans=transaction: self.view_transaction_details(trans))
             actions_layout.addWidget(view_btn)
 
             # Compare Duplicates button (only if duplicates exist)
             if has_duplicates:
                 compare_btn = QPushButton("Compare")
+                compare_btn.setMinimumHeight(35)
+                compare_btn.setMinimumWidth(70)
                 compare_btn.clicked.connect(lambda checked, trans=transaction, dups=result['duplicates']: self.compare_duplicates(trans, dups))
                 compare_btn.setStyleSheet("QPushButton { background-color: #FF9800; color: white; }")
                 actions_layout.addWidget(compare_btn)
@@ -1422,27 +1790,31 @@ class ImportUndisclosedCasesDialog(QDialog):
             current_counter = max_existing or 0
             conn.close()
 
+            # Filter out transactions marked for removal before assigning case numbers
+            transactions_to_assign = [t for t in self.transactions if not t.get('marked_for_removal', False)]
+
             # Assign preview case numbers (don't increment database counter yet)
-            for i, transaction in enumerate(self.transactions):
+            for i, transaction in enumerate(transactions_to_assign):
                 preview_number = current_counter + i + 1
                 case_number = f"{fy_end_year}{preview_number:05d}"
                 transaction['case_number'] = case_number
 
             # Store the next counter value for when import actually happens
-            self.next_counter_value = current_counter + len(self.transactions)
+            self.next_counter_value = current_counter + len(transactions_to_assign)
 
             # Update the table to show case numbers
             self.populate_transactions_table()
 
-            # Enable import button and disable assign button
+            # Keep import button enabled and disable assign button
             self.import_button.setEnabled(True)
             self.assign_case_numbers_button.setEnabled(False)
             self.assign_case_numbers_button.setText("Case Numbers Assigned")
 
             QMessageBox.information(
                 self, "Case Numbers Assigned",
-                f"✅ Case numbers have been assigned to all {len(self.transactions)} transactions.\n\n"
-                f"Next available case number: {fy_end_year}{(current_counter + len(self.transactions) + 1):05d}\n\n"
+                f"✅ Case numbers have been assigned to {len(transactions_to_assign)} transactions "
+                f"(out of {len(self.transactions)} total).\n\n"
+                f"Next available case number: {fy_end_year}{(current_counter + len(transactions_to_assign) + 1):05d}\n\n"
                 "You can now proceed with importing the cases."
             )
 
@@ -1452,6 +1824,23 @@ class ImportUndisclosedCasesDialog(QDialog):
     def import_cases(self):
         if not self.transactions:
             QMessageBox.warning(self, "No Transactions", "No transactions to import")
+            return
+
+        # Filter out transactions marked for removal before checking case numbers
+        transactions_to_import = [t for t in self.transactions if not t.get('marked_for_removal', False)]
+
+        if not transactions_to_import:
+            QMessageBox.warning(self, "No Transactions", "All transactions have been marked for removal. Nothing to import.")
+            return
+
+        # Check if case numbers have been assigned to transactions that will actually be imported
+        transactions_without_case_numbers = [t for t in transactions_to_import if not t.get('case_number')]
+        if transactions_without_case_numbers:
+            QMessageBox.warning(
+                self, "Case Numbers Required",
+                f"{len(transactions_without_case_numbers)} transactions do not have case numbers assigned.\n\n"
+                "Please click 'Assign Case Numbers' before importing cases."
+            )
             return
 
         # Check if the period is open
@@ -1515,7 +1904,7 @@ class ImportUndisclosedCasesDialog(QDialog):
 
         reply = QMessageBox.question(
             self, "Confirm Import",
-            f"Import {len(self.transactions)} transactions as cases?\n\n"
+            f"Import {len(transactions_to_import)} transactions as cases?\n\n"
             f"Date Range: {self.date_from.strftime('%d/%m/%Y')} to {self.date_to.strftime('%d/%m/%Y')}\n"
             "This will create new cases in the system.",
             QMessageBox.Yes | QMessageBox.No
@@ -1525,7 +1914,7 @@ class ImportUndisclosedCasesDialog(QDialog):
             self.perform_import()
 
     def perform_import(self):
-        # Filter out transactions marked for removal
+        # Filter out transactions marked for removal (already done in import_cases, but being safe)
         transactions_to_import = [t for t in self.transactions if not t.get('marked_for_removal', False)]
 
         if not transactions_to_import:
@@ -1541,7 +1930,7 @@ class ImportUndisclosedCasesDialog(QDialog):
         self.import_button.setEnabled(False)
 
         self.worker = ImportWorker(transactions_to_import, self.category,
-                                   self.date_from, self.date_to, self.bas_file_path)
+                                    self.date_from, self.date_to, self.bas_file_path)
         self.worker.progress.connect(self.update_progress)
         self.worker.finished.connect(self.import_finished)
         self.worker.error.connect(self.import_error)

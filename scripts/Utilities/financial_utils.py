@@ -71,4 +71,49 @@ def create_year_folder(fy):
     from .config import DATA_DIR
     folder = os.path.join(DATA_DIR, fy)
     os.makedirs(folder, exist_ok=True)
+def get_active_period_display():
+    """
+    Get the active period as a display string "Current Open Month: [Month Year]"
+    Returns None if no active period found
+    """
+    import sqlite3
+    from calendar import month_name
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Get the open financial year with active period
+        cursor.execute("""
+            SELECT start_year, end_year, active_period
+            FROM financial_years
+            WHERE status = 'open' AND active_period IS NOT NULL
+            ORDER BY start_year DESC
+            LIMIT 1
+        """)
+        fy = cursor.fetchone()
+        conn.close()
+
+        if not fy:
+            return None
+
+        start_year, end_year, active_period = fy
+
+        # Map period to month and year
+        # Financial year starts April (period 1) to March (period 12)
+        months = [
+            (4, start_year), (5, start_year), (6, start_year), (7, start_year), (8, start_year), (9, start_year),
+            (10, start_year), (11, start_year), (12, start_year), (1, end_year), (2, end_year), (3, end_year)
+        ]
+
+        if 1 <= active_period <= 12:
+            month_num, year = months[active_period - 1]
+            month_name_str = month_name[month_num]
+            return f"Current Open Month: {month_name_str} {year}"
+        else:
+            return f"Current Open Period: P{active_period}"
+
+    except sqlite3.Error as e:
+        logging.error(f"Failed to get active period display: {e}")
+        return None
     return folder

@@ -286,10 +286,24 @@ class FinancialYearManagementDialog(QDialog):
 
                 fy_id = cursor.lastrowid
 
-                # Create periods 1-12
+                # Create periods 1-12 with correct financial year dates
+                months = [
+                    (4, 30), (5, 31), (6, 30), (7, 31), (8, 31), (9, 30),
+                    (10, 31), (11, 30), (12, 31), (1, 31), (2, 28), (3, 31)
+                ]
+
                 for period_num in range(1, 13):
-                    start_date = f"2026-{period_num:02d}-01"
-                    end_date = f"2026-{period_num:02d}-31"
+                    month_idx = period_num - 1
+                    month, days = months[month_idx]
+
+                    if period_num <= 9:  # April to December of start_year
+                        year = 2026
+                    else:  # January to March of end_year
+                        year = 2027
+
+                    start_date = f"{year}-{month:02d}-01"
+                    end_date = f"{year}-{month:02d}-{days:02d}"
+
                     cursor.execute("""
                         INSERT INTO periods (fy_id, period_number, status, start_date, end_date)
                         VALUES (?, ?, 'closed', ?, ?)
@@ -417,10 +431,19 @@ class FinancialYearManagementDialog(QDialog):
             # Open the period
             cursor.execute("UPDATE periods SET status = 'open' WHERE id = ?", (period_id,))
 
-            # Update FY active period
+            # Update FY active period to the highest open period
             cursor.execute("SELECT fy_id FROM periods WHERE id = ?", (period_id,))
             fy_id = cursor.fetchone()[0]
-            cursor.execute("UPDATE financial_years SET active_period = ? WHERE id = ?", (period_number, fy_id))
+
+            # Find the highest open period for this FY
+            cursor.execute("""
+                SELECT MAX(period_number) FROM periods
+                WHERE fy_id = ? AND status = 'open'
+            """, (fy_id,))
+
+            max_open_period = cursor.fetchone()[0]
+            if max_open_period:
+                cursor.execute("UPDATE financial_years SET active_period = ? WHERE id = ?", (max_open_period, fy_id))
 
             conn.commit()
             conn.close()
@@ -488,11 +511,17 @@ class FinancialYearManagementDialog(QDialog):
                 cursor.execute("SELECT fy_id FROM periods WHERE id = ?", (period_id,))
                 fy_id = cursor.fetchone()[0]
 
-                # If this was the active period, clear it
+                # If this was the active period, update to the next highest open period
                 cursor.execute("SELECT active_period FROM financial_years WHERE id = ?", (fy_id,))
                 active_period = cursor.fetchone()[0]
                 if active_period == period_number:
-                    cursor.execute("UPDATE financial_years SET active_period = NULL WHERE id = ?", (fy_id,))
+                    # Find the new highest open period
+                    cursor.execute("""
+                        SELECT MAX(period_number) FROM periods
+                        WHERE fy_id = ? AND status = 'open'
+                    """, (fy_id,))
+                    new_active = cursor.fetchone()[0]
+                    cursor.execute("UPDATE financial_years SET active_period = ? WHERE id = ?", (new_active, fy_id))
 
                 conn.commit()
                 conn.close()

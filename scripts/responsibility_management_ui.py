@@ -182,7 +182,7 @@ class ResponsibilityManagementDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Manage Responsibilities")
-        self.resize(2000, 700)
+        self.resize(1400, 700)
         self.responsibilities = []  # Initialize to prevent AttributeError
         self.setup_ui()
         self.load_responsibilities()

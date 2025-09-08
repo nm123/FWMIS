@@ -75,12 +75,16 @@ class EditCaseDialog(QDialog):
         # Create scroll area for the form
         scroll_area = QScrollArea()
         scroll_widget = QWidget()
-        form_layout = QFormLayout(scroll_widget)
+        main_layout = QVBoxLayout(scroll_widget)
+
+        # ===== BASIC CASE INFORMATION GROUP =====
+        basic_group = QGroupBox("Basic Case Information")
+        basic_layout = QFormLayout(basic_group)
 
         # Case Number (read-only)
         self.trans_no_edit = QLineEdit(self.transaction_no)
         self.trans_no_edit.setReadOnly(True)
-        form_layout.addRow("Case No:", self.trans_no_edit)
+        basic_layout.addRow("Case No:", self.trans_no_edit)
 
         # Responsibility
         resp_layout = QHBoxLayout()
@@ -93,7 +97,11 @@ class EditCaseDialog(QDialog):
         self.select_responsibility_button.clicked.connect(self.select_responsibility)
         resp_layout.addWidget(self.select_responsibility_button)
 
-        form_layout.addRow("Responsibility:", resp_layout)
+        basic_layout.addRow("Responsibility:", resp_layout)
+
+        # Amount (moved here as it's crucial information)
+        self.amount_edit = QLineEdit()
+        basic_layout.addRow("Amount:", self.amount_edit)
 
         # Date fields (improved grid layout for better alignment)
         date_group = QWidget()
@@ -128,19 +136,22 @@ class EditCaseDialog(QDialog):
         self.date_reported_edit.setFixedWidth(120)
         date_layout.addWidget(self.date_reported_edit, 0, 5)
 
-        form_layout.addRow("Dates:", date_group)
+        basic_layout.addRow("Dates:", date_group)
 
         # Description (larger for paragraphs)
         self.description_edit = QTextEdit()
         self.description_edit.setMinimumHeight(80)
-        form_layout.addRow("Description:", self.description_edit)
+        basic_layout.addRow("Description:", self.description_edit)
 
-        # Category
+        # Category and List
+        category_list_layout = QHBoxLayout()
         self.category_combo = QComboBox()
         self.category_combo.addItems([c["name"] for c in self.categories])
-        form_layout.addRow("Category:", self.category_combo)
+        category_list_layout.addWidget(QLabel("Category:"))
+        category_list_layout.addWidget(self.category_combo)
 
-        # List (show all system lists including new ones)
+        category_list_layout.addSpacing(20)
+
         self.list_combo = QComboBox()
         system_lists = [l["name"] for l in self.lists if l.get("is_system", False)]
         # Add new system-generated lists if not already in database
@@ -154,44 +165,42 @@ class EditCaseDialog(QDialog):
             default_list = next((l for l in self.lists if l.get("is_default", False)), None)
             if default_list and default_list["name"] in system_lists:
                 self.list_combo.setCurrentText(default_list["name"])
-        form_layout.addRow("List:", self.list_combo)
+        category_list_layout.addWidget(QLabel("List:"))
+        category_list_layout.addWidget(self.list_combo)
+
+        basic_layout.addRow("", category_list_layout)
+
+        main_layout.addWidget(basic_group)
+
+        # ===== ASSESSMENT GROUP =====
+        assessment_group = QGroupBox("Assessment")
+        assessment_layout = QFormLayout(assessment_group)
 
         # Status
         self.status_combo = QComboBox()
         self.status_combo.setCurrentText("Alleged")
-        form_layout.addRow("Status:", self.status_combo)
+        assessment_layout.addRow("Status:", self.status_combo)
 
-        # Criminal Charges Laid
-        self.criminal_charges_combo = QComboBox()
-        self.criminal_charges_combo.addItems(["N/A", "Yes", "No"])
-        self.criminal_charges_combo.setCurrentText("N/A")
-        form_layout.addRow("Criminal Charges Laid:", self.criminal_charges_combo)
+        # Assessment Evidence (conditional)
+        self.evidence_label = QLabel("Assessment Evidence:")
+        self.evidence_edit = QLineEdit()
+        self.evidence_button = QPushButton("Browse")
+        self.evidence_button.clicked.connect(self.browse_evidence)
+        evidence_layout = QHBoxLayout()
+        evidence_layout.addWidget(self.evidence_edit)
+        evidence_layout.addWidget(self.evidence_button)
+        assessment_layout.addRow(self.evidence_label, evidence_layout)
 
-        # Disciplinary process
-        self.disciplinary_combo = QComboBox()
-        self.disciplinary_combo.addItems(["N/A", "Yes", "No"])
-        self.disciplinary_combo.setCurrentText("N/A")
-        form_layout.addRow("Disciplinary process in progress or completed:", self.disciplinary_combo)
+        main_layout.addWidget(assessment_group)
 
-        # Loss recovery
-        self.loss_recovery_combo = QComboBox()
-        self.loss_recovery_combo.addItems(["N/A", "Yes", "No"])
-        self.loss_recovery_combo.setCurrentText("N/A")
-        form_layout.addRow("Loss recovery commenced or completed:", self.loss_recovery_combo)
-
-        # Steps to prevent future occurrence
-        self.prevention_steps_edit = QTextEdit()
-        self.prevention_steps_edit.setMinimumHeight(40)
-        form_layout.addRow("Steps taken to prevent future occurrence of F&W expenditure:", self.prevention_steps_edit)
-
-        # Amount
-        self.amount_edit = QLineEdit()
-        form_layout.addRow("Amount:", self.amount_edit)
+        # ===== SUPPORTING EVIDENCE GROUP =====
+        supporting_group = QGroupBox("Supporting Evidence (To Prove Existence)")
+        supporting_layout = QFormLayout(supporting_group)
 
         # BAS Payment fields
         self.bas_label = QLabel("BAS Payment No:")
         self.bas_payment_no_edit = QLineEdit()
-        form_layout.addRow(self.bas_label, self.bas_payment_no_edit)
+        supporting_layout.addRow(self.bas_label, self.bas_payment_no_edit)
 
         # BAS Payment Date with manual date picker
         bas_payment_date_layout = QHBoxLayout()
@@ -203,12 +212,12 @@ class EditCaseDialog(QDialog):
         self.bas_payment_date_button.clicked.connect(self.select_bas_payment_date)
         bas_payment_date_layout.addWidget(self.bas_payment_date_edit)
         bas_payment_date_layout.addWidget(self.bas_payment_date_button)
-        form_layout.addRow(self.bas_date_label, bas_payment_date_layout)
+        supporting_layout.addRow(self.bas_date_label, bas_payment_date_layout)
 
         # BAS Journal fields
         self.bas_journal_label = QLabel("BAS Journal No:")
         self.bas_journal_no_edit = QLineEdit()
-        form_layout.addRow(self.bas_journal_label, self.bas_journal_no_edit)
+        supporting_layout.addRow(self.bas_journal_label, self.bas_journal_no_edit)
 
         # BAS Journal Date with manual date picker
         bas_journal_date_layout = QHBoxLayout()
@@ -220,23 +229,20 @@ class EditCaseDialog(QDialog):
         self.bas_journal_date_button.clicked.connect(self.select_bas_journal_date)
         bas_journal_date_layout.addWidget(self.bas_journal_date_edit)
         bas_journal_date_layout.addWidget(self.bas_journal_date_button)
-        form_layout.addRow(self.bas_journal_date_label, bas_journal_date_layout)
+        supporting_layout.addRow(self.bas_journal_date_label, bas_journal_date_layout)
 
         # Persal No field
         self.persal_label = QLabel("Persal No:")
         self.persal_no_edit = QLineEdit()
-        form_layout.addRow(self.persal_label, self.persal_no_edit)
+        supporting_layout.addRow(self.persal_label, self.persal_no_edit)
 
-        # File selection fields (conditional)
-        self.source_doc_label = QLabel("Source Document:")
-        self.source_doc_edit = QLineEdit()
-        self.source_doc_button = QPushButton("Browse")
-        self.source_doc_button.clicked.connect(self.browse_source_doc)
-        source_doc_layout = QHBoxLayout()
-        source_doc_layout.addWidget(self.source_doc_edit)
-        source_doc_layout.addWidget(self.source_doc_button)
-        form_layout.addRow(self.source_doc_label, source_doc_layout)
+        main_layout.addWidget(supporting_group)
 
+        # ===== LOSS CONTROL GROUP =====
+        loss_control_group = QGroupBox("Loss Control Committee")
+        loss_control_layout = QFormLayout(loss_control_group)
+
+        # Loss Control Minutes
         self.minutes_label = QLabel("Loss Control Minutes:")
         self.minutes_edit = QLineEdit()
         self.minutes_button = QPushButton("Browse")
@@ -244,26 +250,73 @@ class EditCaseDialog(QDialog):
         minutes_layout = QHBoxLayout()
         minutes_layout.addWidget(self.minutes_edit)
         minutes_layout.addWidget(self.minutes_button)
-        form_layout.addRow(self.minutes_label, minutes_layout)
+        loss_control_layout.addRow(self.minutes_label, minutes_layout)
 
-        self.evidence_label = QLabel("Assessment Evidence:")
-        self.evidence_edit = QLineEdit()
-        self.evidence_button = QPushButton("Browse")
-        self.evidence_button.clicked.connect(self.browse_evidence)
-        evidence_layout = QHBoxLayout()
-        evidence_layout.addWidget(self.evidence_edit)
-        evidence_layout.addWidget(self.evidence_button)
-        form_layout.addRow(self.evidence_label, evidence_layout)
+        # Loss Control Recommendation
+        self.loss_control_label = QLabel("Loss Control Recommendation:")
+        self.loss_control_combo = QComboBox()
+        self.loss_control_combo.addItems(["", "Recovered", "Write Off"])
+        self.loss_control_combo.currentTextChanged.connect(self.on_loss_control_changed)
+        loss_control_layout.addRow(self.loss_control_label, self.loss_control_combo)
 
-        # Assessment fields (conditional)
-        self.assessed_by_label = QLabel("Assessed By:")
-        self.assessed_by_edit = QLineEdit()
-        form_layout.addRow(self.assessed_by_label, self.assessed_by_edit)
+        # Recovery Evidence (conditional)
+        self.recovery_evidence_label = QLabel("Recovery Evidence:")
+        self.recovery_evidence_edit = QLineEdit()
+        self.recovery_evidence_button = QPushButton("Browse")
+        self.recovery_evidence_button.clicked.connect(self.browse_recovery_evidence)
+        recovery_evidence_layout = QHBoxLayout()
+        recovery_evidence_layout.addWidget(self.recovery_evidence_edit)
+        recovery_evidence_layout.addWidget(self.recovery_evidence_button)
+        loss_control_layout.addRow(self.recovery_evidence_label, recovery_evidence_layout)
 
-        self.assessment_date_label = QLabel("Assessment Date:")
-        self.assessment_date_edit = QDateEdit(QDate.currentDate())
-        self.assessment_date_edit.setCalendarPopup(True)
-        form_layout.addRow(self.assessment_date_label, self.assessment_date_edit)
+        main_layout.addWidget(loss_control_group)
+
+        # ===== ADDITIONAL INFORMATION GROUP =====
+        additional_group = QGroupBox("Additional Information")
+        additional_layout = QFormLayout(additional_group)
+
+        # Amount moved to Basic Case Information group
+
+        # Criminal Charges Laid
+        self.criminal_charges_combo = QComboBox()
+        self.criminal_charges_combo.addItems(["N/A", "Yes", "No"])
+        self.criminal_charges_combo.setCurrentText("N/A")
+        additional_layout.addRow("Criminal Charges Laid:", self.criminal_charges_combo)
+
+        # Disciplinary process
+        self.disciplinary_combo = QComboBox()
+        self.disciplinary_combo.addItems(["N/A", "Yes", "No"])
+        self.disciplinary_combo.setCurrentText("N/A")
+        additional_layout.addRow("Disciplinary process in progress or completed:", self.disciplinary_combo)
+
+        # Loss recovery
+        self.loss_recovery_combo = QComboBox()
+        self.loss_recovery_combo.addItems(["N/A", "Yes", "No"])
+        self.loss_recovery_combo.setCurrentText("N/A")
+        additional_layout.addRow("Loss recovery commenced or completed:", self.loss_recovery_combo)
+
+        # Steps to prevent future occurrence
+        self.prevention_steps_edit = QTextEdit()
+        self.prevention_steps_edit.setMinimumHeight(40)
+        additional_layout.addRow("Steps taken to prevent future occurrence of F&W expenditure:", self.prevention_steps_edit)
+
+        main_layout.addWidget(additional_group)
+
+        # ===== FILE ATTACHMENTS GROUP =====
+        attachments_group = QGroupBox("File Attachments")
+        attachments_layout = QFormLayout(attachments_group)
+
+        # Source Document
+        self.source_doc_label = QLabel("Source Document:")
+        self.source_doc_edit = QLineEdit()
+        self.source_doc_button = QPushButton("Browse")
+        self.source_doc_button.clicked.connect(self.browse_source_doc)
+        source_doc_layout = QHBoxLayout()
+        source_doc_layout.addWidget(self.source_doc_edit)
+        source_doc_layout.addWidget(self.source_doc_button)
+        attachments_layout.addRow(self.source_doc_label, source_doc_layout)
+
+        main_layout.addWidget(attachments_group)
 
         # Set up scroll area
         scroll_area.setWidget(scroll_widget)
@@ -383,11 +436,13 @@ class EditCaseDialog(QDialog):
         if self.case_data[14]:  # evidence_path
             self.evidence_edit.setText(self.case_data[14])
 
-        # Set assessment fields
-        if len(self.case_data) > 18 and self.case_data[18]:  # assessment_assessed_by
-            self.assessed_by_edit.setText(self.case_data[18])
-        if len(self.case_data) > 19 and self.case_data[19]:  # assessment_date
-            self.assessment_date_edit.setDate(QDate.fromString(self.case_data[19], "yyyy-MM-dd"))
+        # Assessment fields removed as requested
+
+        # Set Loss Control fields
+        if len(self.case_data) > 31 and self.case_data[31]:  # loss_control_recommendation
+            self.loss_control_combo.setCurrentText(self.case_data[31])
+        if len(self.case_data) > 32 and self.case_data[32]:  # recovery_evidence_path
+            self.recovery_evidence_edit.setText(self.case_data[32])
 
         # Update conditional fields to set proper status options based on list
         self.update_conditional_fields()
@@ -401,7 +456,7 @@ class EditCaseDialog(QDialog):
                 self.selected_responsibility_id = selected["id"]
 
     def on_status_changed(self, status):
-        """Handle status selection change with special logic for Valid status"""
+        """Handle status selection change with special logic for Valid and Confirmed statuses"""
         if status == "Valid":
             # Show warning dialog for Valid status
             reply = QMessageBox.question(
@@ -421,6 +476,21 @@ class EditCaseDialog(QDialog):
                 # Revert to previous status or default
                 self.status_combo.setCurrentText("Alleged")
                 self.supporting_evidence_compulsory = False
+        elif status == "Confirmed":
+            # Show warning dialog for Confirmed status
+            reply = QMessageBox.question(
+                self,
+                "Confirm Confirmed Status",
+                "Selecting 'Confirmed' means this case IS Fruitless and Wasteful Expenditure.\n\n"
+                "The case will be copied to the Lead Schedule for further processing.\n\n"
+                "Do you want to proceed?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+
+            if reply == QMessageBox.No:
+                # Revert to previous status or default
+                self.status_combo.setCurrentText("Alleged")
         else:
             # Reset the compulsory flag for other statuses
             self.supporting_evidence_compulsory = False
@@ -487,23 +557,9 @@ class EditCaseDialog(QDialog):
 
             # Update assessment fields visibility (Lead Schedule + Valid/Confirmed)
             show_assessment = (selected_list == "Lead Schedule" and
-                              selected_status in ["Valid", "Confirmed"])
+                             selected_status in ["Valid", "Confirmed"])
 
-            # Assessment fields
-            if hasattr(self, 'source_doc_label'):
-                self.source_doc_label.setVisible(show_assessment)
-            if hasattr(self, 'source_doc_edit'):
-                self.source_doc_edit.setVisible(show_assessment)
-            if hasattr(self, 'source_doc_button'):
-                self.source_doc_button.setVisible(show_assessment)
-
-            if hasattr(self, 'minutes_label'):
-                self.minutes_label.setVisible(show_assessment)
-            if hasattr(self, 'minutes_edit'):
-                self.minutes_edit.setVisible(show_assessment)
-            if hasattr(self, 'minutes_button'):
-                self.minutes_button.setVisible(show_assessment)
-
+            # Assessment Evidence fields (Status + Evidence)
             if hasattr(self, 'evidence_label'):
                 self.evidence_label.setVisible(show_assessment)
             if hasattr(self, 'evidence_edit'):
@@ -511,15 +567,33 @@ class EditCaseDialog(QDialog):
             if hasattr(self, 'evidence_button'):
                 self.evidence_button.setVisible(show_assessment)
 
-            if hasattr(self, 'assessed_by_label'):
-                self.assessed_by_label.setVisible(show_assessment)
-            if hasattr(self, 'assessed_by_edit'):
-                self.assessed_by_edit.setVisible(show_assessment)
+            # Update Loss Control fields visibility (for cases that need Loss Control processing)
+            # Show for cases in Lead Schedule that have been through initial assessment
+            show_loss_control = (selected_list == "Lead Schedule")
 
-            if hasattr(self, 'assessment_date_label'):
-                self.assessment_date_label.setVisible(show_assessment)
-            if hasattr(self, 'assessment_date_edit'):
-                self.assessment_date_edit.setVisible(show_assessment)
+            if hasattr(self, 'loss_control_label'):
+                self.loss_control_label.setVisible(show_loss_control)
+            if hasattr(self, 'loss_control_combo'):
+                self.loss_control_combo.setVisible(show_loss_control)
+
+            # Recovery evidence visibility depends on recommendation selection
+            if hasattr(self, 'loss_control_combo') and show_loss_control:
+                recommendation = self.loss_control_combo.currentText()
+                show_recovery = (recommendation == "Recovered")
+                if hasattr(self, 'recovery_evidence_label'):
+                    self.recovery_evidence_label.setVisible(show_recovery)
+                if hasattr(self, 'recovery_evidence_edit'):
+                    self.recovery_evidence_edit.setVisible(show_recovery)
+                if hasattr(self, 'recovery_evidence_button'):
+                    self.recovery_evidence_button.setVisible(show_recovery)
+            else:
+                # Hide recovery evidence if Loss Control is not visible
+                if hasattr(self, 'recovery_evidence_label'):
+                    self.recovery_evidence_label.setVisible(False)
+                if hasattr(self, 'recovery_evidence_edit'):
+                    self.recovery_evidence_edit.setVisible(False)
+                if hasattr(self, 'recovery_evidence_button'):
+                    self.recovery_evidence_button.setVisible(False)
 
             # Update determination button visibility
             self.update_determination_button_visibility()
@@ -541,6 +615,24 @@ class EditCaseDialog(QDialog):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Evidence", "", "PDF Files (*.pdf)")
         if file_path:
             self.evidence_edit.setText(file_path)
+
+    def on_loss_control_changed(self, recommendation):
+        """Handle Loss Control Recommendation change"""
+        if recommendation == "Recovered":
+            self.recovery_evidence_label.setVisible(True)
+            self.recovery_evidence_edit.setVisible(True)
+            self.recovery_evidence_button.setVisible(True)
+            self.recovery_evidence_edit.setPlaceholderText("Recovery evidence is REQUIRED")
+        else:
+            self.recovery_evidence_label.setVisible(False)
+            self.recovery_evidence_edit.setVisible(False)
+            self.recovery_evidence_button.setVisible(False)
+            self.recovery_evidence_edit.clear()
+
+    def browse_recovery_evidence(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Recovery Evidence", "", "PDF Files (*.pdf)")
+        if file_path:
+            self.recovery_evidence_edit.setText(file_path)
 
     def select_bas_payment_date(self):
         """Open calendar dialog for BAS Payment Date selection"""
@@ -671,6 +763,14 @@ class EditCaseDialog(QDialog):
                 QMessageBox.warning(self, "Invalid Input", "Please select a responsibility.")
                 return
 
+            # Validate Loss Control fields
+            loss_control_rec = self.loss_control_combo.currentText()
+            if loss_control_rec == "Recovered" and not self.recovery_evidence_edit.text().strip():
+                QMessageBox.warning(self, "Recovery Evidence Required",
+                                  "Recovery Evidence is compulsory when Loss Control Recommendation is 'Recovered'.\n\n"
+                                  "Please select a file before saving.")
+                return
+
             # Convert dates to strings, handling NULL dates
             date_incurred_str = self.date_incurred_edit.date().toString("yyyy-MM-dd")
             date_identified_str = self.date_identified_edit.date().toString("yyyy-MM-dd")
@@ -713,8 +813,8 @@ class EditCaseDialog(QDialog):
                 "attachments": "[]",
                 "status": status_text,
                 "list": list_text,
-                "assessment_assessed_by": self.assessed_by_edit.text().strip(),
-                "assessment_date": str(assessment_date_str),
+                "assessment_assessed_by": "",
+                "assessment_date": "",
                 "assessment_result": "",
                 "criminal_charges": criminal_charges_text,
                 "disciplinary_process": disciplinary_text,
@@ -722,12 +822,14 @@ class EditCaseDialog(QDialog):
                 "prevention_steps": self.prevention_steps_edit.toPlainText().strip(),
                 "fy_id": None,
                 "period_id": None,
-                "original_list": list_text
+                "original_list": list_text,
+                "loss_control_recommendation": self.loss_control_combo.currentText(),
+                "recovery_evidence_path": self.recovery_evidence_edit.text().strip()
             }
 
             # Handle file operations
             year_folder = create_year_folder(self.fy)
-            for field in ["source_document", "minutes", "evidence_path"]:
+            for field in ["source_document", "minutes", "evidence_path", "recovery_evidence_path"]:
                 if case[field]:
                     dest_path = os.path.join(year_folder, f"{self.transaction_no}_{field}.pdf")
                     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
@@ -744,7 +846,7 @@ class EditCaseDialog(QDialog):
                     bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
                     source_document = ?, minutes = ?, evidence_path = ?, attachments = ?, status = ?, list = ?, assessment_assessed_by = ?,
                     assessment_date = ?, assessment_result = ?, fy_id = ?, period_id = ?, criminal_charges = ?, disciplinary_process = ?,
-                    loss_recovery = ?, prevention_steps = ?, original_list = ?
+                    loss_recovery = ?, prevention_steps = ?, original_list = ?, loss_control_recommendation = ?, recovery_evidence_path = ?
                 WHERE transaction_no = ?
             """, (
                 case["date_incurred"], case["date_identified"], case["date_reported"],
@@ -754,7 +856,7 @@ class EditCaseDialog(QDialog):
                 case["assessment_assessed_by"], case["assessment_date"], case["assessment_result"],
                 case["fy_id"], case["period_id"],
                 case["criminal_charges"], case["disciplinary_process"], case["loss_recovery"],
-                case["prevention_steps"], case["original_list"],
+                case["prevention_steps"], case["original_list"], case["loss_control_recommendation"], case["recovery_evidence_path"],
                 case["transaction_no"]
             ))
 
@@ -766,6 +868,28 @@ class EditCaseDialog(QDialog):
             old_status = self.case_data[17] if len(self.case_data) > 17 else None
             if old_status != status_text:
                 handle_case_status_change(case_id, self.transaction_no, status_text, list_text)
+
+            # Handle Loss Control Recommendation changes
+            loss_control_rec = self.loss_control_combo.currentText()
+            if loss_control_rec == "Recovered" and list_text != "Recovered":
+                # Move case to Recovered list
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE cases
+                    SET list = 'Recovered', original_list = ?
+                    WHERE transaction_no = ?
+                """, (list_text, self.transaction_no))
+                conn.commit()
+                conn.close()
+
+                QMessageBox.information(self, "Case Moved",
+                                      f"Case {self.transaction_no} has been moved to 'Recovered' list due to Loss Control Recommendation.")
+            elif loss_control_rec == "Write Off":
+                # For Write Off recommendations, case stays in Lead Schedule but will also appear in Write-Off Recommended
+                QMessageBox.information(self, "Write-Off Recommended",
+                                      f"Case {self.transaction_no} has been marked for write-off recommendation.\n\n"
+                                      "The case will remain visible in Lead Schedule and will also appear in the Write-Off Recommended list for approval.")
 
             save_audit_log("edit_case", {
                 "timestamp": datetime.now().isoformat(),

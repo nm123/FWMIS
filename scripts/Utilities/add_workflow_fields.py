@@ -1,8 +1,21 @@
 import sqlite3
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from scripts.Utilities.config import DB_PATH
+
+# Add scripts directory to Python path
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(scripts_dir)
+
+try:
+    from Utilities.config import DB_PATH
+except ImportError:
+    # Fallback if config.py is missing
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
+    DB_PATH = os.path.join(BASE_DIR, 'fruitless.db')
+    print(f"Warning: config.py not found, using fallback paths")
+except Exception as e:
+    print(f"Error loading config: {e}")
+    sys.exit(1)
 
 def add_workflow_fields():
     """Add new fields required for the enhanced case workflow"""

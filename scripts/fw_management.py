@@ -8,8 +8,10 @@ from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QMessageBox,
+    QLabel,
 )
 from PyQt5.QtCore import Qt
+from scripts.Utilities.ui_theme import apply_theme, create_status_label
 from scripts.case_management import AddNewCaseDialog, ViewCasesDialog, EditCasesDialog, ToDoListDialog, ViewDeletedCasesDialog, import_undisclosed_cases
 from scripts.case_management_modules.bulk_case_entry import BulkCaseEntryWizard
 from scripts.case_management_modules.write_off_submission_dialog import WriteOffSubmissionDialog
@@ -21,12 +23,23 @@ from scripts.responsibility_management_ui import ResponsibilityManagementDialog
 from scripts.report_management import ReportManagementDialog
 from scripts.financial_year_management import FinancialYearManagementDialog
 from scripts.Utilities.config import initialize_shared_documents_table
+from scripts.Utilities.financial_utils import get_active_period_display
 
 class FWManagementApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Fruitless and Wasteful Expenditure Management")
-        self.showMaximized()  # Open in full-screen mode
+        self.setWindowTitle("🎯 FWMIS - Fruitless and Wasteful Expenditure Management System")
+
+        # Set minimum size and allow resizing/maximizing
+        self.setMinimumSize(1000, 700)
+        self.resize(1200, 800)  # Default size
+        self.center_window()
+
+        # Enable maximize button and window resizing
+        self.setWindowFlags(self.windowFlags() | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint)
+
+        # Apply professional theme
+        apply_theme(self)
 
         # Initialize database tables
         initialize_shared_documents_table()
@@ -34,13 +47,104 @@ class FWManagementApp(QMainWindow):
         self.setup_ui()
         self.setup_menu()
 
+    def center_window(self):
+        """Center the window on the screen"""
+        from PyQt5.QtWidgets import QDesktopWidget
+        screen = QDesktopWidget().screenGeometry()
+        # Use the default size for centering calculations
+        window_width = 1200
+        window_height = 800
+        x = (screen.width() - window_width) // 2
+        y = (screen.height() - window_height) // 2
+        self.move(x, y)
+
     def setup_ui(self):
-        # Set an empty central widget
+        # Create professional central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
-        # Add a placeholder widget (empty)
-        layout.addWidget(QWidget())
+        layout.setSpacing(20)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        # Welcome header
+        active_period_text = get_active_period_display()
+        if active_period_text:
+            welcome_text = f"🏢 Welcome to FWMIS\n{active_period_text}"
+        else:
+            welcome_text = "🏢 Welcome to FWMIS"
+
+        welcome_label = QLabel(welcome_text)
+        welcome_label.setWordWrap(True)
+        welcome_label.setStyleSheet("""
+            QLabel {
+                font-size: 24px;
+                font-weight: bold;
+                color: #343a40;
+                margin-bottom: 10px;
+            }
+        """)
+        layout.addWidget(welcome_label, alignment=Qt.AlignCenter)
+
+        # Subtitle
+        subtitle_label = QLabel("Fruitless and Wasteful Expenditure Management Information System")
+        subtitle_label.setStyleSheet("""
+            QLabel {
+                font-size: 16px;
+                color: #6c757d;
+                margin-bottom: 30px;
+            }
+        """)
+        layout.addWidget(subtitle_label, alignment=Qt.AlignCenter)
+
+        # Quick actions section
+        actions_group = QWidget()
+        actions_layout = QVBoxLayout(actions_group)
+        actions_layout.setSpacing(15)
+
+        actions_title = QLabel("🚀 Quick Actions")
+        actions_title.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: bold;
+                color: #495057;
+                margin-bottom: 15px;
+            }
+        """)
+        actions_layout.addWidget(actions_title, alignment=Qt.AlignCenter)
+
+        # Action buttons in a grid
+        from PyQt5.QtWidgets import QGridLayout, QPushButton
+        from scripts.Utilities.ui_theme import create_professional_button
+
+        buttons_layout = QGridLayout()
+        buttons_layout.setSpacing(15)
+
+        # Create professional action buttons
+        add_case_btn = create_professional_button("➕ Add New Case", "success", "large")
+        add_case_btn.clicked.connect(self.add_new_case)
+        buttons_layout.addWidget(add_case_btn, 0, 0)
+
+        view_cases_btn = create_professional_button("👁️ View Cases", "primary", "large")
+        view_cases_btn.clicked.connect(self.view_cases)
+        buttons_layout.addWidget(view_cases_btn, 0, 1)
+
+        import_cases_btn = create_professional_button("📊 Import Cases", "info", "large")
+        import_cases_btn.clicked.connect(self.import_undisclosed_cases)
+        buttons_layout.addWidget(import_cases_btn, 1, 0)
+
+        reports_btn = create_professional_button("📈 Generate Reports", "warning", "large")
+        reports_btn.clicked.connect(self.generate_reports)
+        buttons_layout.addWidget(reports_btn, 1, 1)
+
+        actions_layout.addLayout(buttons_layout)
+        layout.addWidget(actions_group)
+
+        # Status information
+        status_label = create_status_label("ℹ️ System ready. Use the menu above or quick actions below to get started.", "info")
+        layout.addWidget(status_label)
+
+        # Add stretch to push everything to the top
+        layout.addStretch()
 
     def setup_menu(self):
         menubar = self.menuBar()

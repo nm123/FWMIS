@@ -96,11 +96,13 @@ class EditCasesDialog(QDialog):
         splitter.addWidget(self.resp_tree)
 
         self.case_table = QTableWidget()
-        self.case_table.setColumnCount(7)
+        self.case_table.setColumnCount(8)
         self.case_table.setHorizontalHeaderLabels([
-            "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"
+            "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do", "Edit Case"
         ])
 
+        # Enable selection change to highlight responsibility
+        self.case_table.itemSelectionChanged.connect(self.on_case_select)
         # Enable double-click to view case details
         self.case_table.itemDoubleClicked.connect(self.show_case_details)
 
@@ -118,6 +120,7 @@ class EditCasesDialog(QDialog):
         self.case_table.setColumnWidth(4, 120)  # List
         self.case_table.setColumnWidth(5, 120)  # Status
         self.case_table.setColumnWidth(6, 80)   # To-Do
+        self.case_table.setColumnWidth(7, 100)  # Edit Case
 
         # Set row height for better readability
         self.case_table.verticalHeader().setDefaultSectionSize(25)
@@ -200,15 +203,23 @@ class EditCasesDialog(QDialog):
         cursor = conn.cursor()
 
         # Build base query with list filtering
-        base_conditions = ["list != 'Deleted Cases'"]
+        base_conditions = []
         params = []
 
         # Add list filter condition
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            base_conditions.append("list = 'Checklist'")
+            base_conditions.append("(list = 'Checklist' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
         elif selected_list == "Lead Schedule":
-            base_conditions.append("list = 'Lead Schedule'")
+            base_conditions.append("(list = 'Lead Schedule' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
+        elif selected_list == "Write-Off Recommended":
+            base_conditions.append("(list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off')")
+        elif selected_list == "Recovered":
+            base_conditions.append("list = 'Recovered'")
+        elif selected_list == "Written Off":
+            base_conditions.append("list = 'Written Off'")
+        else:  # "All Cases"
+            base_conditions.append("list != 'Deleted Cases'")
 
         # Add responsibility filter if provided
         if resp_ids:
@@ -216,7 +227,7 @@ class EditCasesDialog(QDialog):
             base_conditions.append(f"responsibility_id IN ({placeholders})")
             params.extend(resp_ids)
 
-        where_clause = " AND ".join(base_conditions)
+        where_clause = " AND ".join(base_conditions) if base_conditions else "1=1"
         query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
@@ -234,6 +245,12 @@ class EditCasesDialog(QDialog):
                     self.case_table.setItem(row, col, amount_item)
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
+
+            # Add Edit Case button in the last column
+            edit_button = QPushButton("Edit Case")
+            edit_button.clicked.connect(lambda checked, r=row: self.edit_case_by_row(r))
+            self.case_table.setCellWidget(row, 7, edit_button)
+
         conn.close()
 
     def show_case_details(self, item):
@@ -272,10 +289,16 @@ class EditCasesDialog(QDialog):
         # Add list filter condition
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            base_conditions.append("list = 'Checklist'")
+            base_conditions.append("(list = 'Checklist' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
         elif selected_list == "Lead Schedule":
-            base_conditions.append("list = 'Lead Schedule'")
-        else:
+            base_conditions.append("(list = 'Lead Schedule' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
+        elif selected_list == "Write-Off Recommended":
+            base_conditions.append("(list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off')")
+        elif selected_list == "Recovered":
+            base_conditions.append("list = 'Recovered'")
+        elif selected_list == "Written Off":
+            base_conditions.append("list = 'Written Off'")
+        else:  # "All Cases"
             base_conditions.append("list != 'Deleted Cases'")
 
         where_clause = " AND ".join(base_conditions)
@@ -296,7 +319,84 @@ class EditCasesDialog(QDialog):
                     self.case_table.setItem(row, col, amount_item)
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     self.case_table.setItem(row, col, QTableWidgetItem(str(data)))
+
+            # Add Edit Case button in the last column
+            edit_button = QPushButton("Edit Case")
+            edit_button.clicked.connect(lambda checked, r=row: self.edit_case_by_row(r))
+            self.case_table.setCellWidget(row, 7, edit_button)
+
         conn.close()
+
+    def on_case_select(self):
+        """Highlight the responsibility in the tree when a case is selected"""
+        selected_rows = set()
+        for item in self.case_table.selectedItems():
+            selected_rows.add(item.row())
+
+        if not selected_rows:
+            # Clear selection if no case is selected
+            self.resp_tree.clearSelection()
+            return
+
+        # Get the first selected case's responsibility
+        first_row = min(selected_rows)
+        case_no = self.case_table.item(first_row, 0).text()
+
+        # Get responsibility_id for this case
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
+            result = cursor.fetchone()
+            conn.close()
+
+            if result:
+                responsibility_id = result[0]
+                self.highlight_responsibility(responsibility_id)
+        except sqlite3.Error as e:
+            print(f"Error getting responsibility for case {case_no}: {e}")
+
+    def highlight_responsibility(self, responsibility_id):
+        """Find and highlight the responsibility in the tree"""
+        def find_item_by_id(parent_item, target_id):
+            """Recursively search for an item with the given ID"""
+            if parent_item is None:
+                # Search top-level items
+                for i in range(self.resp_tree.topLevelItemCount()):
+                    item = self.resp_tree.topLevelItem(i)
+                    if item.data(0, Qt.UserRole) == target_id:
+                        return item
+                    # Search children
+                    result = find_item_by_id(item, target_id)
+                    if result:
+                        return result
+            else:
+                # Search children of parent_item
+                for i in range(parent_item.childCount()):
+                    item = parent_item.child(i)
+                    if item.data(0, Qt.UserRole) == target_id:
+                        return item
+                    # Search grandchildren
+                    result = find_item_by_id(item, target_id)
+                    if result:
+                        return result
+            return None
+
+        # Find the responsibility item
+        target_item = find_item_by_id(None, responsibility_id)
+
+        if target_item:
+            # Clear current selection
+            self.resp_tree.clearSelection()
+            # Select the target item
+            target_item.setSelected(True)
+            # Ensure it's visible
+            self.resp_tree.scrollToItem(target_item)
+            # Expand parent items to make it visible
+            parent = target_item.parent()
+            while parent:
+                parent.setExpanded(True)
+                parent = parent.parent()
 
     def filter_responsibilities(self, text):
         """Filter responsibilities based on search text"""
@@ -355,3 +455,20 @@ class EditCasesDialog(QDialog):
 
         add_filtered_items(None, None)
         self.resp_tree.expandAll()
+
+    def edit_case_by_row(self, row):
+        """Edit case by table row"""
+        case_no = self.case_table.item(row, 0).text()
+
+        # Get full case details from database
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
+        case_data = cursor.fetchone()
+        conn.close()
+
+        if case_data:
+            dialog = EditCaseDialog(case_data, self)
+            if dialog.exec_():
+                # Refresh the table after editing
+                self.refresh_cases()

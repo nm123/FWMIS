@@ -29,6 +29,7 @@ from scripts.Utilities.financial_utils import (
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.contact_utils import get_effective_contacts
 from scripts.Utilities.validation_utils import is_valid_email
+from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 import win32com.client
 from scripts.case_management_modules.responsibility_selection import ResponsibilitySelectionDialog
 
@@ -38,6 +39,9 @@ class AddNewCaseDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Add New Case")
         self.setFixedSize(1100, 900)
+
+        # Apply professional theme
+        apply_theme(self)
 
         # Initialize data with error handling
         try:
@@ -79,7 +83,7 @@ class AddNewCaseDialog(QDialog):
         self.responsibility_edit.setPlaceholderText("Click Select to choose responsibility...")
         resp_layout.addWidget(self.responsibility_edit)
 
-        self.select_responsibility_button = QPushButton("Select")
+        self.select_responsibility_button = create_professional_button("Select", 'secondary')
         self.select_responsibility_button.clicked.connect(self.select_responsibility)
         resp_layout.addWidget(self.select_responsibility_button)
 
@@ -136,7 +140,7 @@ class AddNewCaseDialog(QDialog):
         file_layout = QHBoxLayout()
         self.file_path_edit = QLineEdit()
         self.file_path_edit.setPlaceholderText("Select file...")
-        browse_button = QPushButton("Browse...")
+        browse_button = create_professional_button("Browse...", 'secondary')
         browse_button.clicked.connect(self.browse_file)
         file_layout.addWidget(self.file_path_edit)
         file_layout.addWidget(browse_button)
@@ -146,7 +150,7 @@ class AddNewCaseDialog(QDialog):
         supporting_layout = QHBoxLayout()
         self.supporting_evidence_edit = QLineEdit()
         self.supporting_evidence_edit.setPlaceholderText("Select file (optional)...")
-        supporting_browse_button = QPushButton("Browse...")
+        supporting_browse_button = create_professional_button("Browse...", 'secondary')
         supporting_browse_button.clicked.connect(self.browse_supporting_evidence)
         supporting_layout.addWidget(self.supporting_evidence_edit)
         supporting_layout.addWidget(supporting_browse_button)
@@ -196,7 +200,7 @@ class AddNewCaseDialog(QDialog):
         # Assessment fields - add them but hide initially
         self.source_doc_label = QLabel("Source Document:")
         self.source_doc_edit = QLineEdit()
-        self.source_doc_button = QPushButton("Browse")
+        self.source_doc_button = create_professional_button("Browse", 'secondary')
         self.source_doc_button.clicked.connect(self.browse_source_doc)
         source_doc_layout = QHBoxLayout()
         source_doc_layout.addWidget(self.source_doc_edit)
@@ -208,7 +212,7 @@ class AddNewCaseDialog(QDialog):
 
         self.minutes_label = QLabel("Loss Control Minutes:")
         self.minutes_edit = QLineEdit()
-        self.minutes_button = QPushButton("Browse")
+        self.minutes_button = create_professional_button("Browse", 'secondary')
         self.minutes_button.clicked.connect(self.browse_minutes)
         minutes_layout = QHBoxLayout()
         minutes_layout.addWidget(self.minutes_edit)
@@ -220,7 +224,7 @@ class AddNewCaseDialog(QDialog):
 
         self.evidence_label = QLabel("Assessment Evidence:")
         self.evidence_edit = QLineEdit()
-        self.evidence_button = QPushButton("Browse")
+        self.evidence_button = create_professional_button("Browse", 'secondary')
         self.evidence_button.clicked.connect(self.browse_evidence)
         evidence_layout = QHBoxLayout()
         evidence_layout.addWidget(self.evidence_edit)
@@ -259,9 +263,10 @@ class AddNewCaseDialog(QDialog):
 
         # Buttons
         button_layout = QHBoxLayout()
-        self.save_button = QPushButton("Save & Continue")
+        self.save_button = create_professional_button("Save & Continue", 'primary')
         self.save_button.clicked.connect(self.save_case)
-        self.cancel_button = QPushButton("Cancel")
+
+        self.cancel_button = create_professional_button("Cancel", 'secondary')
         self.cancel_button.clicked.connect(self.reject)
 
         button_layout.addWidget(self.save_button)
@@ -769,6 +774,10 @@ class AssessmentDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Case Assessment")
         self.setFixedSize(400, 300)
+
+        # Apply professional theme
+        apply_theme(self)
+
         layout = QFormLayout(self)
 
         self.assessed_by_edit = QLineEdit()
@@ -783,9 +792,9 @@ class AssessmentDialog(QDialog):
         layout.addRow("Result:", self.result_combo)
 
         button_layout = QHBoxLayout()
-        save_button = QPushButton("Save")
+        save_button = create_professional_button("Save", 'primary')
         save_button.clicked.connect(self.accept)
-        cancel_button = QPushButton("Cancel")
+        cancel_button = create_professional_button("Cancel", 'secondary')
         cancel_button.clicked.connect(self.reject)
         button_layout.addWidget(save_button)
         button_layout.addWidget(cancel_button)

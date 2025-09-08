@@ -137,7 +137,9 @@ def load_lists():
                 loss_recovery TEXT DEFAULT 'N/A',
                 prevention_steps TEXT,
                 period_id INTEGER,
-                fy_id INTEGER
+                fy_id INTEGER,
+                loss_control_recommendation TEXT,
+                recovery_evidence_path TEXT
             )
         """)
         # Alter table to add columns if not exist

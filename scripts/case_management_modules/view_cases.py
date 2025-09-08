@@ -24,6 +24,7 @@ from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
+from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 from collections import defaultdict
 
 
@@ -33,6 +34,10 @@ class ViewCasesDialog(QDialog):
         self.setWindowTitle("View Cases")
         self.setFixedSize(1700, 600)  # Increased by another ~10% (160px) for optimal header visibility
         self.responsibilities = load_responsibilities()
+
+        # Apply professional theme
+        apply_theme(self)
+
         self.setup_ui()
 
     def setup_ui(self):
@@ -76,6 +81,8 @@ class ViewCasesDialog(QDialog):
             "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"
         ])
 
+        # Enable selection change to highlight responsibility
+        self.case_table.itemSelectionChanged.connect(self.on_case_select)
         # Enable double-click to view case details
         self.case_table.itemDoubleClicked.connect(self.show_case_details)
 
@@ -168,6 +175,77 @@ class ViewCasesDialog(QDialog):
         else:
             self.refresh_cases()
 
+    def on_case_select(self):
+        """Highlight the responsibility in the tree when a case is selected"""
+        selected_rows = set()
+        for item in self.case_table.selectedItems():
+            selected_rows.add(item.row())
+
+        if not selected_rows:
+            # Clear selection if no case is selected
+            self.resp_tree.clearSelection()
+            return
+
+        # Get the first selected case's responsibility
+        first_row = min(selected_rows)
+        case_no = self.case_table.item(first_row, 0).text()
+
+        # Get responsibility_id for this case
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
+            result = cursor.fetchone()
+            conn.close()
+
+            if result:
+                responsibility_id = result[0]
+                self.highlight_responsibility(responsibility_id)
+        except sqlite3.Error as e:
+            print(f"Error getting responsibility for case {case_no}: {e}")
+
+    def highlight_responsibility(self, responsibility_id):
+        """Find and highlight the responsibility in the tree"""
+        def find_item_by_id(parent_item, target_id):
+            """Recursively search for an item with the given ID"""
+            if parent_item is None:
+                # Search top-level items
+                for i in range(self.resp_tree.topLevelItemCount()):
+                    item = self.resp_tree.topLevelItem(i)
+                    if item.data(0, Qt.UserRole) == target_id:
+                        return item
+                    # Search children
+                    result = find_item_by_id(item, target_id)
+                    if result:
+                        return result
+            else:
+                # Search children of parent_item
+                for i in range(parent_item.childCount()):
+                    item = parent_item.child(i)
+                    if item.data(0, Qt.UserRole) == target_id:
+                        return item
+                    # Search grandchildren
+                    result = find_item_by_id(item, target_id)
+                    if result:
+                        return result
+            return None
+
+        # Find the responsibility item
+        target_item = find_item_by_id(None, responsibility_id)
+
+        if target_item:
+            # Clear current selection
+            self.resp_tree.clearSelection()
+            # Select the target item
+            target_item.setSelected(True)
+            # Ensure it's visible
+            self.resp_tree.scrollToItem(target_item)
+            # Expand parent items to make it visible
+            parent = target_item.parent()
+            while parent:
+                parent.setExpanded(True)
+                parent = parent.parent()
+
     def refresh_cases(self, resp_ids=None):
         self.case_table.setRowCount(0)
         conn = sqlite3.connect(DB_PATH)
@@ -181,14 +259,14 @@ class ViewCasesDialog(QDialog):
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
             # Checklist shows ALL cases except deleted and To-Do List ones
-            base_conditions.append("(list = 'Checklist' OR list = 'Lead Schedule' OR list = 'Recovered' OR list = 'Write-Off Recommended' OR list = 'Written Off')")
+            base_conditions.append("(list = 'Checklist' OR list = 'Lead Schedule' OR list = 'Recovered' OR list = 'Write-Off Recommended' OR list = 'Written Off' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
         elif selected_list == "Lead Schedule":
             # Lead Schedule excludes finalized cases
-            base_conditions.append("list = 'Lead Schedule' AND is_finalized = 0")
+            base_conditions.append("(list = 'Lead Schedule' AND is_finalized = 0)")
         elif selected_list == "Recovered":
             base_conditions.append("list = 'Recovered'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("list = 'Write-Off Recommended'")
+            base_conditions.append("(list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off')")
         elif selected_list == "Written Off":
             base_conditions.append("list = 'Written Off'")
         elif selected_list == "To-Do List":
@@ -334,7 +412,7 @@ class CaseDetailsDialog(QDialog):
 
         # Close button
         button_layout = QHBoxLayout()
-        close_button = QPushButton("Close")
+        close_button = create_professional_button("Close", 'secondary')
         close_button.clicked.connect(self.accept)
         button_layout.addStretch()
         button_layout.addWidget(close_button)

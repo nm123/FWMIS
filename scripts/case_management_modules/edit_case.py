@@ -34,6 +34,7 @@ from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.list_utils import load_lists
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.utils import format_currency_amount
+from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 from collections import defaultdict
 from .responsibility_selection import ResponsibilitySelectionDialog
 
@@ -43,6 +44,10 @@ class EditCaseDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Edit Case Details")
         self.setFixedSize(1200, 900)
+
+        # Apply professional theme
+        apply_theme(self)
+
         try:
             self.responsibilities = load_posting_responsibilities()
             self.categories = load_categories()
@@ -126,7 +131,7 @@ class EditCaseDialog(QDialog):
             self.responsibility_edit.setPlaceholderText("Click Select to choose responsibility...")
             responsibility_layout.addWidget(self.responsibility_edit)
 
-            self.select_responsibility_button = QPushButton("Select")
+            self.select_responsibility_button = create_professional_button("Select", 'secondary')
             self.select_responsibility_button.clicked.connect(self.select_responsibility)
             responsibility_layout.addWidget(self.select_responsibility_button)
 
@@ -254,7 +259,7 @@ class EditCaseDialog(QDialog):
         # File selection fields (conditional)
         self.source_doc_label = QLabel("Source Document:")
         self.source_doc_edit = QLineEdit()
-        self.source_doc_button = QPushButton("Browse")
+        self.source_doc_button = create_professional_button("Browse", 'secondary')
         self.source_doc_button.clicked.connect(self.browse_source_doc)
         source_doc_layout = QHBoxLayout()
         source_doc_layout.addWidget(self.source_doc_edit)
@@ -263,7 +268,7 @@ class EditCaseDialog(QDialog):
 
         self.minutes_label = QLabel("Loss Control Minutes:")
         self.minutes_edit = QLineEdit()
-        self.minutes_button = QPushButton("Browse")
+        self.minutes_button = create_professional_button("Browse", 'secondary')
         self.minutes_button.clicked.connect(self.browse_minutes)
         minutes_layout = QHBoxLayout()
         minutes_layout.addWidget(self.minutes_edit)
@@ -272,7 +277,7 @@ class EditCaseDialog(QDialog):
 
         self.evidence_label = QLabel("Assessment Evidence:")
         self.evidence_edit = QLineEdit()
-        self.evidence_button = QPushButton("Browse")
+        self.evidence_button = create_professional_button("Browse", 'secondary')
         self.evidence_button.clicked.connect(self.browse_evidence)
         evidence_layout = QHBoxLayout()
         evidence_layout.addWidget(self.evidence_edit)
@@ -312,14 +317,13 @@ class EditCaseDialog(QDialog):
             traceback.print_exc()
 
         button_layout = QHBoxLayout()
-        self.save_button = QPushButton("Save Changes")
+        self.save_button = create_professional_button("Save Changes", 'primary')
         self.save_button.clicked.connect(self.save_case)
 
-        self.delete_button = QPushButton("Delete Case")
+        self.delete_button = create_professional_button("Delete Case", 'danger')
         self.delete_button.clicked.connect(self.delete_case)
-        self.delete_button.setStyleSheet("QPushButton { color: red; font-weight: bold; }")
 
-        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button = create_professional_button("Cancel", 'secondary')
         self.cancel_button.clicked.connect(self.reject)
 
         button_layout.addWidget(self.save_button)
@@ -784,6 +788,10 @@ class EditCasesDialog(QDialog):
         self.setFixedSize(1700, 600)  # Match ViewCasesDialog width for consistency
         self.responsibilities = load_responsibilities()
         self.current_list = "Checklist"  # Default context
+
+        # Apply professional theme
+        apply_theme(self)
+
         self.setup_ui()
 
     def setup_ui(self):
@@ -855,6 +863,8 @@ class EditCasesDialog(QDialog):
             "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"
         ])
 
+        # Enable selection change to highlight responsibility
+        self.case_table.itemSelectionChanged.connect(self.on_case_select)
         # Enable double-click to view case details (same as ViewCasesDialog)
         self.case_table.itemDoubleClicked.connect(self.show_case_details)
 
@@ -947,6 +957,77 @@ class EditCasesDialog(QDialog):
             self.refresh_cases(subtree_ids)
         else:
             self.refresh_cases()
+
+    def on_case_select(self):
+        """Highlight the responsibility in the tree when a case is selected"""
+        selected_rows = set()
+        for item in self.case_table.selectedItems():
+            selected_rows.add(item.row())
+
+        if not selected_rows:
+            # Clear selection if no case is selected
+            self.resp_tree.clearSelection()
+            return
+
+        # Get the first selected case's responsibility
+        first_row = min(selected_rows)
+        case_no = self.case_table.item(first_row, 0).text()
+
+        # Get responsibility_id for this case
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
+            result = cursor.fetchone()
+            conn.close()
+
+            if result:
+                responsibility_id = result[0]
+                self.highlight_responsibility(responsibility_id)
+        except sqlite3.Error as e:
+            print(f"Error getting responsibility for case {case_no}: {e}")
+
+    def highlight_responsibility(self, responsibility_id):
+        """Find and highlight the responsibility in the tree"""
+        def find_item_by_id(parent_item, target_id):
+            """Recursively search for an item with the given ID"""
+            if parent_item is None:
+                # Search top-level items
+                for i in range(self.resp_tree.topLevelItemCount()):
+                    item = self.resp_tree.topLevelItem(i)
+                    if item.data(0, Qt.UserRole) == target_id:
+                        return item
+                    # Search children
+                    result = find_item_by_id(item, target_id)
+                    if result:
+                        return result
+            else:
+                # Search children of parent_item
+                for i in range(parent_item.childCount()):
+                    item = parent_item.child(i)
+                    if item.data(0, Qt.UserRole) == target_id:
+                        return item
+                    # Search grandchildren
+                    result = find_item_by_id(item, target_id)
+                    if result:
+                        return result
+            return None
+
+        # Find the responsibility item
+        target_item = find_item_by_id(None, responsibility_id)
+
+        if target_item:
+            # Clear current selection
+            self.resp_tree.clearSelection()
+            # Select the target item
+            target_item.setSelected(True)
+            # Ensure it's visible
+            self.resp_tree.scrollToItem(target_item)
+            # Expand parent items to make it visible
+            parent = target_item.parent()
+            while parent:
+                parent.setExpanded(True)
+                parent = parent.parent()
 
     def refresh_cases(self, resp_ids=None):
         self.case_table.setRowCount(0)
