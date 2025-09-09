@@ -72,3 +72,5 @@
 2025-09-03 17:17:35,612 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
 2025-09-03 17:17:35,639 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
 2025-09-03 17:17:35,661 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
+2025-09-09 10:57:55,966 - ERROR - Failed to save audit log: database is locked
+2025-09-09 11:01:49,005 - ERROR - Failed to save audit log: database is locked

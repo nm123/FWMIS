@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from scripts.case_management_modules.import_undisclosed_cases import BASParser
+from scripts.models.bas_parser import BASParser
 from datetime import date
 
 def test_parser():

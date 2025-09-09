@@ -71,6 +71,7 @@ def create_year_folder(fy):
     from .config import DATA_DIR
     folder = os.path.join(DATA_DIR, fy)
     os.makedirs(folder, exist_ok=True)
+    return folder
 def get_active_period_display():
     """
     Get the active period as a display string "Current Open Month: [Month Year]"
@@ -116,4 +117,67 @@ def get_active_period_display():
     except sqlite3.Error as e:
         logging.error(f"Failed to get active period display: {e}")
         return None
-    return folder
+
+def get_all_financial_years():
+    """
+    Get all financial years from the database
+    Returns list of tuples: [(id, fy_string, is_open), ...]
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, start_year, end_year, status
+            FROM financial_years
+            ORDER BY start_year DESC
+        """)
+
+        financial_years = []
+        for row in cursor.fetchall():
+            fy_id, start_year, end_year, status = row
+            fy_string = f"{start_year}-{end_year}"
+            is_open = status == 'open'
+            financial_years.append((fy_id, fy_string, is_open))
+
+        conn.close()
+        return financial_years
+
+    except sqlite3.Error as e:
+        logging.error(f"Failed to get financial years: {e}")
+        return []
+
+def get_current_open_financial_year():
+    """
+    Get the current open financial year
+    Returns tuple: (id, fy_string) or None if no open year
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, start_year, end_year
+            FROM financial_years
+            WHERE status = 'open'
+            ORDER BY start_year DESC
+            LIMIT 1
+        """)
+
+        result = cursor.fetchone()
+        conn.close()
+
+        if result:
+            fy_id, start_year, end_year = result
+            fy_string = f"{start_year}-{end_year}"
+            return (fy_id, fy_string)
+
+        return None
+
+    except sqlite3.Error as e:
+        logging.error(f"Failed to get current open financial year: {e}")
+        return None

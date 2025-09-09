@@ -10,7 +10,8 @@ try:
     from .case_management_modules.edit_cases_dialog import EditCasesDialog
     from .case_management_modules.deleted_cases import ViewDeletedCasesDialog
     from .case_management_modules.todo_list import ToDoListDialog
-    from .case_management_modules.import_undisclosed_cases import ImportUndisclosedCasesDialog, import_undisclosed_cases
+    # Import from new modular structure
+    from .ui.dialogs.import_cases_dialog import ImportUndisclosedCasesDialog, import_undisclosed_cases
 except ImportError:
     # Fall back to absolute imports (when run directly)
     from scripts.case_management_modules.responsibility_selection import ResponsibilitySelectionDialog
@@ -20,7 +21,8 @@ except ImportError:
     from scripts.case_management_modules.edit_cases_dialog import EditCasesDialog
     from scripts.case_management_modules.deleted_cases import ViewDeletedCasesDialog
     from scripts.case_management_modules.todo_list import ToDoListDialog
-    from scripts.case_management_modules.import_undisclosed_cases import ImportUndisclosedCasesDialog, import_undisclosed_cases
+    # Import from new modular structure
+    from scripts.ui.dialogs.import_cases_dialog import ImportUndisclosedCasesDialog, import_undisclosed_cases
 
 # Make all dialogs available at the package level
 __all__ = [

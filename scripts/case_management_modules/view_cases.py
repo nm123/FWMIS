@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
     QSplitter,
     QWidget,
     QLabel,
+    QLineEdit,
     QScrollArea,
     QFormLayout,
     QGroupBox,
@@ -25,6 +26,7 @@ from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
+from scripts.Utilities.financial_utils import get_all_financial_years, get_current_open_financial_year
 from collections import defaultdict
 
 
@@ -40,6 +42,25 @@ class ViewCasesDialog(QDialog):
 
         self.setup_ui()
 
+    def populate_fy_filter(self):
+        """Populate the financial year filter combo box"""
+        self.fy_filter_combo.clear()
+
+        # Get all financial years
+        financial_years = get_all_financial_years()
+
+        # Add financial years to combo box
+        for fy_id, fy_string, is_open in financial_years:
+            self.fy_filter_combo.addItem(fy_string, fy_id)
+
+        # Set current open financial year as default
+        current_open = get_current_open_financial_year()
+        if current_open:
+            fy_id, fy_string = current_open
+            index = self.fy_filter_combo.findData(fy_id)
+            if index >= 0:
+                self.fy_filter_combo.setCurrentIndex(index)
+
     def setup_ui(self):
         layout = QVBoxLayout(self)
 
@@ -47,6 +68,34 @@ class ViewCasesDialog(QDialog):
         search_layout = QHBoxLayout()
         search_layout.setContentsMargins(5, 5, 5, 5)
         search_layout.setSpacing(10)
+
+        # Financial Year filter
+        fy_label = QLabel("FY:")
+        fy_label.setFixedWidth(20)
+        self.fy_filter_combo = QComboBox()
+        self.fy_filter_combo.setFixedWidth(120)
+        self.populate_fy_filter()
+        self.fy_filter_combo.currentTextChanged.connect(lambda: self.refresh_cases())
+
+        search_layout.addWidget(fy_label)
+        search_layout.addWidget(self.fy_filter_combo)
+
+        # Separator
+        search_layout.addSpacing(20)
+
+        # Responsibility search
+        resp_label = QLabel("Responsibility:")
+        resp_label.setFixedWidth(80)
+        self.resp_search_edit = QLineEdit()
+        self.resp_search_edit.setPlaceholderText("Type to search...")
+        self.resp_search_edit.setFixedWidth(200)
+        self.resp_search_edit.textChanged.connect(self.filter_responsibilities)
+
+        search_layout.addWidget(resp_label)
+        search_layout.addWidget(self.resp_search_edit)
+
+        # Separator
+        search_layout.addSpacing(20)
 
         # List filter - compact layout
         list_label = QLabel("List:")
@@ -130,8 +179,17 @@ class ViewCasesDialog(QDialog):
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            # Get all responsibility IDs that have cases
-            cursor.execute("SELECT DISTINCT responsibility_id FROM cases WHERE list != 'Deleted Cases'")
+            # Build query with financial year filter
+            query = "SELECT DISTINCT responsibility_id FROM cases WHERE list != 'Deleted Cases'"
+            params = []
+
+            # Add financial year filter if selected
+            selected_fy_id = self.fy_filter_combo.currentData()
+            if selected_fy_id:
+                query += " AND fy_id = ?"
+                params.append(selected_fy_id)
+
+            cursor.execute(query, params)
             case_resp_ids = {row[0] for row in cursor.fetchall()}
 
             # Include parent responsibilities
@@ -255,18 +313,24 @@ class ViewCasesDialog(QDialog):
         base_conditions = ["list != 'Deleted Cases'"]
         params = []
 
+        # Add financial year filter
+        selected_fy_id = self.fy_filter_combo.currentData()
+        if selected_fy_id:
+            base_conditions.append("fy_id = ?")
+            params.append(selected_fy_id)
+
         # Add list filter condition
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
             # Checklist shows ALL cases except deleted and To-Do List ones
             base_conditions.append("(list = 'Checklist' OR list = 'Lead Schedule' OR list = 'Recovered' OR list = 'Write-Off Recommended' OR list = 'Written Off' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
         elif selected_list == "Lead Schedule":
-            # Lead Schedule excludes finalized cases
-            base_conditions.append("(list = 'Lead Schedule' AND is_finalized = 0)")
+            # Lead Schedule shows cases that are in Lead Schedule list OR cases with Confirmed status
+            base_conditions.append("(list = 'Lead Schedule' AND is_finalized = 0) OR status = 'Confirmed'")
         elif selected_list == "Recovered":
             base_conditions.append("list = 'Recovered'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("(list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off')")
+            base_conditions.append("list = 'Write-Off Recommended' AND is_finalized = 0")
         elif selected_list == "Written Off":
             base_conditions.append("list = 'Written Off'")
         elif selected_list == "To-Do List":
@@ -301,6 +365,15 @@ class ViewCasesDialog(QDialog):
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     # Handle NULL values properly
                     display_value = str(data) if data is not None else ""
+
+                    # Special display logic for Lead Schedule filter
+                    if selected_list == "Lead Schedule" and col == 4 and row_data[5] == "Confirmed":
+                        # Override list display for Confirmed cases in Lead Schedule view
+                        display_value = "Lead Schedule"
+                    elif selected_list == "Lead Schedule" and col == 5 and row_data[5] == "Confirmed":
+                        # Override status display for Confirmed cases in Lead Schedule view
+                        display_value = "Awaiting LC"
+
                     self.case_table.setItem(row, col, QTableWidgetItem(display_value))
         conn.close()
 
@@ -319,6 +392,71 @@ class ViewCasesDialog(QDialog):
         if case_data:
             dialog = CaseDetailsDialog(case_data, self)
             dialog.exec_()
+
+    def filter_responsibilities(self, text):
+        """Filter responsibilities based on search text"""
+        text = text.lower()
+        if not text:
+            self.refresh_responsibilities()
+            return
+
+        self.resp_tree.clear()
+
+        # Find responsibilities that match the search text
+        matching_resps = []
+        parent_ids_to_include = set()
+
+        for resp in self.responsibilities:
+            if text in resp["name"].lower():
+                matching_resps.append(resp)
+                # Recursively collect all parent IDs up to the root
+                current_parent_id = resp["parent_id"]
+                while current_parent_id:
+                    parent_ids_to_include.add(current_parent_id)
+                    # Find the parent and get its parent_id
+                    parent_resp = next((r for r in self.responsibilities if r["id"] == current_parent_id), None)
+                    if parent_resp:
+                        current_parent_id = parent_resp["parent_id"]
+                    else:
+                        current_parent_id = None
+
+        # Include all parent responsibilities
+        for resp in self.responsibilities:
+            if resp["id"] in parent_ids_to_include:
+                matching_resps.append(resp)
+
+        # Remove duplicates while preserving order
+        seen_ids = set()
+        filtered_resps = []
+        for resp in matching_resps:
+            if resp["id"] not in seen_ids:
+                filtered_resps.append(resp)
+                seen_ids.add(resp["id"])
+
+        # Create parent map for filtered results
+        parent_map = defaultdict(list)
+        for resp in filtered_resps:
+            parent_map[resp["parent_id"]].append(resp)
+
+        def add_filtered_items(parent_item, parent_id):
+            for resp in sorted(parent_map[parent_id], key=lambda x: x["name"]):
+                item = QTreeWidgetItem([resp["name"]])
+                item.setData(0, Qt.UserRole, resp["id"])
+
+                # Bold responsibilities that have cases
+                if resp["id"] in self.responsibilities_with_cases:
+                    font = item.font(0)
+                    font.setBold(True)
+                    item.setFont(0, font)
+
+                if parent_id is None:
+                    self.resp_tree.addTopLevelItem(item)
+                else:
+                    parent_item.addChild(item)
+                add_filtered_items(item, resp["id"])
+
+        add_filtered_items(None, None)
+        self.resp_tree.expandAll()
 
 
 class CaseDetailsDialog(QDialog):

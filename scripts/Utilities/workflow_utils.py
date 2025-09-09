@@ -33,23 +33,35 @@ def handle_case_status_change(case_id, transaction_no, new_status, new_list=None
         if is_finalized:
             return False
 
+        # Handle automatic list changes based on status
+        automatic_list = new_list
+
         # Determine automatic list changes based on status
         automatic_list = new_list
 
         if new_status == "Recovered":
             automatic_list = "Recovered"
-        elif new_status == "Write Off Recommended":
-            automatic_list = "Write-Off Recommended"
+        elif new_status == "Write Off":
+            # For Write Off, copy to Write-Off Recommended list but stay in Lead Schedule
+            return copy_case_to_write_off_recommended(case_id, transaction_no, user_id)
         elif new_status == "Written Off":
-            automatic_list = "Written Off"
+            if current_list == "Write-Off Recommended":
+                automatic_list = "Written Off"
+            else:
+                automatic_list = "Written Off"
 
         # Handle finalization logic
         should_finalize = False
         finalization_reason = None
 
-        if new_status in ["Recovered", "Written Off"]:
+        if new_status in ["Valid", "Recovered", "Written Off"]:
             should_finalize = True
-            finalization_reason = f"Case {new_status.lower()}"
+            if new_status == "Valid":
+                finalization_reason = "Case determined as not fruitless and wasteful"
+            elif new_status == "Recovered":
+                finalization_reason = "Case recovered by Loss Control Committee"
+            elif new_status == "Written Off":
+                finalization_reason = "Case written off by approval"
 
         # Apply changes
         update_fields = ["status = ?"]
@@ -71,7 +83,11 @@ def handle_case_status_change(case_id, transaction_no, new_status, new_list=None
             query = f"UPDATE cases SET {', '.join(update_fields)} WHERE id = ?"
             cursor.execute(query, update_values)
 
-            # Log the workflow change
+        conn.commit()
+        conn.close()
+
+        # Log the workflow change after connection is fully closed
+        if update_fields:
             workflow_data = {
                 "timestamp": datetime.now().isoformat(),
                 "case_id": case_id,
@@ -86,11 +102,103 @@ def handle_case_status_change(case_id, transaction_no, new_status, new_list=None
 
             save_audit_log("workflow_transition", workflow_data, get_financial_year())
 
-        conn.commit()
         return True
 
     except Exception as e:
         print(f"Error in handle_case_status_change: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+def copy_case_to_write_off_recommended(case_id, transaction_no, user_id=None):
+    """
+    Copy a case from Lead Schedule to Write-Off Recommended when status becomes Write Off Recommended
+
+    Args:
+        case_id: Database ID of the case
+        transaction_no: Transaction number of the case
+        user_id: User making the change (optional)
+
+    Returns:
+        bool: Success status
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+        # Get the current case data
+        cursor.execute("""
+            SELECT * FROM cases WHERE id = ?
+        """, (case_id,))
+
+        case_data = cursor.fetchone()
+        if not case_data:
+            return False
+
+        # Get column names
+        cursor.execute("PRAGMA table_info(cases)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        # Create dictionary from case data
+        case_dict = dict(zip(columns, case_data))
+
+        # Modify the case data for the Write-Off Recommended copy
+        case_dict['list'] = 'Write-Off Recommended'
+        case_dict['status'] = 'Write Off Recommended'
+        case_dict['original_list'] = 'Lead Schedule'
+        case_dict['is_finalized'] = 0
+        case_dict['finalized_date'] = None
+        case_dict['finalization_reason'] = None
+
+        # Remove the id field for INSERT
+        case_dict.pop('id', None)
+
+        # Check if case already exists in Lead Schedule
+        cursor.execute("""
+            SELECT id FROM cases WHERE transaction_no = ? AND list = 'Lead Schedule'
+        """, (transaction_no,))
+
+        existing_case = cursor.fetchone()
+        if existing_case:
+            print(f"Case {transaction_no} already exists in Lead Schedule")
+            return True  # Consider this a success since the case is already there
+
+        # Insert the copied case
+        columns_str = ', '.join(case_dict.keys())
+        placeholders = ', '.join(['?' for _ in case_dict])
+        values = list(case_dict.values())
+
+        cursor.execute(f"""
+            INSERT INTO cases ({columns_str}) VALUES ({placeholders})
+        """, values)
+
+        new_case_id = cursor.lastrowid
+
+        # Update the original case status to Write Off (stays in Lead Schedule)
+        cursor.execute("""
+            UPDATE cases SET status = ?, loss_control_recommendation = ? WHERE id = ?
+        """, ('Write Off', 'Write Off', case_id))
+
+        conn.commit()
+
+        # Log the workflow change
+        workflow_data = {
+            "timestamp": datetime.now().isoformat(),
+            "case_id": case_id,
+            "transaction_no": transaction_no,
+            "action": "copied_to_write_off_recommended",
+            "new_case_id": new_case_id,
+            "user_id": user_id
+        }
+
+        save_audit_log("case_copied", workflow_data, get_financial_year())
+
+        return True
+
+    except Exception as e:
+        print(f"Error copying case to Write-Off Recommended: {e}")
         conn.rollback()
         return False
     finally:
@@ -187,5 +295,88 @@ def check_workflow_completion():
     except Exception as e:
         print(f"Error checking workflow completion: {e}")
         return {"needs_determination": [], "needs_write_off_submission": []}
+    finally:
+        conn.close()
+
+
+def copy_case_to_lead_schedule(case_id, transaction_no, user_id=None):
+    """
+    Copy a case from Checklist to Lead Schedule when status becomes Confirmed
+
+    Args:
+        case_id: Database ID of the case
+        transaction_no: Transaction number of the case
+        user_id: User making the change (optional)
+
+    Returns:
+        bool: Success status
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+        # Get the current case data
+        cursor.execute("""
+            SELECT * FROM cases WHERE id = ?
+        """, (case_id,))
+
+        case_data = cursor.fetchone()
+        if not case_data:
+            return False
+
+        # Get column names
+        cursor.execute("PRAGMA table_info(cases)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        # Create dictionary from case data
+        case_dict = dict(zip(columns, case_data))
+
+        # Modify the case data for the Lead Schedule copy
+        case_dict['list'] = 'Lead Schedule'
+        case_dict['status'] = 'Awaiting LC determination'
+        case_dict['original_list'] = 'Checklist'
+        case_dict['is_finalized'] = 0
+        case_dict['finalized_date'] = None
+        case_dict['finalization_reason'] = None
+
+        # Remove the id field for INSERT
+        case_dict.pop('id', None)
+
+        # Insert the copied case
+        columns_str = ', '.join(case_dict.keys())
+        placeholders = ', '.join(['?' for _ in case_dict])
+        values = list(case_dict.values())
+
+        cursor.execute(f"""
+            INSERT INTO cases ({columns_str}) VALUES ({placeholders})
+        """, values)
+
+        new_case_id = cursor.lastrowid
+
+        # Update the original case status to Confirmed
+        cursor.execute("""
+            UPDATE cases SET status = ? WHERE id = ?
+        """, ('Confirmed', case_id))
+
+        conn.commit()
+
+        # Log the workflow change
+        workflow_data = {
+            "timestamp": datetime.now().isoformat(),
+            "case_id": case_id,
+            "transaction_no": transaction_no,
+            "action": "copied_to_lead_schedule",
+            "new_case_id": new_case_id,
+            "user_id": user_id
+        }
+
+        save_audit_log("case_copied", workflow_data, get_financial_year())
+
+        return True
+
+    except Exception as e:
+        print(f"Error copying case to Lead Schedule: {e}")
+        conn.rollback()
+        return False
     finally:
         conn.close()

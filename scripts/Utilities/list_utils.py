@@ -123,6 +123,7 @@ def load_lists():
                 responsibility_id INTEGER,
                 amount REAL,
                 source_document TEXT,
+                supporting_evidence_path TEXT,
                 minutes TEXT,
                 evidence_path TEXT,
                 attachments TEXT,
@@ -151,13 +152,27 @@ def load_lists():
             cursor.execute("ALTER TABLE lists ADD COLUMN is_default INTEGER DEFAULT 0")
         if 'is_system' not in columns:
             cursor.execute("ALTER TABLE lists ADD COLUMN is_system INTEGER DEFAULT 0")
+
+        # Alter cases table to add missing columns if not exist
+        cursor.execute("PRAGMA table_info(cases)")
+        case_columns = [col[1] for col in cursor.fetchall()]
+        if 'loss_control_recommendation' not in case_columns:
+            cursor.execute("ALTER TABLE cases ADD COLUMN loss_control_recommendation TEXT")
+        if 'recovery_evidence_path' not in case_columns:
+            cursor.execute("ALTER TABLE cases ADD COLUMN recovery_evidence_path TEXT")
+        if 'supporting_evidence_path' not in case_columns:
+            cursor.execute("ALTER TABLE cases ADD COLUMN supporting_evidence_path TEXT")
+
         conn.commit()
 
         # Auto-create system lists if they don't exist
         system_lists = [
             ("Checklist", True, True),  # name, is_default, is_system
             ("Lead Schedule", False, True),
-            ("Deleted Cases", False, True)
+            ("Deleted Cases", False, True),
+            ("Recovered", False, True),
+            ("Write-Off Recommended", False, True),
+            ("Written Off", False, True)
         ]
         for list_name, is_def, is_sys in system_lists:
             cursor.execute("SELECT id FROM lists WHERE name = ?", (list_name,))

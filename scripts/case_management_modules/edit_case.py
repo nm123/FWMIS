@@ -1162,11 +1162,18 @@ class EditCasesDialog(QDialog):
         for resp in self.responsibilities:
             if text in resp["name"].lower():
                 matching_resps.append(resp)
-                # Also include the parent if it exists
-                if resp["parent_id"]:
-                    parent_ids_to_include.add(resp["parent_id"])
+                # Recursively collect all parent IDs up to the root
+                current_parent_id = resp["parent_id"]
+                while current_parent_id:
+                    parent_ids_to_include.add(current_parent_id)
+                    # Find the parent and get its parent_id
+                    parent_resp = next((r for r in self.responsibilities if r["id"] == current_parent_id), None)
+                    if parent_resp:
+                        current_parent_id = parent_resp["parent_id"]
+                    else:
+                        current_parent_id = None
 
-        # Include parent responsibilities
+        # Include all parent responsibilities
         for resp in self.responsibilities:
             if resp["id"] in parent_ids_to_include:
                 matching_resps.append(resp)

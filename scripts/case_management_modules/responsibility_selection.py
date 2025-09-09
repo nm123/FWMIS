@@ -59,25 +59,10 @@ class ResponsibilitySelectionDialog(QDialog):
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            # First, get all posting level responsibilities
-            cursor.execute("SELECT id, name, parent_id, is_posting_level FROM responsibilities WHERE is_posting_level = 1 ORDER BY name")
-            posting_resps = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3]} for row in cursor.fetchall()]
+            # Load all responsibilities to build the complete tree
+            cursor.execute("SELECT id, name, parent_id, is_posting_level FROM responsibilities ORDER BY name")
+            self.responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3]} for row in cursor.fetchall()]
 
-            # Get all unique parent IDs of posting responsibilities
-            parent_ids = set()
-            for resp in posting_resps:
-                if resp["parent_id"]:
-                    parent_ids.add(resp["parent_id"])
-
-            # Load parent responsibilities (even if not posting level)
-            parent_resps = []
-            if parent_ids:
-                placeholders = ",".join("?" for _ in parent_ids)
-                cursor.execute(f"SELECT id, name, parent_id, is_posting_level FROM responsibilities WHERE id IN ({placeholders})", list(parent_ids))
-                parent_resps = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3]} for row in cursor.fetchall()]
-
-            # Combine all responsibilities
-            self.responsibilities = parent_resps + posting_resps
             conn.close()
         except sqlite3.Error as e:
             QMessageBox.critical(self, "Database Error", f"Failed to load responsibilities: {e}")
@@ -128,11 +113,18 @@ class ResponsibilitySelectionDialog(QDialog):
         for resp in self.responsibilities:
             if text in resp["name"].lower():
                 matching_resps.append(resp)
-                # Also include the parent if it exists
-                if resp["parent_id"]:
-                    parent_ids_to_include.add(resp["parent_id"])
+                # Recursively collect all parent IDs up to the root
+                current_parent_id = resp["parent_id"]
+                while current_parent_id:
+                    parent_ids_to_include.add(current_parent_id)
+                    # Find the parent and get its parent_id
+                    parent_resp = next((r for r in self.responsibilities if r["id"] == current_parent_id), None)
+                    if parent_resp:
+                        current_parent_id = parent_resp["parent_id"]
+                    else:
+                        current_parent_id = None
 
-        # Include parent responsibilities
+        # Include all parent responsibilities
         for resp in self.responsibilities:
             if resp["id"] in parent_ids_to_include:
                 matching_resps.append(resp)
