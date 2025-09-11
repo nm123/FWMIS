@@ -19,6 +19,9 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QGroupBox,
     QCalendarWidget,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
 )
 from PyQt5.QtCore import QDate, Qt
 from scripts.Utilities.config import DB_PATH
@@ -35,9 +38,13 @@ from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.list_utils import load_lists
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.workflow_utils import handle_case_status_change
+from scripts.ui.components.custom_widgets import NoWheelComboBox
+from .case_business_logic import CaseBusinessLogic
 from collections import defaultdict
 from .responsibility_selection import ResponsibilitySelectionDialog
 from .determination_dialog import DeterminationDialog
+
+
 
 
 class EditCaseDialog(QDialog):
@@ -56,6 +63,7 @@ class EditCaseDialog(QDialog):
             self.selected_responsibility_id = case_data[10]  # responsibility_id
             self.case_data = case_data
             self.supporting_evidence_compulsory = False
+            self.business_logic = CaseBusinessLogic(self.fy)
 
             # Validate that required data was loaded
             if not self.responsibilities:
@@ -147,14 +155,14 @@ class EditCaseDialog(QDialog):
 
         # Category and List
         category_list_layout = QHBoxLayout()
-        self.category_combo = QComboBox()
+        self.category_combo = NoWheelComboBox()
         self.category_combo.addItems([c["name"] for c in self.categories])
         category_list_layout.addWidget(QLabel("Category:"))
         category_list_layout.addWidget(self.category_combo)
 
         category_list_layout.addSpacing(20)
 
-        self.list_combo = QComboBox()
+        self.list_combo = NoWheelComboBox()
         system_lists = [l["name"] for l in self.lists if l.get("is_system", False)]
         self.list_combo.addItems(system_lists)
         # Select default list
@@ -184,13 +192,78 @@ class EditCaseDialog(QDialog):
 
         self.main_layout.addWidget(basic_group)
 
+        # ===== LIST STATUS INFORMATION GROUP =====
+        list_status_group = QGroupBox("List Status Information")
+        list_status_layout = QVBoxLayout(list_status_group)
+
+        # Create a simple grid layout for reliable text display
+        grid_widget = QWidget()
+        grid_layout = QGridLayout(grid_widget)
+        grid_layout.setContentsMargins(10, 10, 10, 10)
+        grid_layout.setSpacing(5)
+
+        # Headers
+        headers = ["Checklist", "Lead Schedule", "Recovered", "Write-Off Recommended", "Written Off", "Deleted Cases"]
+
+        # Get comprehensive status information for all lists this case appears in
+        transaction_no = self.case_data[1]  # transaction_no is always at index 1
+
+        # Query database to get status for this case across all lists
+        list_statuses_dict = self.get_case_statuses_across_lists(transaction_no)
+
+        # Determine status for each list based on database query results
+        list_statuses = []
+        for header in headers:
+            if header in list_statuses_dict:
+                # Show the actual status for lists where this case exists
+                list_statuses.append(list_statuses_dict[header])
+            else:
+                # Show N/A for lists the case is not in
+                list_statuses.append("N/A")
+
+        # Add headers (row 0)
+        for i, header in enumerate(headers):
+            header_label = QLabel(header)
+            header_label.setStyleSheet("""
+                QLabel {
+                    font-weight: bold;
+                    padding: 8px;
+                    background-color: #f5f5f5;
+                    border: 1px solid #ddd;
+                    text-align: center;
+                }
+            """)
+            header_label.setAlignment(Qt.AlignCenter)
+            header_label.setMinimumHeight(40)
+            grid_layout.addWidget(header_label, 0, i)
+
+        # Add status values (row 1)
+        for i, status in enumerate(list_statuses):
+            status_label = QLabel(status)
+            status_label.setStyleSheet("""
+                QLabel {
+                    padding: 8px;
+                    border: 1px solid #ddd;
+                    text-align: center;
+                    background-color: white;
+                }
+            """)
+            status_label.setAlignment(Qt.AlignCenter)
+            status_label.setMinimumHeight(40)
+            status_label.setWordWrap(True)  # Allow text to wrap if needed
+            grid_layout.addWidget(status_label, 1, i)
+
+        list_status_layout.addWidget(grid_widget)
+        self.main_layout.addWidget(list_status_group)
+
         # ===== ASSESSMENT GROUP =====
         assessment_group = QGroupBox("Assessment")
         assessment_layout = QFormLayout(assessment_group)
 
         # Status
-        self.status_combo = QComboBox()
-        # Items will be populated by update_conditional_fields
+        self.status_combo = NoWheelComboBox()
+        # Populate with default items initially
+        self.status_combo.addItems(["Alleged", "Under Assessment", "Valid", "Confirmed"])
         self.status_combo.setCurrentText("Alleged")
         assessment_layout.addRow("Status:", self.status_combo)
 
@@ -277,7 +350,7 @@ class EditCaseDialog(QDialog):
 
         # Loss Control Recommendation
         self.loss_control_label = QLabel("Loss Control Recommendation:")
-        self.loss_control_combo = QComboBox()
+        self.loss_control_combo = NoWheelComboBox()
         self.loss_control_combo.addItems(["", "Recovered", "Write Off"])
         self.loss_control_combo.currentTextChanged.connect(self.on_loss_control_changed)
         loss_control_layout.addRow(self.loss_control_label, self.loss_control_combo)
@@ -301,19 +374,19 @@ class EditCaseDialog(QDialog):
         # Amount moved to Basic Case Information group
 
         # Criminal Charges Laid
-        self.criminal_charges_combo = QComboBox()
+        self.criminal_charges_combo = NoWheelComboBox()
         self.criminal_charges_combo.addItems(["N/A", "Yes", "No"])
         self.criminal_charges_combo.setCurrentText("N/A")
         additional_layout.addRow("Criminal Charges Laid:", self.criminal_charges_combo)
 
         # Disciplinary process
-        self.disciplinary_combo = QComboBox()
+        self.disciplinary_combo = NoWheelComboBox()
         self.disciplinary_combo.addItems(["N/A", "Yes", "No"])
         self.disciplinary_combo.setCurrentText("N/A")
         additional_layout.addRow("Disciplinary process in progress or completed:", self.disciplinary_combo)
 
         # Loss recovery
-        self.loss_recovery_combo = QComboBox()
+        self.loss_recovery_combo = NoWheelComboBox()
         self.loss_recovery_combo.addItems(["N/A", "Yes", "No"])
         self.loss_recovery_combo.setCurrentText("N/A")
         additional_layout.addRow("Loss recovery commenced or completed:", self.loss_recovery_combo)
@@ -346,8 +419,8 @@ class EditCaseDialog(QDialog):
         scroll_area.setWidgetResizable(True)
         layout.addWidget(scroll_area)
 
-        # Connect signals and update conditional fields after dialog is fully initialized
-        self.update_conditional_fields()
+        # Connect signals - conditional fields will be updated in load_case_data
+        # self.update_conditional_fields()  # Commented out to avoid double call
 
         # Buttons
         button_layout = QHBoxLayout()
@@ -407,13 +480,16 @@ class EditCaseDialog(QDialog):
         if self.case_data[16]:  # list
             self.list_combo.setCurrentText(self.case_data[16])
 
-        # Set status
+        # Update conditional fields first to populate status combo with correct items
+        self.update_conditional_fields()
+
+        # Set status directly after conditional fields are updated
         if self.case_data[17]:  # status
             self.status_combo.setCurrentText(self.case_data[17])
 
         # Check if case is finalized and disable editing if so
-        if len(self.case_data) > 26 and self.case_data[26]:  # is_finalized
-            self.setWindowTitle(f"View Case Details - {self.list_name} (FINALIZED)")
+        if len(self.case_data) > 37 and self.case_data[37]:  # is_finalized
+            self.setWindowTitle(f"Edit Case Details - {self.list_name} (FINALIZED)")
             # Disable all input fields for finalized cases
             self.description_edit.setReadOnly(True)
             self.amount_edit.setReadOnly(True)
@@ -449,8 +525,8 @@ class EditCaseDialog(QDialog):
             self.save_button.setText("Case Finalized - No Changes Allowed")
 
             # Add finalization notice
-            if len(self.case_data) > 27 and self.case_data[27]:  # finalization_reason
-                finalization_label = QLabel(f"📋 Finalized: {self.case_data[27]}")
+            if len(self.case_data) > 36 and self.case_data[36]:  # finalization_reason
+                finalization_label = QLabel(f"📋 Finalized: {self.case_data[36]}")
                 finalization_label.setStyleSheet("color: #d32f2f; font-weight: bold; font-size: 14px; margin-top: 10px;")
                 self.main_layout.insertWidget(0, finalization_label)
 
@@ -529,8 +605,6 @@ class EditCaseDialog(QDialog):
         if len(self.case_data) > 32 and self.case_data[32]:  # recovery_evidence_path
             self.recovery_evidence_edit.setText(self.case_data[32])
 
-        # Update conditional fields to set proper status options based on list
-        self.update_conditional_fields()
 
     def select_responsibility(self):
         dialog = ResponsibilitySelectionDialog(self)
@@ -543,7 +617,7 @@ class EditCaseDialog(QDialog):
     def on_status_changed(self, status):
         """Handle status selection change with validation and special logic"""
         current_list = self.list_combo.currentText()
-        current_status = self.case_data[17] if len(self.case_data) > 17 else ""
+        current_status = self.status_combo.currentText()
 
         # Validate status progression based on current list
         if not self.is_valid_status_transition(current_list, current_status, status):
@@ -628,19 +702,19 @@ class EditCaseDialog(QDialog):
                     self.status_combo.clear()
                     self.status_combo.addItems(new_items)
 
-                # Restore previous selection if still valid
-                if current_status and current_status in [self.status_combo.itemText(i) for i in range(self.status_combo.count())]:
-                    self.status_combo.setCurrentText(current_status)
-                else:
-                    # Set appropriate default based on list
-                    if selected_list == "Lead Schedule":
-                        self.status_combo.setCurrentText("Awaiting LC determination")
-                    elif selected_list == "Write-Off Recommended":
-                        self.status_combo.setCurrentText("Write Off Recommended")
-                    elif selected_list == "Written Off":
-                        self.status_combo.setCurrentText("Written Off")
+                    # Restore the previous selection if it's still valid
+                    if current_status and current_status in new_items:
+                        self.status_combo.setCurrentText(current_status)
                     else:
-                        self.status_combo.setCurrentText("Alleged")
+                        # Set appropriate default based on list
+                        if selected_list == "Lead Schedule":
+                            self.status_combo.setCurrentText("Awaiting LC determination")
+                        elif selected_list == "Write-Off Recommended":
+                            self.status_combo.setCurrentText("Write Off Recommended")
+                        elif selected_list == "Written Off":
+                            self.status_combo.setCurrentText("Written Off")
+                        else:
+                            self.status_combo.setCurrentText("Alleged")
 
             # Update category-based compulsory fields
             bas_comp = False
@@ -847,7 +921,7 @@ class EditCaseDialog(QDialog):
     def save_case(self):
         try:
             # Check if case is finalized
-            if len(self.case_data) > 26 and self.case_data[26]:  # is_finalized
+            if len(self.case_data) > 37 and self.case_data[37]:  # is_finalized
                 QMessageBox.warning(self, "Case Finalized",
                                   "This case has been finalized and cannot be modified.\n\n"
                                   "Finalized cases are read-only for audit purposes.")
@@ -955,6 +1029,44 @@ class EditCaseDialog(QDialog):
             disciplinary_text = self.disciplinary_combo.currentText()
             loss_recovery_text = self.loss_recovery_combo.currentText()
 
+            # Get existing fy_id and period_id from case data, or set defaults if missing
+            existing_fy_id = self.case_data[21] if len(self.case_data) > 21 else None  # fy_id
+            existing_period_id = self.case_data[22] if len(self.case_data) > 22 else None  # period_id
+
+            # If fy_id is missing, get current open financial year
+            if existing_fy_id is None:
+                from scripts.Utilities.financial_utils import get_current_open_financial_year
+                current_fy = get_current_open_financial_year()
+                if current_fy:
+                    existing_fy_id = current_fy[0]
+                    print(f"DEBUG: Fixed NULL fy_id for case {self.transaction_no}, set to {existing_fy_id}")
+                else:
+                    QMessageBox.critical(self, "Financial Year Error",
+                                       "Cannot save case: No open financial year found.\n\n"
+                                       "Please ensure a financial year is open in Financial Year Management.")
+                    return
+
+            # If period_id is missing, try to determine it from the date incurred
+            if existing_period_id is None and existing_fy_id:
+                try:
+                    conn_temp = sqlite3.connect(DB_PATH)
+                    cursor_temp = conn_temp.cursor()
+
+                    # Find the period that contains the date incurred
+                    cursor_temp.execute("""
+                        SELECT p.id FROM periods p
+                        INNER JOIN financial_years fy ON p.fy_id = fy.id
+                        WHERE p.fy_id = ? AND p.start_date <= ? AND p.end_date >= ?
+                        ORDER BY p.period_number DESC LIMIT 1
+                    """, (existing_fy_id, date_incurred_str, date_incurred_str))
+                    period_result = cursor_temp.fetchone()
+                    existing_period_id = period_result[0] if period_result else None
+
+                    conn_temp.close()
+                except Exception as e:
+                    print(f"Warning: Could not determine period ID: {e}")
+                    existing_period_id = None
+
             case = {
                 "transaction_no": self.transaction_no,
                 "date_incurred": str(date_incurred_str),
@@ -983,8 +1095,8 @@ class EditCaseDialog(QDialog):
                 "disciplinary_process": disciplinary_text,
                 "loss_recovery": loss_recovery_text,
                 "prevention_steps": self.prevention_steps_edit.toPlainText().strip(),
-                "fy_id": None,
-                "period_id": None,
+                "fy_id": existing_fy_id,
+                "period_id": existing_period_id,
                 "original_list": list_text,
                 "loss_control_recommendation": self.loss_control_combo.currentText(),
                 "recovery_evidence_path": self.recovery_evidence_edit.text().strip()
@@ -992,13 +1104,14 @@ class EditCaseDialog(QDialog):
 
             # Handle file operations - create case-specific folder structure
             year_folder = create_year_folder(self.fy)
-            case_folder = os.path.join(year_folder, f"Case {self.transaction_no}")
+            supporting_evidence_folder = os.path.join(year_folder, "Supporting Evidence")
+            case_folder = os.path.join(supporting_evidence_folder, f"Case {self.transaction_no}")
             os.makedirs(case_folder, exist_ok=True)
 
             # Map fields to proper file names
             file_mappings = {
-                "source_document": f"{self.transaction_no} Supporting Evidence.pdf",
-                "supporting_evidence_path": f"{self.transaction_no} Supporting Evidence Document.pdf",
+                "source_document": f"{self.transaction_no} Source Document.pdf",
+                "supporting_evidence_path": f"{self.transaction_no} Supporting Evidence.pdf",
                 "minutes": f"{self.transaction_no} Loss Control Minutes.pdf",
                 "evidence_path": f"{self.transaction_no} Assessment Evidence.pdf",
                 "recovery_evidence_path": f"{self.transaction_no} Recovery Evidence.pdf"
@@ -1015,6 +1128,11 @@ class EditCaseDialog(QDialog):
                         continue
 
                     if os.path.exists(source_path):
+                        # Check if it's a PDF file (only copy PDF files to avoid corruption)
+                        if not source_path.lower().endswith('.pdf'):
+                            print(f"Warning: Skipping non-PDF file for {field}: {source_path}")
+                            continue
+
                         try:
                             # Ensure destination directory exists
                             os.makedirs(os.path.dirname(dest_path), exist_ok=True)
@@ -1201,38 +1319,52 @@ class EditCaseDialog(QDialog):
             if hasattr(self, 'determination_button'):
                 self.determination_button.setVisible(False)
 
+    def get_case_statuses_across_lists(self, transaction_no):
+        """
+        Get status information for a case across all lists it appears in
+
+        Args:
+            transaction_no: The transaction number of the case
+
+        Returns:
+            dict: Mapping of list names to their statuses
+        """
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            # Query for all cases with this transaction number
+            cursor.execute("""
+                SELECT list, status
+                FROM cases
+                WHERE transaction_no = ?
+                AND is_finalized = 0
+                ORDER BY
+                    CASE
+                        WHEN list = 'Checklist' THEN 1
+                        WHEN list = 'Lead Schedule' THEN 2
+                        WHEN list = 'Recovered' THEN 3
+                        WHEN list = 'Write-Off Recommended' THEN 4
+                        WHEN list = 'Written Off' THEN 5
+                        WHEN list = 'Deleted Cases' THEN 6
+                        ELSE 7
+                    END
+            """, (transaction_no,))
+
+            results = cursor.fetchall()
+            conn.close()
+
+            # Build dictionary of list -> status
+            list_statuses = {}
+            for list_name, status in results:
+                list_statuses[list_name] = status
+
+            return list_statuses
+
+        except Exception as e:
+            print(f"Error getting case statuses across lists: {e}")
+            return {}
+
     def is_valid_status_transition(self, current_list, current_status, new_status):
         """Validate if a status transition is allowed based on workflow rules"""
-        if current_status == new_status:
-            return True  # Allow staying in same status
-
-        # Define valid transitions for each list
-        valid_transitions = {
-            "Checklist": {
-                "Alleged": ["Under Assessment", "Valid", "Confirmed"],
-                "Under Assessment": ["Valid", "Confirmed"],
-                "Valid": [],  # End state
-                "Confirmed": []  # Should be copied to Lead Schedule
-            },
-            "Lead Schedule": {
-                "Awaiting LC determination": ["Recovered", "Write Off"],
-                "Recovered": [],  # End state
-                "Write Off": []  # Should be copied to Write-Off Recommended
-            },
-            "Write-Off Recommended": {
-                "Write Off Recommended": ["Written Off"],
-                "Written Off": []  # End state
-            },
-            "Recovered": {
-                "Recovered": []  # End state
-            },
-            "Written Off": {
-                "Written Off": []  # End state
-            }
-        }
-
-        # Get valid transitions for current list and status
-        list_transitions = valid_transitions.get(current_list, {})
-        allowed_transitions = list_transitions.get(current_status, [])
-
-        return new_status in allowed_transitions
+        return self.business_logic.is_valid_status_transition(current_list, current_status, new_status)

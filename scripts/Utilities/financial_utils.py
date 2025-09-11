@@ -22,6 +22,9 @@ def generate_transaction_no(fy):
         fy_end_year = int(fy.split('-')[1])
 
         # Get or create case counter for this financial year
+        print(f"DEBUG: generate_transaction_no for FY {fy}")
+        print(f"DEBUG: fy_end_year = {fy_end_year}, start_year = {fy_end_year - 1}")
+
         cursor.execute("""
             SELECT counter FROM fy_case_counters WHERE fy_id = (
                 SELECT id FROM financial_years WHERE start_year = ?

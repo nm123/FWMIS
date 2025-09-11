@@ -45,6 +45,7 @@ from scripts.email_template_management import ManageEmailTemplatesDialog
 from scripts.responsibility_management_ui import ResponsibilityManagementDialog
 from scripts.report_management import ReportManagementDialog
 from scripts.financial_year_management import FinancialYearManagementDialog
+from scripts.wipe_cases_dialog import WipeCasesDialog
 from scripts.Utilities.config import initialize_shared_documents_table, DB_PATH
 from scripts.Utilities.financial_utils import get_active_period_display
 from scripts.Utilities.qt_diagnostics import apply_qt_fixes, print_qt_diagnostics, check_qt_compatibility
@@ -185,8 +186,20 @@ class FWManagementApp(QMainWindow):
     def setup_menu(self):
         menubar = self.menuBar()
 
-        # File menu with Exit option only
+        # File menu
         file_menu = menubar.addMenu("File")
+
+        # Management actions
+        responsibilities_action = QAction("Manage Responsibilities", self)
+        responsibilities_action.triggered.connect(self.manage_responsibilities)
+        file_menu.addAction(responsibilities_action)
+
+        email_templates_action = QAction("Manage Email Templates", self)
+        email_templates_action.triggered.connect(self.manage_email_templates)
+        file_menu.addAction(email_templates_action)
+
+        file_menu.addSeparator()  # Separator before Exit
+
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
@@ -262,18 +275,19 @@ class FWManagementApp(QMainWindow):
         lists_action.triggered.connect(self.manage_lists)
         manage_submenu.addAction(lists_action)
 
-        responsibilities_action = QAction("Responsibilities", self)
-        responsibilities_action.triggered.connect(self.manage_responsibilities)
-        manage_submenu.addAction(responsibilities_action)
-
-        email_templates_action = QAction("Email Templates", self)
-        email_templates_action.triggered.connect(self.manage_email_templates)
-        manage_submenu.addAction(email_templates_action)
-
         # Add Financial Years to Administrator > Manage
         fy_action = QAction("Financial Years", self)
         fy_action.triggered.connect(self.manage_financial_years)
         manage_submenu.addAction(fy_action)
+
+        # Add separator before dangerous operations
+        admin_menu.addSeparator()
+
+        # Wipe Cases action (dangerous operation)
+        wipe_cases_action = QAction("🗑️ Wipe Cases (DANGER)", self)
+        wipe_cases_action.triggered.connect(self.wipe_cases)
+        wipe_cases_action.setToolTip("Permanently delete all cases for a selected financial year")
+        admin_menu.addAction(wipe_cases_action)
 
         # Reports menu
         reports_menu = menubar.addMenu("Reports")
@@ -490,6 +504,13 @@ class FWManagementApp(QMainWindow):
             dialog.exec_()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to open Financial Year Management dialog: {str(e)}")
+
+    def wipe_cases(self):
+        try:
+            dialog = WipeCasesDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open Wipe Cases dialog: {str(e)}")
 
     def view_checklist(self):
         """Placeholder for Checklist view - to be implemented"""

@@ -19,7 +19,8 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QGroupBox,
 )
-from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtCore import QDate, Qt, QEvent
+from PyQt5.QtGui import QWheelEvent
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import (
     get_financial_year,
@@ -32,6 +33,18 @@ from scripts.Utilities.validation_utils import is_valid_email
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 import win32com.client
 from scripts.case_management_modules.responsibility_selection import ResponsibilitySelectionDialog
+
+
+class NoWheelComboBox(QComboBox):
+    """Custom QComboBox that ignores mouse wheel events unless focused"""
+
+    def wheelEvent(self, event: QWheelEvent):
+        """Override wheel event to only accept when widget has focus"""
+        if self.hasFocus():
+            super().wheelEvent(event)
+        else:
+            # Ignore wheel event when not focused
+            event.ignore()
 
 
 class AddNewCaseDialog(QDialog):
@@ -95,7 +108,7 @@ class AddNewCaseDialog(QDialog):
         form_layout.addRow("Description:", self.description_edit)
 
         # Category
-        self.category_combo = QComboBox()
+        self.category_combo = NoWheelComboBox()
         if self.categories:
             self.category_combo.addItems([c["name"] for c in self.categories])
         form_layout.addRow("Category:", self.category_combo)
@@ -116,7 +129,7 @@ class AddNewCaseDialog(QDialog):
         form_layout.addRow("Date Reported:", self.date_reported_edit)
 
         # List
-        self.list_combo = QComboBox()
+        self.list_combo = NoWheelComboBox()
         system_lists = [l["name"] for l in self.lists if l.get("is_system", False) and l["name"] != "Deleted Cases"]
         self.list_combo.addItems(system_lists)
         # Always set to Checklist and disable selection
@@ -126,7 +139,7 @@ class AddNewCaseDialog(QDialog):
         form_layout.addRow("List:", self.list_combo)
 
         # Status
-        self.status_combo = QComboBox()
+        self.status_combo = NoWheelComboBox()
         self.status_combo.addItems(["Alleged", "Under Assessment", "Valid", "Confirmed"])
         self.status_combo.setCurrentText("Alleged")
         form_layout.addRow("Status:", self.status_combo)
@@ -539,18 +552,59 @@ class AddNewCaseDialog(QDialog):
             category_text = self.category_combo.currentText()
             status_text = self.status_combo.currentText()
             list_text = self.list_combo.currentText()
-            # If status is Confirmed, set list to Lead Schedule
+
+            # Handle case suffixes based on status
+            transaction_no_with_suffix = self.transaction_no
             if status_text == "Confirmed":
+                # Add -LS suffix for Lead Schedule cases
+                transaction_no_with_suffix = f"{self.transaction_no}-LS"
                 list_text = "Lead Schedule"
+            elif status_text == "Write-Off Recommended":
+                # Add -WOR suffix for Write-Off Recommended cases
+                transaction_no_with_suffix = f"{self.transaction_no}-WOR"
+                list_text = "Write-Off Recommended"
 
             # Determine status
             final_status = status_text
             if bas_comp and has_journal_details and not has_payment_details:
                 final_status = "Outstanding BAS Details"
 
+            # Get current financial year ID
+            from scripts.Utilities.financial_utils import get_current_open_financial_year
+            current_fy = get_current_open_financial_year()
+            fy_id = current_fy[0] if current_fy else None
+
+            if fy_id is None:
+                QMessageBox.critical(self, "Financial Year Error",
+                                   "Cannot save case: No open financial year found.\n\n"
+                                   "Please ensure a financial year is open in Financial Year Management.")
+                return
+
+            # Get period ID for the transaction date
+            period_id = None
+            if fy_id:
+                try:
+                    conn_temp = sqlite3.connect(DB_PATH)
+                    cursor_temp = conn_temp.cursor()
+
+                    # Find the period that contains the date incurred
+                    cursor_temp.execute("""
+                        SELECT p.id FROM periods p
+                        INNER JOIN financial_years fy ON p.fy_id = fy.id
+                        WHERE p.fy_id = ? AND p.start_date <= ? AND p.end_date >= ?
+                        ORDER BY p.period_number DESC LIMIT 1
+                    """, (fy_id, date_incurred_str, date_incurred_str))
+                    period_result = cursor_temp.fetchone()
+                    period_id = period_result[0] if period_result else None
+
+                    conn_temp.close()
+                except Exception as e:
+                    print(f"Warning: Could not determine period ID: {e}")
+                    period_id = None
+
             # Create case dictionary
             case = {
-                "transaction_no": self.transaction_no,
+                "transaction_no": transaction_no_with_suffix,
                 "date_incurred": str(date_incurred_str),
                 "date_identified": str(date_identified_str),
                 "date_reported": str(date_reported_str),
@@ -574,23 +628,56 @@ class AddNewCaseDialog(QDialog):
                 "assessment_date": str(assessment_date_str),
                 "assessment_result": "",
                 "prevention_steps": self.prevention_steps_edit.toPlainText().strip(),
-                "fy_id": None,
-                "period_id": None,
+                "fy_id": fy_id,
+                "period_id": period_id,
                 "original_list": list_text
             }
 
             # Handle file operations
             year_folder = create_year_folder(self.fy)
-            for field in ["source_document", "minutes", "evidence_path", "supporting_evidence"]:
-                if case[field]:
-                    # Determine file extension
-                    _, ext = os.path.splitext(case[field])
-                    if not ext:
-                        ext = ".pdf"  # Default to PDF if no extension
-                    dest_path = os.path.join(year_folder, f"{self.transaction_no}_{field}{ext}")
-                    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-                    os.replace(case[field], dest_path)
-                    case[field] = dest_path
+            supporting_evidence_folder = os.path.join(year_folder, "Supporting Evidence")
+            case_folder = os.path.join(supporting_evidence_folder, f"Case {self.transaction_no}")
+            os.makedirs(case_folder, exist_ok=True)
+
+            # Map fields to proper file names
+            file_mappings = {
+                "source_document": f"{self.transaction_no} Source Document.pdf",
+                "minutes": f"{self.transaction_no} Loss Control Minutes.pdf",
+                "evidence_path": f"{self.transaction_no} Assessment Evidence.pdf",
+                "supporting_evidence": f"{self.transaction_no} Supporting Evidence.pdf"
+            }
+
+            for field, filename in file_mappings.items():
+                if case[field] and case[field].strip():
+                    source_path = case[field].strip()
+                    dest_path = os.path.join(case_folder, filename)
+
+                    # Check if source and destination are the same
+                    if os.path.abspath(source_path) == os.path.abspath(dest_path):
+                        case[field] = dest_path
+                        continue
+
+                    if os.path.exists(source_path):
+                        # Check if it's a PDF file (only copy PDF files to avoid corruption)
+                        if not source_path.lower().endswith('.pdf'):
+                            print(f"Warning: Skipping non-PDF file for {field}: {source_path}")
+                            continue
+
+                        try:
+                            # Ensure destination directory exists
+                            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                            # Try to copy the file first (safer than move)
+                            import shutil
+                            shutil.copy2(source_path, dest_path)
+                            case[field] = dest_path
+                        except Exception as e:
+                            QMessageBox.warning(self, "File Save Error",
+                                              f"Failed to save {field} file: {str(e)}")
+                            return
+                    else:
+                        QMessageBox.warning(self, "File Not Found",
+                                          f"The selected {field} file could not be found: {source_path}")
+                        return
 
             # Save to database
             conn = sqlite3.connect(DB_PATH)
@@ -787,7 +874,7 @@ class AssessmentDialog(QDialog):
         self.assessment_date_edit.setCalendarPopup(True)
         layout.addRow("Assessment Date:", self.assessment_date_edit)
 
-        self.result_combo = QComboBox()
+        self.result_combo = NoWheelComboBox()
         self.result_combo.addItems(["Valid", "Confirmed"])
         layout.addRow("Result:", self.result_combo)
 

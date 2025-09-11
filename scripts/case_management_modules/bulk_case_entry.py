@@ -25,11 +25,24 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
     QHeaderView,
 )
-from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtCore import QDate, Qt, QEvent
+from PyQt5.QtGui import QWheelEvent
 from scripts.Utilities.config import DB_PATH, initialize_shared_documents_table
 from scripts.Utilities.financial_utils import get_financial_year, generate_transaction_no
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.utils import format_currency_amount
+
+
+class NoWheelComboBox(QComboBox):
+    """Custom QComboBox that ignores mouse wheel events unless focused"""
+
+    def wheelEvent(self, event: QWheelEvent):
+        """Override wheel event to only accept when widget has focus"""
+        if self.hasFocus():
+            super().wheelEvent(event)
+        else:
+            # Ignore wheel event when not focused
+            event.ignore()
 
 
 class BulkCaseEntryWizard(QWizard):
@@ -224,7 +237,7 @@ class CaseEntryPage(QWizardPage):
         self.form_layout.addRow("Amount:", self.amount_edit)
 
         # Status
-        self.status_combo = QComboBox()
+        self.status_combo = NoWheelComboBox()
         self.status_combo.addItems(["Alleged", "Under Assessment", "Valid", "Confirmed"])
         self.status_combo.setCurrentText("Alleged")
         self.form_layout.addRow("Status:", self.status_combo)
@@ -409,6 +422,14 @@ def save_bulk_cases(wizard):
             wizard.shared_document_id
         ))
 
+        # Get proper fy_id
+        from scripts.Utilities.financial_utils import get_current_open_financial_year
+        current_fy = get_current_open_financial_year()
+        fy_id = current_fy[0] if current_fy else None
+
+        if fy_id is None:
+            raise Exception("Cannot save bulk cases: No open financial year found. Please ensure a financial year is open in Financial Year Management.")
+
         # Save cases
         for case in cases_data:
             cursor.execute("""
@@ -423,7 +444,7 @@ def save_bulk_cases(wizard):
                 case["status"],
                 "Checklist",  # Default to Checklist
                 wizard.shared_document_id,
-                fy,
+                fy_id,
                 datetime.now().strftime("%Y-%m-%d")
             ))
 

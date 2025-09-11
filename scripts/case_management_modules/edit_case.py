@@ -25,7 +25,8 @@ from PyQt5.QtWidgets import (
     QHeaderView,
     QSplitter,
 )
-from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtCore import QDate, Qt, QEvent
+from PyQt5.QtGui import QWheelEvent
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year, create_year_folder
 from scripts.Utilities.audit_utils import save_audit_log
@@ -37,6 +38,18 @@ from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 from collections import defaultdict
 from .responsibility_selection import ResponsibilitySelectionDialog
+
+
+class NoWheelComboBox(QComboBox):
+    """Custom QComboBox that ignores mouse wheel events unless focused"""
+
+    def wheelEvent(self, event: QWheelEvent):
+        """Override wheel event to only accept when widget has focus"""
+        if self.hasFocus():
+            super().wheelEvent(event)
+        else:
+            # Ignore wheel event when not focused
+            event.ignore()
 
 
 class EditCaseDialog(QDialog):
@@ -193,12 +206,12 @@ class EditCaseDialog(QDialog):
         form_layout.addRow("Description:", self.description_edit)
 
         # Category (moved down)
-        self.category_combo = QComboBox()
+        self.category_combo = NoWheelComboBox()
         self.category_combo.addItems([c["name"] for c in self.categories])
         form_layout.addRow("Category:", self.category_combo)
 
         # List (only show Checklist and Lead Schedule)
-        self.list_combo = QComboBox()
+        self.list_combo = NoWheelComboBox()
         system_lists = [l["name"] for l in self.lists if l.get("is_system", False) and l["name"] != "Deleted Cases"]
         self.list_combo.addItems(system_lists)
         # Select default list
@@ -209,25 +222,25 @@ class EditCaseDialog(QDialog):
         form_layout.addRow("List:", self.list_combo)
 
         # Status (moved here, right below List)
-        self.status_combo = QComboBox()
+        self.status_combo = NoWheelComboBox()
         # Status options will be set dynamically based on list selection
         self.status_combo.setCurrentText("Alleged")  # Default to Alleged
         form_layout.addRow("Status:", self.status_combo)
 
         # Criminal Charges Laid
-        self.criminal_charges_combo = QComboBox()
+        self.criminal_charges_combo = NoWheelComboBox()
         self.criminal_charges_combo.addItems(["N/A", "Yes", "No"])
         self.criminal_charges_combo.setCurrentText("N/A")
         form_layout.addRow("Criminal Charges Laid:", self.criminal_charges_combo)
 
         # Disciplinary process
-        self.disciplinary_combo = QComboBox()
+        self.disciplinary_combo = NoWheelComboBox()
         self.disciplinary_combo.addItems(["N/A", "Yes", "No"])
         self.disciplinary_combo.setCurrentText("N/A")
         form_layout.addRow("Disciplinary process in progress or completed:", self.disciplinary_combo)
 
         # Loss recovery
-        self.loss_recovery_combo = QComboBox()
+        self.loss_recovery_combo = NoWheelComboBox()
         self.loss_recovery_combo.addItems(["N/A", "Yes", "No"])
         self.loss_recovery_combo.setCurrentText("N/A")
         form_layout.addRow("Loss recovery commenced or completed:", self.loss_recovery_combo)
@@ -638,8 +651,64 @@ class EditCaseDialog(QDialog):
                 print(f"DEBUG: Combo box values - category: '{category_text}', status: '{status_text}', list: '{list_text}'")
                 print(f"DEBUG: Combo box values - criminal: '{criminal_charges_text}', disciplinary: '{disciplinary_text}', loss: '{loss_recovery_text}'")
 
+                # Get existing fy_id and period_id from case data, or set defaults if missing
+                existing_fy_id = self.case_data[21] if len(self.case_data) > 21 else None  # fy_id
+                existing_period_id = self.case_data[22] if len(self.case_data) > 22 else None  # period_id
+
+                # If fy_id is missing, get current open financial year
+                if existing_fy_id is None:
+                    from scripts.Utilities.financial_utils import get_current_open_financial_year
+                    current_fy = get_current_open_financial_year()
+                    if current_fy:
+                        existing_fy_id = current_fy[0]
+                        print(f"DEBUG: Fixed NULL fy_id for case {self.transaction_no}, set to {existing_fy_id}")
+                    else:
+                        QMessageBox.critical(self, "Financial Year Error",
+                                            "Cannot save case: No open financial year found.\n\n"
+                                            "Please ensure a financial year is open in Financial Year Management.")
+                        return
+
+                # If period_id is missing, try to determine it from the date incurred
+                if existing_period_id is None and existing_fy_id:
+                    try:
+                        conn_temp = sqlite3.connect(DB_PATH)
+                        cursor_temp = conn_temp.cursor()
+
+                        # Find the period that contains the date incurred
+                        cursor_temp.execute("""
+                            SELECT p.id FROM periods p
+                            INNER JOIN financial_years fy ON p.fy_id = fy.id
+                            WHERE p.fy_id = ? AND p.start_date <= ? AND p.end_date >= ?
+                            ORDER BY p.period_number DESC LIMIT 1
+                        """, (existing_fy_id, date_incurred_str, date_incurred_str))
+                        period_result = cursor_temp.fetchone()
+                        existing_period_id = period_result[0] if period_result else None
+
+                        conn_temp.close()
+                    except Exception as e:
+                        print(f"Warning: Could not determine period ID: {e}")
+                        existing_period_id = None
+
+                # Handle transaction_no suffix changes based on status
+                base_transaction_no = self.transaction_no
+                if base_transaction_no.endswith('-LS'):
+                    base_transaction_no = base_transaction_no[:-3]  # Remove -LS
+                elif base_transaction_no.endswith('-WOR'):
+                    base_transaction_no = base_transaction_no[:-4]  # Remove -WOR
+
+                transaction_no_with_suffix = base_transaction_no
+                if status_text == "Confirmed":
+                    transaction_no_with_suffix = f"{base_transaction_no}-LS"
+                    list_text = "Lead Schedule"
+                elif status_text == "Write-Off Recommended":
+                    transaction_no_with_suffix = f"{base_transaction_no}-WOR"
+                    list_text = "Write-Off Recommended"
+                else:
+                    # For other statuses, ensure no suffix
+                    list_text = "Checklist"
+
                 case = {
-                    "transaction_no": self.transaction_no,
+                    "transaction_no": transaction_no_with_suffix,
                     "date_incurred": str(date_incurred_str),
                     "date_identified": str(date_identified_str),
                     "date_reported": str(date_reported_str),
@@ -663,8 +732,8 @@ class EditCaseDialog(QDialog):
                     "disciplinary_process": disciplinary_text,
                     "loss_recovery": loss_recovery_text,
                     "prevention_steps": self.prevention_steps_edit.toPlainText().strip(),
-                    "fy_id": None,  # Add missing fields
-                    "period_id": None,
+                    "fy_id": existing_fy_id,
+                    "period_id": existing_period_id,
                     "original_list": list_text
                 }
                 print(f"DEBUG: Case dictionary created successfully with {len(case)} fields")
@@ -675,15 +744,50 @@ class EditCaseDialog(QDialog):
             # Handle file operations with error checking
             try:
                 year_folder = create_year_folder(self.fy)
-                print(f"DEBUG: Year folder: {year_folder}")
-                for field in ["source_document", "minutes", "evidence_path"]:
-                    if case[field]:
-                        print(f"DEBUG: Processing file field: {field} = '{case[field]}'")
-                        dest_path = os.path.join(year_folder, f"{self.transaction_no}_{field}.pdf")
-                        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-                        os.replace(case[field], dest_path)
-                        case[field] = dest_path
-                        print(f"DEBUG: Successfully moved {field} to {dest_path}")
+                supporting_evidence_folder = os.path.join(year_folder, "Supporting Evidence")
+                case_folder = os.path.join(supporting_evidence_folder, f"Case {self.transaction_no}")
+                os.makedirs(case_folder, exist_ok=True)
+                print(f"DEBUG: Case folder: {case_folder}")
+
+                # Map fields to proper file names
+                file_mappings = {
+                    "source_document": f"{self.transaction_no} Source Document.pdf",
+                    "minutes": f"{self.transaction_no} Loss Control Minutes.pdf",
+                    "evidence_path": f"{self.transaction_no} Assessment Evidence.pdf"
+                }
+
+                for field, filename in file_mappings.items():
+                    if case[field] and case[field].strip():
+                        source_path = case[field].strip()
+                        dest_path = os.path.join(case_folder, filename)
+
+                        # Check if source and destination are the same
+                        if os.path.abspath(source_path) == os.path.abspath(dest_path):
+                            case[field] = dest_path
+                            continue
+
+                        if os.path.exists(source_path):
+                            # Check if it's a PDF file (only copy PDF files to avoid corruption)
+                            if not source_path.lower().endswith('.pdf'):
+                                print(f"Warning: Skipping non-PDF file for {field}: {source_path}")
+                                continue
+
+                            try:
+                                # Ensure destination directory exists
+                                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                                # Try to copy the file first (safer than move)
+                                import shutil
+                                shutil.copy2(source_path, dest_path)
+                                case[field] = dest_path
+                                print(f"DEBUG: Successfully copied {field} to {dest_path}")
+                            except Exception as e:
+                                QMessageBox.warning(self, "File Save Error",
+                                                  f"Failed to save {field} file: {str(e)}")
+                                return
+                        else:
+                            QMessageBox.warning(self, "File Not Found",
+                                              f"The selected {field} file could not be found: {source_path}")
+                            return
                     else:
                         print(f"DEBUG: No file for {field}")
             except Exception as e:
@@ -698,14 +802,14 @@ class EditCaseDialog(QDialog):
             try:
                 cursor.execute("""
                     UPDATE cases SET
-                        date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
+                        transaction_no = ?, date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
                         bas_payment_no = ?, bas_payment_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
                         source_document = ?, minutes = ?, evidence_path = ?, attachments = ?, status = ?, list = ?, assessment_assessed_by = ?,
                         assessment_date = ?, assessment_result = ?, fy_id = ?, period_id = ?, criminal_charges = ?, disciplinary_process = ?,
                         loss_recovery = ?, prevention_steps = ?, original_list = ?
                     WHERE transaction_no = ?
                 """, (
-                    case["date_incurred"], case["date_identified"], case["date_reported"],
+                    case["transaction_no"], case["date_incurred"], case["date_identified"], case["date_reported"],
                     case["description"], case["bas_payment_no"], case["bas_payment_date"], case["persal_no"],
                     case["category"], case["responsibility_id"], case["amount"], case["source_document"],
                     case["minutes"], case["evidence_path"], case["attachments"], case["status"], case["list"],
@@ -713,7 +817,7 @@ class EditCaseDialog(QDialog):
                     case["fy_id"], case["period_id"],  # Use values from case dict
                     case["criminal_charges"], case["disciplinary_process"], case["loss_recovery"],
                     case["prevention_steps"], case["original_list"],  # Use value from case dict
-                    case["transaction_no"]
+                    self.transaction_no  # Use original transaction_no for WHERE clause
                 ))
                 print("DEBUG: UPDATE statement executed successfully")
             except Exception as e:
@@ -833,7 +937,7 @@ class EditCasesDialog(QDialog):
         # List filter - compact layout
         list_label = QLabel("List:")
         list_label.setFixedWidth(30)
-        self.list_filter_combo = QComboBox()
+        self.list_filter_combo = NoWheelComboBox()
         self.list_filter_combo.addItems([
             "All Cases", "Checklist", "Lead Schedule", "To-Do List",
             "Recovered", "Write-Off Recommended", "Written Off", "Deleted Cases"
@@ -1038,15 +1142,26 @@ class EditCasesDialog(QDialog):
         base_conditions = ["list != 'Deleted Cases'"]
         params = []
 
-        # Add list filter condition
+        # Add list filter condition based on transaction_no suffixes
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            base_conditions.append("list = 'Checklist'")
+            # Checklist shows all cases (main case numbers without -LS or -WOR suffixes)
+            base_conditions.append("transaction_no NOT LIKE '%-LS' AND transaction_no NOT LIKE '%-WOR'")
         elif selected_list == "Lead Schedule":
-            base_conditions.append("list = 'Lead Schedule'")
+            # Lead Schedule shows only cases with -LS suffix
+            base_conditions.append("transaction_no LIKE '%-LS'")
         elif selected_list == "To-Do List":
             # Show both actual To-Do List cases and GJ cases with outstanding actions
             base_conditions.append("(list = 'To-Do List' OR bas_journal_no IS NOT NULL)")
+        elif selected_list == "Write-Off Recommended":
+            # Write-Off Recommended shows only cases with -WOR suffix
+            base_conditions.append("transaction_no LIKE '%-WOR'")
+        elif selected_list == "Recovered":
+            base_conditions.append("list = 'Recovered'")
+        elif selected_list == "Written Off":
+            base_conditions.append("list = 'Written Off'")
+        elif selected_list == "Deleted Cases":
+            base_conditions.append("list = 'Deleted Cases'")
         # For "All Cases", we don't add any additional list condition
 
         # Add responsibility filter if provided
@@ -1109,21 +1224,22 @@ class EditCasesDialog(QDialog):
         base_conditions = ["transaction_no LIKE ?"]
         params = [f"%{case_no}%"]
 
-        # Add list filter condition
+        # Add list filter condition based on transaction_no suffixes
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            # Checklist shows ALL cases except deleted ones (never exclude finalized)
-            base_conditions.append("(list = 'Checklist' OR list = 'Lead Schedule' OR list = 'Recovered' OR list = 'Write-Off Recommended' OR list = 'Written Off')")
+            # Checklist shows all cases (main case numbers without -LS or -WOR suffixes)
+            base_conditions.append("transaction_no NOT LIKE '%-LS' AND transaction_no NOT LIKE '%-WOR'")
         elif selected_list == "Lead Schedule":
-            # Lead Schedule excludes finalized cases
-            base_conditions.append("list = 'Lead Schedule' AND is_finalized = 0")
+            # Lead Schedule shows only cases with -LS suffix
+            base_conditions.append("transaction_no LIKE '%-LS'")
         elif selected_list == "To-Do List":
             # Show both actual To-Do List cases and GJ cases with outstanding actions
             base_conditions.append("(list = 'To-Do List' OR bas_journal_no IS NOT NULL)")
         elif selected_list == "Recovered":
             base_conditions.append("list = 'Recovered'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("list = 'Write-Off Recommended'")
+            # Write-Off Recommended shows only cases with -WOR suffix
+            base_conditions.append("transaction_no LIKE '%-WOR'")
         elif selected_list == "Written Off":
             base_conditions.append("list = 'Written Off'")
         elif selected_list == "Deleted Cases":
@@ -1263,19 +1379,7 @@ class EditCasesDialog(QDialog):
         conn.close()
         dialog = EditCaseDialog(case, self)
         if dialog.exec_():
-            # Check if status changed to Confirmed and move to Lead Schedule
-            new_status = dialog.status_combo.currentText()
-            if new_status == "Confirmed" and case[16] != "Confirmed":
-                try:
-                    conn = sqlite3.connect(DB_PATH)
-                    cursor = conn.cursor()
-                    # Store original list and move to Lead Schedule
-                    cursor.execute("UPDATE cases SET list = 'Lead Schedule', original_list = ? WHERE transaction_no = ?", (case[15], transaction_no))
-                    conn.commit()
-                    conn.close()
-                    QMessageBox.information(self, "Case Moved", "Case status changed to Confirmed and moved to Lead Schedule for follow-up action.")
-                except sqlite3.Error as e:
-                    QMessageBox.warning(self, "Warning", f"Case status updated but failed to move to Lead Schedule: {str(e)}")
+            # Refresh the table after editing - the EditCaseDialog handles all status changes and suffix updates
             self.refresh_cases()
 
     def delete_case(self, row):

@@ -74,3 +74,11 @@
 2025-09-03 17:17:35,661 - ERROR - Unexpected error saving audit log: Object of type date is not JSON serializable
 2025-09-09 10:57:55,966 - ERROR - Failed to save audit log: database is locked
 2025-09-09 11:01:49,005 - ERROR - Failed to save audit log: database is locked
+2025-09-11 12:37:22,121 - ERROR - Failed to load email templates: no such column: body
+2025-09-11 12:37:22,167 - ERROR - Failed to load email templates: no such column: body
+2025-09-11 12:37:54,896 - ERROR - Failed to load email templates: no such column: body
+2025-09-11 12:37:54,909 - ERROR - Failed to load email templates: no such column: body
+2025-09-11 12:39:30,309 - ERROR - Failed to load email templates: no such column: body
+2025-09-11 12:39:30,323 - ERROR - Failed to load email templates: no such column: body
+2025-09-11 12:46:57,331 - ERROR - Failed to load email templates: no such column: body
+2025-09-11 12:46:57,344 - ERROR - Failed to load email templates: no such column: body

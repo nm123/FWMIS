@@ -1,6 +1,5 @@
 import os
 import sqlite3
-import re
 from datetime import datetime
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
@@ -8,7 +7,7 @@ from PyQt5.QtWidgets import (
     QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
     QProgressBar, QGroupBox, QTextEdit, QComboBox, QCheckBox, QGridLayout
 )
-from PyQt5.QtCore import QDate, Qt, QThread, pyqtSignal
+from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtGui import QFont
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year, generate_transaction_no, create_year_folder
@@ -19,438 +18,14 @@ from scripts.category_management import ManageCategoriesDialog
 from scripts.responsibility_management_ui import ResponsibilityManagementDialog
 from scripts.responsibility_management_actions import edit_responsibility_by_name
 from .duplicate_comparison_dialog import DuplicateComparisonDialog
+from scripts.ui.dialogs.financial_year_selection_dialog import show_fy_selection_dialog
+from scripts.ui.dialogs.transaction_details_dialog import TransactionDetailsDialog
 from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button, create_professional_groupbox, setup_professional_table, create_status_label
+from scripts.models.bas_parser import BASParser
+from scripts.core.import_worker import ImportWorker
 
 
-class BASParser:
-    """Parser for BAS report files"""
-
-    def __init__(self):
-        self.transactions = []
-        self.extracted_date_from = None
-        self.extracted_date_to = None
-
-    def extract_dates_from_header(self, lines):
-        """Extract date range from BAS report header"""
-        self.extracted_date_from = None
-        self.extracted_date_to = None
-
-        # Look for various date range patterns in header lines (first 30 lines)
-        patterns = [
-            re.compile(r'(\d{2}/\d{2}/\d{4})\s+TO\s+(\d{2}/\d{2}/\d{4})'),  # 01/05/2025 TO 31/05/2025
-            re.compile(r'(\d{2}/\d{2}/\d{4})\s*-\s*(\d{2}/\d{2}/\d{4})'),   # 01/05/2025 - 31/05/2025
-            re.compile(r'FROM\s+(\d{2}/\d{2}/\d{4})\s+TO\s+(\d{2}/\d{2}/\d{4})'),  # FROM 01/05/2025 TO 31/05/2025
-            re.compile(r'(\d{2}/\d{2}/\d{4})\s+(\d{2}/\d{2}/\d{4})'),     # 01/05/2025 31/05/2025
-        ]
-
-        for i, line in enumerate(lines[:100]):  # Check first 100 lines
-            for pattern in patterns:
-                match = pattern.search(line)
-                if match:
-                    try:
-                        date_from_str = match.group(1)
-                        date_to_str = match.group(2)
-
-                        # Parse dates (DD/MM/YYYY format)
-                        self.extracted_date_from = datetime.strptime(date_from_str, '%d/%m/%Y').date()
-                        self.extracted_date_to = datetime.strptime(date_to_str, '%d/%m/%Y').date()
-                        return  # Exit early once we find dates
-                    except ValueError:
-                        continue
-
-        # If no standard patterns found, try to find any date ranges in the file
-        date_only_pattern = re.compile(r'(\d{2}/\d{2}/\d{4})')
-        found_dates = []
-
-        for line in lines[:100]:
-            matches = date_only_pattern.findall(line)
-            if matches:
-                found_dates.extend(matches)
-
-        if len(found_dates) >= 2:
-            try:
-                # Take first two dates as from/to range
-                self.extracted_date_from = datetime.strptime(found_dates[0], '%d/%m/%Y').date()
-                self.extracted_date_to = datetime.strptime(found_dates[1], '%d/%m/%Y').date()
-                return
-            except ValueError:
-                pass
-
-    def parse_file(self, file_path, date_from, date_to):
-        """Parse BAS report file and extract transactions"""
-        self.transactions = []
-
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-
-            # Extract dates from header first
-            self.extract_dates_from_header(lines)
-
-            current_responsibility = None
-            current_item = None
-
-            for line in lines:
-                line = line.rstrip()
-
-                # Check for responsibility line (R 007)
-                resp_match = re.match(r'\s*R\s+(\d+)\s+(.+)', line)
-                if resp_match:
-                    current_responsibility = resp_match.group(2).strip()
-                    continue
-
-                # Check for item line (I 005) - exclude amounts at the end
-                item_match = re.match(r'\s*I\s+(\d+)\s+(.+?)\s+\d+\.\d{2}\s+\d+\.\d{2}\s*$', line)
-                if item_match:
-                    current_item = item_match.group(2).strip()
-                    continue
-
-                # Check for transaction lines (AP, GJ, CL)
-                # Updated regex to handle system-generated numbers before actual user names
-                trans_match = re.match(r'\s*(AP|GJ|CL)\s+(\d+)\s+(.+?)\s+(.+?)\s+(\d{2}/\d{2}/\d{4})\s+([\d,]+\.\d{2})\s+([\d,]+\.\d{2})', line)
-                if trans_match and current_responsibility and current_item:
-                    trans_type = trans_match.group(1)
-                    trans_number = trans_match.group(2)
-                    description = trans_match.group(3).strip()
-                    # Extract the last word as the actual user name (handles system-generated numbers)
-                    user_field = trans_match.group(4).strip()
-                    user_name = user_field.split()[-1] if user_field else ""  # Get the last word (actual user name)
-                    user_date = trans_match.group(5)
-                    debit = trans_match.group(6).replace(',', '')
-                    credit = trans_match.group(7).replace(',', '')
-
-                    # Parse date (DD/MM/YYYY format)
-                    try:
-                        date_obj = datetime.strptime(user_date, '%d/%m/%Y').date()
-                    except ValueError:
-                        continue  # Skip invalid dates
-
-                    # Validate date range (skip if dates are None - used for header extraction)
-                    if date_from is not None and date_to is not None:
-                        if not (date_from <= date_obj <= date_to):
-                            continue
-
-                    # Determine amount (debit or credit)
-                    try:
-                        amount = float(debit) if float(debit) > 0 else -float(credit)
-                    except ValueError:
-                        continue
-
-                    # Create transaction record
-                    transaction = {
-                        'responsibility': current_responsibility,
-                        'item': current_item,
-                        'type': trans_type,
-                        'number': trans_number,
-                        'description': description,
-                        'date': date_obj,
-                        'user_id': user_name,  # Use the actual user name instead of system-generated number
-                        'amount': amount,
-                        'is_credit': amount < 0
-                    }
-
-                    self.transactions.append(transaction)
-
-        except Exception as e:
-            raise Exception(f"Error parsing BAS file: {str(e)}")
-
-        return self.transactions
-
-    def get_extracted_dates(self):
-        """Get the extracted date range from the report header"""
-        return {
-            'date_from': self.extracted_date_from,
-            'date_to': self.extracted_date_to
-        }
-
-    def get_transaction_summary(self):
-        """Get summary of parsed transactions"""
-        if not self.transactions:
-            return "No transactions found"
-
-        total_count = len(self.transactions)
-        debit_count = len([t for t in self.transactions if not t['is_credit']])
-        credit_count = len([t for t in self.transactions if t['is_credit']])
-        total_amount = sum(abs(t['amount']) for t in self.transactions)
-
-        return f"Found {total_count} transactions ({debit_count} debits, {credit_count} credits) totaling {format_currency_amount(total_amount)}"
-
-
-class ImportWorker(QThread):
-    """Worker thread for importing cases"""
-    progress = pyqtSignal(int, str)  # progress percentage, current operation
-    finished = pyqtSignal(list)  # list of imported case numbers
-    error = pyqtSignal(str)
-
-    def __init__(self, transactions, category, date_from, date_to, bas_file_path):
-        super().__init__()
-        self.transactions = transactions
-        self.category = category
-        self.date_from = date_from
-        self.date_to = date_to
-        self.bas_file_path = bas_file_path
-
-    def run(self):
-        try:
-            imported_cases = []
-            total = len(self.transactions)
-            print(f"DEBUG: ImportWorker starting with {total} transactions")
-
-            for i, transaction in enumerate(self.transactions):
-                try:
-                    self.progress.emit(int((i / total) * 100), f"Importing case {i+1} of {total}...")
-                    print(f"DEBUG: Processing transaction {i+1}: {transaction.get('case_number', 'No case number')}")
-
-                    # Import the transaction as a case
-                    case_number = self._import_transaction(transaction)
-                    if case_number:
-                        imported_cases.append(case_number)
-                        print(f"DEBUG: Successfully imported case: {case_number}")
-                    else:
-                        print(f"DEBUG: Failed to import transaction {i+1}")
-                        # Continue with other transactions even if one fails
-                        continue
-
-                except Exception as e:
-                    print(f"DEBUG: Error importing transaction {i+1}: {e}")
-                    import traceback
-                    print(f"DEBUG: Transaction error traceback: {traceback.format_exc()}")
-                    # Continue with other transactions
-                    continue
-
-            print(f"DEBUG: Import completed. Successfully imported {len(imported_cases)} cases")
-            self.progress.emit(100, "Import completed successfully")
-            self.finished.emit(imported_cases)
-
-        except Exception as e:
-            print(f"DEBUG: ImportWorker critical error: {e}")
-            import traceback
-            print(f"DEBUG: ImportWorker traceback: {traceback.format_exc()}")
-            self.error.emit(f"Critical import error: {str(e)}")
-
-    def _import_transaction(self, transaction):
-        """Import a single transaction as a case"""
-        try:
-            print(f"DEBUG: _import_transaction called for: {transaction.get('case_number', 'No case number')}")
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-
-            # Get financial year
-            fy = get_financial_year()
-            fy_parts = fy.split('-')
-            start_year = int(fy_parts[0])
-            end_year = int(fy_parts[1])
-
-            # Get financial year ID
-            cursor.execute("SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?", (start_year, end_year))
-            fy_result = cursor.fetchone()
-            fy_id = fy_result[0] if fy_result else None
-
-            print(f"DEBUG: Import - Current FY: {fy}, start_year: {start_year}, end_year: {end_year}, fy_id: {fy_id}")
-
-            # CRITICAL: Check if fy_id is valid before proceeding
-            if fy_id is None:
-                print(f"DEBUG: *** CRITICAL ERROR *** FY {fy} not found in database!")
-                print(f"DEBUG: This will cause cases to be imported with invalid fy_id")
-                conn.close()
-                raise Exception(f"Financial Year {fy} not found in database. Please ensure the financial year is properly set up in Financial Year Management before importing cases.")
-            else:
-                print(f"DEBUG: Found FY {fy} with ID: {fy_id}")
-
-            # Get period ID for the transaction date
-            period_id = None
-            if fy_id:
-                # Convert transaction date to string format for database query
-                date_str = transaction['date'].strftime('%Y-%m-%d')
-                cursor.execute("""
-                    SELECT id FROM periods
-                    WHERE fy_id = ? AND start_date <= ? AND end_date >= ?
-                    ORDER BY period_number DESC LIMIT 1
-                """, (fy_id, date_str, date_str))
-                period_result = cursor.fetchone()
-                period_id = period_result[0] if period_result else None
-
-                # If no period found for this date, try to find the most recent open period for this FY
-                if period_id is None:
-                    cursor.execute("""
-                        SELECT id FROM periods
-                        WHERE fy_id = ? AND status = 'open'
-                        ORDER BY period_number DESC LIMIT 1
-                    """, (fy_id,))
-                    open_period_result = cursor.fetchone()
-                    if open_period_result:
-                        period_id = open_period_result[0]
-                        print(f"DEBUG: Using open period {period_id} for FY {fy_id} as fallback")
-                    else:
-                        print(f"DEBUG: No open periods found for FY {fy_id}, using period_id = None")
-
-            # Get responsibility ID
-            resp_id = None
-            cursor.execute("SELECT id FROM responsibilities WHERE name = ?", (transaction['responsibility'],))
-            resp_result = cursor.fetchone()
-            resp_id = resp_result[0] if resp_result else None
-
-            # Debug: Log responsibility lookup result
-            if resp_id:
-                print(f"DEBUG: Found responsibility '{transaction['responsibility']}' with ID: {resp_id}")
-            else:
-                print(f"DEBUG: Responsibility '{transaction['responsibility']}' NOT found in database")
-
-            # Use the case number that was already assigned during preview
-            case_number = transaction.get('case_number')
-            if not case_number:
-                print("DEBUG: No case number assigned, using fallback")
-                # Fallback if no case number was assigned
-                cursor.execute("SELECT MAX(CAST(SUBSTR(transaction_no, 5) AS INTEGER)) FROM cases WHERE transaction_no LIKE ?", (f"{fy}%",))
-                max_num = cursor.fetchone()[0]
-                next_num = (max_num or 0) + 1
-                fy_end_year = int(fy.split('-')[1])
-                case_number = f"{fy_end_year}{next_num:05d}"
-
-            print(f"DEBUG: Using case number: {case_number}, fy_id: {fy_id}, period_id: {period_id}, resp_id: {resp_id}")
-
-            # Prepare case data
-            # date_str already defined above for period lookup
-
-            # Debug: Log the actual values being inserted
-            print(f"DEBUG: Inserting case with values:")
-            print(f"  - transaction_no: {case_number}")
-            print(f"  - responsibility_id: {resp_id}")
-            print(f"  - category: {self.category['name']}")
-            print(f"  - amount: {abs(transaction['amount'])}")
-            print(f"  - fy_id: {fy_id}")
-            print(f"  - period_id: {period_id}")
-
-            # Determine list and status based on transaction type
-            if transaction['type'] == 'GJ':
-                list_name = 'Checklist'  # Will also be added to To-Do List
-                status = 'Alleged'
-            else:  # CL or AP
-                list_name = 'Checklist'
-                status = 'Alleged'
-
-            # Clean transaction number
-            clean_number = transaction['number'].lstrip('0') or '0'
-
-            # Prepare description
-            if transaction['type'] == 'GJ':
-                description = f"{transaction['item']}. Journal authorised by BAS user {transaction['user_id']}"
-                bas_journal_no = clean_number
-                bas_journal_date = date_str
-                bas_payment_no = None
-                bas_payment_date = None
-            elif transaction['type'] == 'AP':
-                description = f"{transaction['description']} Payment authorised by BAS user {transaction['user_id']}"
-                bas_journal_no = None
-                bas_journal_date = None
-                bas_payment_no = clean_number
-                bas_payment_date = date_str
-            else:  # CL
-                description = f"{transaction['description']} Payment authorised by BAS user {transaction['user_id']}"
-                bas_journal_no = None
-                bas_journal_date = None
-                bas_payment_no = clean_number
-                bas_payment_date = date_str
-
-            # Get default list ID
-            cursor.execute("SELECT id FROM lists WHERE name = ? AND is_default = 1", (list_name,))
-            list_result = cursor.fetchone()
-            list_id = list_result[0] if list_result else 1
-
-            # Insert case - ensure NULL values are properly handled
-            cursor.execute("""
-                INSERT INTO cases (
-                    transaction_no, date_incurred, date_identified, date_reported,
-                    description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, persal_no, category,
-                    responsibility_id, amount, source_document, minutes, evidence_path,
-                    attachments, status, list, assessment_assessed_by, assessment_date,
-                    assessment_result, fy_id, period_id, criminal_charges, disciplinary_process,
-                    loss_recovery, prevention_steps, original_list
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                case_number, date_str, date_str, date_str,
-                description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, None, self.category['name'],
-                resp_id, abs(transaction['amount']), None, None, None,  # Will set evidence later
-                '[]', status, list_name, None, None,
-                fy_id, period_id, 'N/A', 'N/A', 'N/A',
-                'N/A', 'N/A', list_name
-            ))
-
-            case_id = cursor.lastrowid
-
-            # Debug: Verify what was actually saved
-            cursor.execute("SELECT responsibility_id FROM cases WHERE id = ?", (case_id,))
-            saved_resp_id = cursor.fetchone()
-            print(f"DEBUG: Case {case_number} saved with responsibility_id: {saved_resp_id[0] if saved_resp_id else 'None'}")
-
-
-            # Copy BAS file to proper location (not as evidence)
-            if self.bas_file_path:
-                # Create Imported BAS Files folder structure
-                year_folder = create_year_folder(fy)
-                bas_files_folder = os.path.join(year_folder, "Imported BAS Files")
-
-                # Extract month from transaction date for subfolder (e.g., "202505")
-                month_str = transaction['date'].strftime('%Y%m')
-                month_folder = os.path.join(bas_files_folder, month_str)
-
-                # Create directories
-                os.makedirs(month_folder, exist_ok=True)
-
-                # Get original filename and copy with correct extension
-                original_filename = os.path.basename(self.bas_file_path)
-                bas_file_path = os.path.join(month_folder, original_filename)
-
-                # Copy file
-                import shutil
-                shutil.copy2(self.bas_file_path, bas_file_path)
-
-                # Store BAS file path in source_document field instead of evidence_path
-                cursor.execute("UPDATE cases SET source_document = ? WHERE transaction_no = ?",
-                              (bas_file_path, case_number))
-
-                print(f"DEBUG: Copied BAS file to: {bas_file_path}")
-
-            print(f"DEBUG: About to commit transaction for case: {case_number}")
-            conn.commit()
-            conn.close()
-            print(f"DEBUG: Successfully committed case: {case_number}")
-
-            # Log audit (convert all date objects to strings for JSON serialization)
-            def convert_dates(obj):
-                if isinstance(obj, dict):
-                    return {k: convert_dates(v) for k, v in obj.items()}
-                elif isinstance(obj, list):
-                    return [convert_dates(item) for item in obj]
-                elif hasattr(obj, 'isoformat'):  # Date/datetime objects
-                    return obj.isoformat()
-                else:
-                    return obj
-
-            audit_transaction = convert_dates(transaction)
-
-            save_audit_log("import_undisclosed_case", {
-                "timestamp": datetime.now().isoformat(),
-                "case_number": case_number,
-                "transaction": audit_transaction,
-                "category": self.category['name']
-            }, fy)
-
-            return case_number
-
-        except Exception as e:
-            print(f"DEBUG: Error importing transaction: {e}")
-            import traceback
-            print(f"DEBUG: Traceback: {traceback.format_exc()}")
-            # Ensure database connection is properly closed on error
-            if 'conn' in locals():
-                try:
-                    conn.rollback()  # Rollback any pending transaction
-                    conn.close()
-                except:
-                    pass
-            return None
 
 
 class ImportUndisclosedCasesDialog(QDialog):
@@ -461,6 +36,7 @@ class ImportUndisclosedCasesDialog(QDialog):
         self.setWindowIconText("📊")
 
         self.parser = BASParser()
+        self.worker = None
         self.transactions = []
         self.category = None
         self.date_from = None
@@ -1515,6 +1091,48 @@ class ImportUndisclosedCasesDialog(QDialog):
             print(f"Error validating responsibility: {e}")
             return {'status': 'Error', 'id': None}
 
+    def validate_financial_year(self, fy_string):
+        """Validate if financial year exists in database"""
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            # Parse FY string (e.g., "2025-2026")
+            fy_parts = fy_string.split('-')
+            if len(fy_parts) != 2:
+                return {'exists': False, 'fy_id': None, 'status': 'Invalid format'}
+
+            start_year = int(fy_parts[0])
+            end_year = int(fy_parts[1])
+
+            cursor.execute("SELECT id, status FROM financial_years WHERE start_year = ? AND end_year = ?",
+                         (start_year, end_year))
+            result = cursor.fetchone()
+            conn.close()
+
+            if result:
+                fy_id, status = result
+                return {
+                    'exists': True,
+                    'fy_id': fy_id,
+                    'status': status,
+                    'fy_string': fy_string
+                }
+            else:
+                return {
+                    'exists': False,
+                    'fy_id': None,
+                    'status': 'Not Found',
+                    'fy_string': fy_string
+                }
+
+        except sqlite3.Error as e:
+            print(f"Error validating financial year: {e}")
+            return {'exists': False, 'fy_id': None, 'status': 'Error', 'fy_string': fy_string}
+        except ValueError as e:
+            print(f"Error parsing financial year string '{fy_string}': {e}")
+            return {'exists': False, 'fy_id': None, 'status': 'Invalid format', 'fy_string': fy_string}
+
     def on_table_double_click(self, item):
         """Handle double-click on table items"""
         row = item.row()
@@ -1771,6 +1389,8 @@ class ImportUndisclosedCasesDialog(QDialog):
         try:
             # Get financial year
             fy = get_financial_year()
+            print(f"DEBUG: ===== ASSIGN CASE NUMBERS START =====")
+            print(f"DEBUG: assign_case_numbers - get_financial_year() returned: {fy}")
 
             # Get the current highest case number (don't increment yet)
             conn = sqlite3.connect(DB_PATH)
@@ -1780,14 +1400,56 @@ class ImportUndisclosedCasesDialog(QDialog):
             fy_end_year = int(fy.split('-')[1])
 
             # Get the highest existing case number for this financial year
+            # Use fy_id to ensure we're only looking at cases from the correct financial year
+            # Also exclude cases with NULL or invalid fy_id
             cursor.execute("""
                 SELECT MAX(CAST(SUBSTR(transaction_no, 5) AS INTEGER))
                 FROM cases
-                WHERE transaction_no LIKE ?
-            """, (f"{fy_end_year}%",))
+                WHERE fy_id = (
+                    SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?
+                )
+                AND fy_id IS NOT NULL
+                AND list != 'Deleted Cases'
+            """, (fy_end_year - 1, fy_end_year))
 
             max_existing = cursor.fetchone()[0]
             current_counter = max_existing or 0
+
+            print(f"DEBUG: assign_case_numbers - FY: {fy}, fy_end_year: {fy_end_year}")
+            print(f"DEBUG: assign_case_numbers - max_existing: {max_existing}, current_counter: {current_counter}")
+
+            # Also check the fy_case_counters table
+            cursor.execute("""
+                SELECT counter FROM fy_case_counters WHERE fy_id = (
+                    SELECT id FROM financial_years WHERE start_year = ?
+                )
+            """, (fy_end_year - 1,))
+            counter_result = cursor.fetchone()
+            db_counter = counter_result[0] if counter_result else None
+            print(f"DEBUG: assign_case_numbers - db_counter: {db_counter}")
+
+            # Check if there are cases from other financial years that might be interfering
+            cursor.execute("""
+                SELECT fy_id, COUNT(*), MAX(transaction_no)
+                FROM cases
+                WHERE fy_id = (
+                    SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?
+                )
+            """, (fy_end_year - 1, fy_end_year))
+            fy_cases = cursor.fetchall()
+            print(f"DEBUG: Cases for current FY {fy}: {fy_cases}")
+
+            # Check all cases in database for this FY
+            cursor.execute("""
+                SELECT COUNT(*), MAX(transaction_no), MIN(transaction_no)
+                FROM cases
+                WHERE fy_id = (
+                    SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?
+                )
+            """, (fy_end_year - 1, fy_end_year))
+            all_cases = cursor.fetchone()
+            print(f"DEBUG: All cases for FY {fy}: count={all_cases[0]}, max={all_cases[1]}, min={all_cases[2]}")
+
             conn.close()
 
             # Filter out transactions marked for removal before assigning case numbers
@@ -1809,6 +1471,12 @@ class ImportUndisclosedCasesDialog(QDialog):
             self.import_button.setEnabled(True)
             self.assign_case_numbers_button.setEnabled(False)
             self.assign_case_numbers_button.setText("Case Numbers Assigned")
+
+            # Show what case numbers were assigned
+            assigned_numbers = [t.get('case_number', 'No number') for t in transactions_to_assign[:5]]
+            print(f"DEBUG: First 5 assigned case numbers: {assigned_numbers}")
+            print(f"DEBUG: Total transactions to assign: {len(transactions_to_assign)}")
+            print(f"DEBUG: ===== ASSIGN CASE NUMBERS END =====")
 
             QMessageBox.information(
                 self, "Case Numbers Assigned",
@@ -1832,6 +1500,38 @@ class ImportUndisclosedCasesDialog(QDialog):
         if not transactions_to_import:
             QMessageBox.warning(self, "No Transactions", "All transactions have been marked for removal. Nothing to import.")
             return
+
+        # FINANCIAL YEAR VALIDATION AND SELECTION
+        # Check if the current financial year exists before proceeding with import
+        from scripts.Utilities.financial_utils import get_financial_year
+        current_fy = get_financial_year()
+        fy_validation = self.validate_financial_year(current_fy)
+
+        # Initialize selected_fy to None (will remain None if current FY is valid)
+        self.selected_fy = None
+        if not fy_validation['exists']:
+            print(f"DEBUG: Current FY {current_fy} does not exist in database")
+            print(f"DEBUG: FY validation result: {fy_validation}")
+
+            # Show FY selection dialog
+            selected_fy_data = show_fy_selection_dialog(current_fy, self)
+            if selected_fy_data:
+                self.selected_fy = selected_fy_data['fy_string']
+                print(f"DEBUG: User selected FY: {self.selected_fy}")
+                QMessageBox.information(
+                    self, "Financial Year Selected",
+                    f"✅ Import will use the selected financial year: {self.selected_fy}\n\n"
+                    f"This ensures all cases are properly associated with an existing financial year."
+                )
+            else:
+                QMessageBox.warning(
+                    self, "Import Cancelled",
+                    "❌ Import cancelled. You must select a valid financial year to proceed."
+                )
+                return
+        else:
+            print(f"DEBUG: Current FY {current_fy} exists and is valid")
+            self.selected_fy = None  # Explicitly set to None for clarity
 
         # Check if case numbers have been assigned to transactions that will actually be imported
         transactions_without_case_numbers = [t for t in transactions_to_import if not t.get('case_number')]
@@ -1930,7 +1630,7 @@ class ImportUndisclosedCasesDialog(QDialog):
         self.import_button.setEnabled(False)
 
         self.worker = ImportWorker(transactions_to_import, self.category,
-                                    self.date_from, self.date_to, self.bas_file_path)
+                                      self.date_from, self.date_to, self.bas_file_path, self.selected_fy)
         self.worker.progress.connect(self.update_progress)
         self.worker.finished.connect(self.import_finished)
         self.worker.error.connect(self.import_error)
@@ -1949,23 +1649,41 @@ class ImportUndisclosedCasesDialog(QDialog):
                 fy = get_financial_year()
                 fy_end_year = int(fy.split('-')[1])
 
+                print(f"DEBUG: import_finished - updating counter for FY: {fy}")
+                print(f"DEBUG: import_finished - imported_cases: {imported_cases[:3]}...")  # Show first 3
+
                 conn = sqlite3.connect(DB_PATH)
                 cursor = conn.cursor()
 
                 # Get the highest number from the imported cases
                 max_imported = max(int(case.split(str(fy_end_year))[1]) for case in imported_cases)
+                print(f"DEBUG: import_finished - max_imported: {max_imported}")
+
+                # Check current counter before update
+                cursor.execute("""
+                    SELECT counter FROM fy_case_counters WHERE fy_id = (
+                        SELECT id FROM financial_years WHERE start_year = ?
+                    )
+                """, (fy_end_year - 1,))
+                old_counter = cursor.fetchone()
+                print(f"DEBUG: import_finished - old_counter: {old_counter}")
 
                 # Update the counter to the next available number
+                new_counter = max_imported + 1
                 cursor.execute("""
                     UPDATE fy_case_counters SET counter = ? WHERE fy_id = (
                         SELECT id FROM financial_years WHERE start_year = ?
                     )
-                """, (max_imported + 1, fy_end_year - 1))
+                """, (new_counter, fy_end_year - 1))
+
+                print(f"DEBUG: import_finished - updated counter to: {new_counter}")
 
                 conn.commit()
                 conn.close()
             except Exception as e:
                 print(f"Warning: Could not update case counter: {e}")
+                import traceback
+                print(f"DEBUG: Counter update traceback: {traceback.format_exc()}")
 
         QMessageBox.information(
             self, "Import Complete",
@@ -2059,56 +1777,6 @@ class ImportUndisclosedCasesDialog(QDialog):
             return None
 
 
-class TransactionDetailsDialog(QDialog):
-    """Dialog to show detailed transaction information"""
-
-    def __init__(self, transaction, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Transaction Details")
-        self.setFixedSize(600, 400)
-
-        self.transaction = transaction
-        self.setup_ui()
-
-    def setup_ui(self):
-        layout = QVBoxLayout(self)
-
-        # Transaction details
-        form_layout = QFormLayout()
-
-        form_layout.addRow("Responsibility:", QLabel(self.transaction['responsibility']))
-        form_layout.addRow("Item:", QLabel(self.transaction['item']))
-        form_layout.addRow("Type:", QLabel(self.transaction['type']))
-        form_layout.addRow("Transaction Number:", QLabel(self.transaction['number']))
-
-        amount = self.transaction['amount']
-        amount_str = format_currency_amount(amount)
-        if self.transaction['is_credit']:
-            amount_str += " (Credit)"
-        else:
-            amount_str += " (Debit)"
-        form_layout.addRow("Amount:", QLabel(amount_str))
-
-        form_layout.addRow("Date:", QLabel(self.transaction['date'].strftime('%Y-%m-%d')))
-        form_layout.addRow("User ID:", QLabel(self.transaction['user_id']))
-
-        layout.addLayout(form_layout)
-
-        # Description
-        desc_group = QGroupBox("Description")
-        desc_layout = QVBoxLayout()
-        desc_edit = QTextEdit()
-        desc_edit.setPlainText(self.transaction['description'])
-        desc_edit.setReadOnly(True)
-        desc_edit.setMaximumHeight(80)
-        desc_layout.addWidget(desc_edit)
-        desc_group.setLayout(desc_layout)
-        layout.addWidget(desc_group)
-
-        # Close button
-        close_button = QPushButton("Close")
-        close_button.clicked.connect(self.accept)
-        layout.addWidget(close_button)
 
 
 # Function to launch the import dialog

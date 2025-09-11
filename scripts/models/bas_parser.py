@@ -153,5 +153,9 @@ class BASParser:
         credit_count = len([t for t in self.transactions if t['is_credit']])
         total_amount = sum(abs(t['amount']) for t in self.transactions)
 
-        from scripts.Utilities.utils import format_currency_amount
-        return f"Found {total_count} transactions ({debit_count} debits, {credit_count} credits) totaling {format_currency_amount(total_amount)}"
+        # Import here to avoid circular imports
+        try:
+            from scripts.Utilities.utils import format_currency_amount
+            return f"Found {total_count} transactions ({debit_count} debits, {credit_count} credits) totaling {format_currency_amount(total_amount)}"
+        except ImportError:
+            return f"Found {total_count} transactions ({debit_count} debits, {credit_count} credits) totaling R{total_amount:,.2f}"

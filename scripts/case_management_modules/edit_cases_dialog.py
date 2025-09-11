@@ -16,7 +16,8 @@ from PyQt5.QtWidgets import (
     QSplitter,
     QWidget,
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtGui import QWheelEvent
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
@@ -26,6 +27,18 @@ from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.ui_theme import create_professional_button
 from collections import defaultdict
 from .edit_case_dialog import EditCaseDialog
+
+
+class NoWheelComboBox(QComboBox):
+    """Custom QComboBox that ignores mouse wheel events unless focused"""
+
+    def wheelEvent(self, event: QWheelEvent):
+        """Override wheel event to only accept when widget has focus"""
+        if self.hasFocus():
+            super().wheelEvent(event)
+        else:
+            # Ignore wheel event when not focused
+            event.ignore()
 
 
 def create_table_button(text):
@@ -104,7 +117,7 @@ class EditCasesDialog(QDialog):
         # Financial Year filter
         fy_label = QLabel("FY:")
         fy_label.setFixedWidth(20)
-        self.fy_filter_combo = QComboBox()
+        self.fy_filter_combo = NoWheelComboBox()
         self.fy_filter_combo.setFixedWidth(120)
         self.populate_fy_filter()
         self.fy_filter_combo.currentTextChanged.connect(lambda: self.refresh_cases())
@@ -146,8 +159,8 @@ class EditCasesDialog(QDialog):
         # List filter
         list_label = QLabel("List:")
         list_label.setFixedWidth(30)
-        self.list_filter_combo = QComboBox()
-        self.list_filter_combo.addItems(["Checklist", "Lead Schedule"])
+        self.list_filter_combo = NoWheelComboBox()
+        self.list_filter_combo.addItems(["All Cases", "Checklist", "Lead Schedule"])
         self.list_filter_combo.setCurrentText("Checklist")
         self.list_filter_combo.setFixedWidth(120)
         self.list_filter_combo.currentTextChanged.connect(lambda: (print("DEBUG: list_filter_combo triggered refresh_cases"), self.refresh_cases()))
@@ -256,7 +269,7 @@ class EditCasesDialog(QDialog):
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            # Build query with financial year filter
+            # Build query with financial year filter (but not for "All Cases" list filter)
             query = "SELECT DISTINCT responsibility_id FROM cases WHERE list != 'Deleted Cases'"
             params = []
 
@@ -340,14 +353,17 @@ class EditCasesDialog(QDialog):
             base_conditions.append("fy_id = ?")
             params.append(selected_fy_id)
 
-        # Add list filter condition
+        # Add list filter condition based on transaction_no suffixes
         selected_list = self.list_filter_combo.currentText()
-        if selected_list == "Checklist":
-            base_conditions.append("(list = 'Checklist' OR list = 'Lead Schedule' OR list = 'Recovered' OR list = 'Write-Off Recommended' OR list = 'Written Off' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
+        if selected_list == "All Cases":
+            base_conditions.append("list != 'Deleted Cases'")
+        elif selected_list == "Checklist":
+            # Checklist shows only cases without -LS or -WOR suffixes (original cases)
+            base_conditions.append("transaction_no NOT LIKE '%-LS' AND transaction_no NOT LIKE '%-WOR'")
         elif selected_list == "Lead Schedule":
-            base_conditions.append("(list = 'Lead Schedule' AND is_finalized = 0) OR status = 'Confirmed'")
+            base_conditions.append("transaction_no LIKE '%-LS'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("list = 'Write-Off Recommended' AND is_finalized = 0")
+            base_conditions.append("transaction_no LIKE '%-WOR'")
         elif selected_list == "Recovered":
             base_conditions.append("list = 'Recovered'")
         elif selected_list == "Written Off":
@@ -388,17 +404,29 @@ class EditCasesDialog(QDialog):
                             elif col == 3:  # Amount column
                                 amount_item = format_currency_amount(data, right_align=True)
                                 self.case_table.setItem(row, col, amount_item)
-                            elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
+                            elif col == 0:  # Case No column - handle suffixes based on view
                                 display_value = str(data)
 
-                                # Special display logic for Lead Schedule filter
-                                if selected_list == "Lead Schedule" and col == 4 and row_data[5] == "Confirmed":
-                                    # Override list display for Confirmed cases in Lead Schedule view
-                                    display_value = "Lead Schedule"
-                                elif selected_list == "Lead Schedule" and col == 5 and row_data[5] == "Confirmed":
-                                    # Override status display for Confirmed cases in Lead Schedule view
-                                    display_value = "Awaiting LC"
+                                # For "All Cases" view, show the suffix; for specific list views, strip it
+                                if selected_list == "All Cases":
+                                    # Keep suffixes in All Cases view
+                                    pass
+                                else:
+                                    # Strip workflow suffixes for display (-LS, -WOR) in specific list views
+                                    if display_value.endswith('-LS') or display_value.endswith('-WOR'):
+                                        display_value = display_value.rsplit('-', 1)[0]
 
+                                self.case_table.setItem(row, col, QTableWidgetItem(display_value))
+                            elif col == 0:  # Case No column - strip suffixes for display
+                                display_value = str(data)
+            
+                                # Strip workflow suffixes for display (-LS, -WOR)
+                                if display_value.endswith('-LS') or display_value.endswith('-WOR'):
+                                    display_value = display_value.rsplit('-', 1)[0]
+            
+                                self.case_table.setItem(row, col, QTableWidgetItem(display_value))
+                            elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
+                                display_value = str(data)
                                 self.case_table.setItem(row, col, QTableWidgetItem(display_value))
                         except Exception as cell_error:
                             print(f"DEBUG: Error setting cell ({row}, {col}): {cell_error}")
@@ -442,13 +470,22 @@ class EditCasesDialog(QDialog):
     def show_case_details(self, item):
         """Show editable case details when double-clicking a case"""
         row = item.row()
-        case_no = self.case_table.item(row, 0).text()
+        display_case_no = self.case_table.item(row, 0).text()
 
-        # Get full case details from database
+        # Convert display case number back to database format
+        # Try different suffixed versions to find the actual database record
+        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
+
+        case_data = None
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
-        case_data = cursor.fetchone()
+
+        for case_no in possible_case_nos:
+            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
+            case_data = cursor.fetchone()
+            if case_data:
+                break
+
         conn.close()
 
         if case_data:
@@ -478,14 +515,17 @@ class EditCasesDialog(QDialog):
             base_conditions.append("fy_id = ?")
             params.append(selected_fy_id)
 
-        # Add list filter condition
+        # Add list filter condition based on transaction_no suffixes
         selected_list = self.list_filter_combo.currentText()
-        if selected_list == "Checklist":
-            base_conditions.append("(list = 'Checklist' OR list = 'Lead Schedule' OR list = 'Recovered' OR list = 'Write-Off Recommended' OR list = 'Written Off' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off'))")
+        if selected_list == "All Cases":
+            base_conditions.append("list != 'Deleted Cases'")
+        elif selected_list == "Checklist":
+            # Checklist shows ALL cases - both without suffixes AND with -LS suffix (so moved cases appear in both places)
+            base_conditions.append("transaction_no NOT LIKE '%-WOR'")
         elif selected_list == "Lead Schedule":
-            base_conditions.append("((list = 'Lead Schedule' OR (list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off')) OR status = 'Confirmed')")
+            base_conditions.append("transaction_no LIKE '%-LS'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("(list = 'Lead Schedule' AND loss_control_recommendation = 'Write Off')")
+            base_conditions.append("transaction_no LIKE '%-WOR'")
         elif selected_list == "Recovered":
             base_conditions.append("list = 'Recovered'")
         elif selected_list == "Written Off":
@@ -509,15 +549,6 @@ class EditCasesDialog(QDialog):
                     self.case_table.setItem(row, col, amount_item)
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     display_value = str(data)
-
-                    # Special display logic for Lead Schedule filter
-                    if selected_list == "Lead Schedule" and col == 4 and row_data[5] == "Confirmed":
-                        # Override list display for Confirmed cases in Lead Schedule view
-                        display_value = "Lead Schedule"
-                    elif selected_list == "Lead Schedule" and col == 5 and row_data[5] == "Confirmed":
-                        # Override status display for Confirmed cases in Lead Schedule view
-                        display_value = "Awaiting LC"
-
                     self.case_table.setItem(row, col, QTableWidgetItem(display_value))
 
             # Add Edit Case button in the last column
@@ -546,21 +577,31 @@ class EditCasesDialog(QDialog):
 
         # Get the first selected case's responsibility
         first_row = min(selected_rows)
-        case_no = self.case_table.item(first_row, 0).text()
+        display_case_no = self.case_table.item(first_row, 0).text()
+
+        # Convert display case number back to database format
+        # Try different suffixed versions to find the actual database record
+        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
 
         # Get responsibility_id for this case
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
-            result = cursor.fetchone()
+
+            responsibility_id = None
+            for case_no in possible_case_nos:
+                cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
+                result = cursor.fetchone()
+                if result:
+                    responsibility_id = result[0]
+                    break
+
             conn.close()
 
-            if result:
-                responsibility_id = result[0]
+            if responsibility_id:
                 self.highlight_responsibility(responsibility_id)
         except sqlite3.Error as e:
-            print(f"Error getting responsibility for case {case_no}: {e}")
+            print(f"Error getting responsibility for case {display_case_no}: {e}")
 
     def highlight_responsibility(self, responsibility_id):
         """Find and highlight the responsibility in the tree"""
@@ -671,13 +712,22 @@ class EditCasesDialog(QDialog):
 
     def edit_case_by_row(self, row):
         """Edit case by table row"""
-        case_no = self.case_table.item(row, 0).text()
+        display_case_no = self.case_table.item(row, 0).text()
 
-        # Get full case details from database
+        # Convert display case number back to database format
+        # Try different suffixed versions to find the actual database record
+        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
+
+        case_data = None
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
-        case_data = cursor.fetchone()
+
+        for case_no in possible_case_nos:
+            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
+            case_data = cursor.fetchone()
+            if case_data:
+                break
+
         conn.close()
 
         if case_data:
