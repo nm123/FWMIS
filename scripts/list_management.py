@@ -14,6 +14,10 @@ from PyQt5.QtWidgets import (
     QCheckBox,
 )
 from PyQt5.QtCore import Qt
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 from scripts.Utilities.list_utils import save_lists, load_lists
 from scripts.Utilities.config import DB_PATH
 import sqlite3
