@@ -1,4 +1,5 @@
 import sqlite3
+from functools import partial
 from PyQt5.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -146,7 +147,7 @@ class ViewCasesDialog(QDialog):
         # Enable selection change to highlight responsibility
         self.case_table.itemSelectionChanged.connect(self.on_case_select)
         # Enable double-click to view case details
-        self.case_table.itemDoubleClicked.connect(self.show_case_details)
+        self.case_table.itemDoubleClicked.connect(lambda item: self.show_case_details(item, self.list_filter_combo.currentText()))
 
         # Set minimum width for headers and enable proper resizing
         header = self.case_table.horizontalHeader()
@@ -342,19 +343,18 @@ class ViewCasesDialog(QDialog):
             base_conditions.append("fy_id = ?")
             params.append(selected_fy_id)
 
-        # Add list filter condition based on transaction_no suffixes
+        # Add list filter condition
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            # Checklist shows only cases without -LS or -WOR suffixes (original cases)
-            base_conditions.append("transaction_no NOT LIKE '%-LS' AND transaction_no NOT LIKE '%-WOR'")
+            # Checklist shows cases in Checklist list
+            base_conditions.append("list = 'Checklist'")
         elif selected_list == "Lead Schedule":
-            # Lead Schedule shows only cases with -LS suffix
-            base_conditions.append("transaction_no LIKE '%-LS'")
+            # Lead Schedule shows cases in Lead Schedule list
+            base_conditions.append("list = 'Lead Schedule'")
         elif selected_list == "Recovered":
             base_conditions.append("list = 'Recovered'")
         elif selected_list == "Write-Off Recommended":
-            # Write-Off Recommended shows only cases with -WOR suffix
-            base_conditions.append("transaction_no LIKE '%-WOR'")
+            base_conditions.append("list = 'Write-Off Recommended'")
         elif selected_list == "Written Off":
             base_conditions.append("list = 'Written Off'")
         elif selected_list == "To-Do List":
@@ -388,7 +388,8 @@ class ViewCasesDialog(QDialog):
                     self.case_table.setItem(row, col, amount_item)
                 elif col == 0:  # Case No column - handle suffixes based on view
                     # Handle NULL values properly
-                    display_value = str(data) if data is not None else ""
+                    full_value = str(data) if data is not None else ""
+                    display_value = full_value
 
                     # For "All Cases" view, show the suffix; for specific list views, strip it
                     if selected_list == "All Cases":
@@ -399,7 +400,9 @@ class ViewCasesDialog(QDialog):
                         if display_value.endswith('-LS') or display_value.endswith('-WOR'):
                             display_value = display_value.rsplit('-', 1)[0]
 
-                    self.case_table.setItem(row, col, QTableWidgetItem(display_value))
+                    item = QTableWidgetItem(display_value)
+                    item.setData(Qt.UserRole, full_value)  # Store full transaction_no
+                    self.case_table.setItem(row, col, item)
                 elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
                     # Handle NULL values properly
                     display_value = str(data) if data is not None else ""
@@ -413,26 +416,25 @@ class ViewCasesDialog(QDialog):
                         display_value = "Awaiting LC"
 
                     self.case_table.setItem(row, col, QTableWidgetItem(display_value))
+
+            # Add Edit button in the last column
+            button = QPushButton("Edit")
+            button.clicked.connect(partial(self.edit_case, row))
+            self.case_table.setCellWidget(row, 7, button)
         conn.close()
 
-    def show_case_details(self, item):
+    def show_case_details(self, item, selected_list=None):
         """Show detailed case information when double-clicking a case"""
-        row = item.row()
-        display_case_no = self.case_table.item(row, 0).text()
-
-        # Convert display case number back to database format
-        # Try different suffixed versions to find the actual database record
-        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
+        full_case_no = item.data(Qt.UserRole)
+        print(f"DEBUG: Opening case: {full_case_no}")
 
         case_data = None
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        for case_no in possible_case_nos:
-            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
-            case_data = cursor.fetchone()
-            if case_data:
-                break
+        cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (full_case_no,))
+        case_data = cursor.fetchone()
+        print(f"DEBUG: Case data found: {case_data is not None}, list: {case_data[16] if case_data else 'None'}")
 
         conn.close()
 
@@ -447,8 +449,17 @@ class ViewCasesDialog(QDialog):
             else:
                 # Open editable dialog for non-finalized cases
                 from .edit_case_dialog import EditCaseDialog
-                dialog = EditCaseDialog(case_data, self)
+                dialog = EditCaseDialog(case_data, self, selected_list=selected_list)
                 dialog.exec_()
+
+    def edit_case(self, row):
+        """Edit case when Edit button is clicked"""
+        print(f"DEBUG: edit_case called for row {row}")
+        item = self.case_table.item(row, 0)
+        if item:
+            self.show_case_details(item, selected_list=self.list_filter_combo.currentText())
+        else:
+            print(f"DEBUG: No item in row {row}")
 
     def filter_responsibilities(self, text):
         """Filter responsibilities based on search text"""

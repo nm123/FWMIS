@@ -160,9 +160,9 @@ class EditCasesDialog(QDialog):
         list_label = QLabel("List:")
         list_label.setFixedWidth(30)
         self.list_filter_combo = NoWheelComboBox()
-        self.list_filter_combo.addItems(["All Cases", "Checklist", "Lead Schedule"])
+        self.list_filter_combo.addItems(["All Cases", "Checklist", "Lead Schedule", "Recovered", "Write-Off Recommended", "Written Off"])
         self.list_filter_combo.setCurrentText("Checklist")
-        self.list_filter_combo.setFixedWidth(120)
+        self.list_filter_combo.setFixedWidth(150)
         self.list_filter_combo.currentTextChanged.connect(lambda: (print("DEBUG: list_filter_combo triggered refresh_cases"), self.refresh_cases()))
 
         search_layout.addWidget(list_label)

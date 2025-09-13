@@ -48,11 +48,17 @@ from .determination_dialog import DeterminationDialog
 
 
 class EditCaseDialog(QDialog):
-    def __init__(self, case_data, parent=None):
+    def __init__(self, case_data, parent=None, selected_list=None):
         super().__init__(parent)
         # Set title with list context for better user understanding
         self.list_name = case_data[16] if len(case_data) > 16 else "Unknown"
-        self.setWindowTitle(f"Edit Case Details - {self.list_name}")
+        title_list = selected_list or self.list_name
+        # Override title based on transaction_no suffix
+        if "-LS" in case_data[1]:
+            title_list = "Lead Schedule"
+        elif "-WOR" in case_data[1]:
+            title_list = "Write-Off Recommended"
+        self.setWindowTitle(f"Edit Case Details - {title_list}")
         self.setFixedSize(1200, 900)
         try:
             self.responsibilities = load_posting_responsibilities()
@@ -62,6 +68,7 @@ class EditCaseDialog(QDialog):
             self.transaction_no = case_data[1]  # Pre-populate with existing case data
             self.selected_responsibility_id = case_data[10]  # responsibility_id
             self.case_data = case_data
+            self.selected_list = selected_list  # From parent dialog's filter
             self.supporting_evidence_compulsory = False
             self.business_logic = CaseBusinessLogic(self.fy)
 
@@ -197,8 +204,8 @@ class EditCaseDialog(QDialog):
         list_status_layout = QVBoxLayout(list_status_group)
 
         # Create a simple grid layout for reliable text display
-        grid_widget = QWidget()
-        grid_layout = QGridLayout(grid_widget)
+        self.list_status_grid_widget = QWidget()
+        grid_layout = QGridLayout(self.list_status_grid_widget)
         grid_layout.setContentsMargins(10, 10, 10, 10)
         grid_layout.setSpacing(5)
 
@@ -253,7 +260,7 @@ class EditCaseDialog(QDialog):
             status_label.setWordWrap(True)  # Allow text to wrap if needed
             grid_layout.addWidget(status_label, 1, i)
 
-        list_status_layout.addWidget(grid_widget)
+        list_status_layout.addWidget(self.list_status_grid_widget)
         self.main_layout.addWidget(list_status_group)
 
         # ===== ASSESSMENT GROUP =====
@@ -272,12 +279,53 @@ class EditCaseDialog(QDialog):
         self.evidence_edit = QLineEdit()
         self.evidence_button = QPushButton("Browse")
         self.evidence_button.clicked.connect(self.browse_evidence)
+        self.evidence_view_button = QPushButton("View")
+        self.evidence_view_button.clicked.connect(self.view_evidence)
         evidence_layout = QHBoxLayout()
         evidence_layout.addWidget(self.evidence_edit)
         evidence_layout.addWidget(self.evidence_button)
+        evidence_layout.addWidget(self.evidence_view_button)
         assessment_layout.addRow(self.evidence_label, evidence_layout)
 
         self.main_layout.addWidget(assessment_group)
+
+        # ===== LOSS CONTROL GROUP =====
+        loss_control_group = QGroupBox("Loss Control Committee")
+        loss_control_layout = QFormLayout(loss_control_group)
+
+        # Status
+        self.loss_control_status_combo = NoWheelComboBox()
+        loss_control_layout.addRow("Status:", self.loss_control_status_combo)
+
+        # Recommendation field removed - merged into Status field above
+
+        # Recovery Evidence (conditional)
+        self.recovery_evidence_label = QLabel("Recovery Evidence:")
+        self.recovery_evidence_edit = QLineEdit()
+        self.recovery_evidence_button = QPushButton("Browse")
+        self.recovery_evidence_button.clicked.connect(self.browse_recovery_evidence)
+        self.recovery_evidence_view_button = QPushButton("View")
+        self.recovery_evidence_view_button.clicked.connect(self.view_recovery_evidence)
+        recovery_evidence_layout = QHBoxLayout()
+        recovery_evidence_layout.addWidget(self.recovery_evidence_edit)
+        recovery_evidence_layout.addWidget(self.recovery_evidence_button)
+        recovery_evidence_layout.addWidget(self.recovery_evidence_view_button)
+        loss_control_layout.addRow(self.recovery_evidence_label, recovery_evidence_layout)
+
+        # LC Minutes
+        self.minutes_label = QLabel("LC Minutes:")
+        self.minutes_edit = QLineEdit()
+        self.minutes_button = QPushButton("Browse")
+        self.minutes_button.clicked.connect(self.browse_minutes)
+        self.minutes_view_button = QPushButton("View")
+        self.minutes_view_button.clicked.connect(self.view_minutes)
+        minutes_layout = QHBoxLayout()
+        minutes_layout.addWidget(self.minutes_edit)
+        minutes_layout.addWidget(self.minutes_button)
+        minutes_layout.addWidget(self.minutes_view_button)
+        loss_control_layout.addRow(self.minutes_label, minutes_layout)
+
+        self.main_layout.addWidget(loss_control_group)
 
         # ===== SUPPORTING EVIDENCE GROUP =====
         supporting_group = QGroupBox("Supporting Evidence (To Prove Existence)")
@@ -327,45 +375,15 @@ class EditCaseDialog(QDialog):
         self.supporting_evidence_edit = QLineEdit()
         self.supporting_evidence_button = QPushButton("Browse")
         self.supporting_evidence_button.clicked.connect(self.browse_supporting_evidence)
+        self.supporting_evidence_view_button = QPushButton("View")
+        self.supporting_evidence_view_button.clicked.connect(self.view_supporting_evidence)
         supporting_evidence_layout = QHBoxLayout()
         supporting_evidence_layout.addWidget(self.supporting_evidence_edit)
         supporting_evidence_layout.addWidget(self.supporting_evidence_button)
+        supporting_evidence_layout.addWidget(self.supporting_evidence_view_button)
         supporting_layout.addRow(self.supporting_evidence_label, supporting_evidence_layout)
 
         self.main_layout.addWidget(supporting_group)
-
-        # ===== LOSS CONTROL GROUP =====
-        loss_control_group = QGroupBox("Loss Control Committee")
-        loss_control_layout = QFormLayout(loss_control_group)
-
-        # Loss Control Minutes
-        self.minutes_label = QLabel("Loss Control Minutes:")
-        self.minutes_edit = QLineEdit()
-        self.minutes_button = QPushButton("Browse")
-        self.minutes_button.clicked.connect(self.browse_minutes)
-        minutes_layout = QHBoxLayout()
-        minutes_layout.addWidget(self.minutes_edit)
-        minutes_layout.addWidget(self.minutes_button)
-        loss_control_layout.addRow(self.minutes_label, minutes_layout)
-
-        # Loss Control Recommendation
-        self.loss_control_label = QLabel("Loss Control Recommendation:")
-        self.loss_control_combo = NoWheelComboBox()
-        self.loss_control_combo.addItems(["", "Recovered", "Write Off"])
-        self.loss_control_combo.currentTextChanged.connect(self.on_loss_control_changed)
-        loss_control_layout.addRow(self.loss_control_label, self.loss_control_combo)
-
-        # Recovery Evidence (conditional)
-        self.recovery_evidence_label = QLabel("Recovery Evidence:")
-        self.recovery_evidence_edit = QLineEdit()
-        self.recovery_evidence_button = QPushButton("Browse")
-        self.recovery_evidence_button.clicked.connect(self.browse_recovery_evidence)
-        recovery_evidence_layout = QHBoxLayout()
-        recovery_evidence_layout.addWidget(self.recovery_evidence_edit)
-        recovery_evidence_layout.addWidget(self.recovery_evidence_button)
-        loss_control_layout.addRow(self.recovery_evidence_label, recovery_evidence_layout)
-
-        self.main_layout.addWidget(loss_control_group)
 
         # ===== ADDITIONAL INFORMATION GROUP =====
         additional_group = QGroupBox("Additional Information")
@@ -407,9 +425,12 @@ class EditCaseDialog(QDialog):
         self.source_doc_edit = QLineEdit()
         self.source_doc_button = QPushButton("Browse")
         self.source_doc_button.clicked.connect(self.browse_source_doc)
+        self.source_doc_view_button = QPushButton("View")
+        self.source_doc_view_button.clicked.connect(self.view_source_doc)
         source_doc_layout = QHBoxLayout()
         source_doc_layout.addWidget(self.source_doc_edit)
         source_doc_layout.addWidget(self.source_doc_button)
+        source_doc_layout.addWidget(self.source_doc_view_button)
         attachments_layout.addRow(self.source_doc_label, source_doc_layout)
 
         self.main_layout.addWidget(attachments_group)
@@ -449,12 +470,18 @@ class EditCaseDialog(QDialog):
         self.category_combo.currentIndexChanged.connect(self.update_conditional_fields)
         self.list_combo.currentTextChanged.connect(self.update_conditional_fields)
         self.status_combo.currentTextChanged.connect(self.on_status_changed)
+        self.loss_control_status_combo.currentTextChanged.connect(self.on_loss_control_status_changed)
 
         # Update determination button visibility
         self.update_determination_button_visibility()
 
     def load_case_data(self):
         """Load existing case data into the form fields"""
+        # Temporarily disconnect signals to prevent triggering update_conditional_fields during loading
+        self.category_combo.currentIndexChanged.disconnect(self.update_conditional_fields)
+        self.list_combo.currentTextChanged.disconnect(self.update_conditional_fields)
+        self.status_combo.currentTextChanged.disconnect(self.on_status_changed)
+
         # Set responsibility
         resp = next((r for r in self.responsibilities if r["id"] == self.case_data[10]), None)
         if resp:
@@ -476,16 +503,25 @@ class EditCaseDialog(QDialog):
         if self.case_data[9]:  # category
             self.category_combo.setCurrentText(self.case_data[9])
 
-        # Set list
-        if self.case_data[16]:  # list
-            self.list_combo.setCurrentText(self.case_data[16])
+        # Set list - use selected_list from parent if provided, otherwise from case data
+        list_text = self.selected_list if self.selected_list else (self.case_data[16] if self.case_data[16] else "")
+        if list_text:
+            self.list_combo.setCurrentText(list_text)
 
         # Update conditional fields first to populate status combo with correct items
         self.update_conditional_fields()
 
-        # Set status directly after conditional fields are updated
-        if self.case_data[17]:  # status
-            self.status_combo.setCurrentText(self.case_data[17])
+        # Set status
+        if self.case_data[15]:  # status at index 15
+            self.status_combo.setCurrentText(self.case_data[15])
+
+        # Update conditional fields again to show/hide fields based on the loaded status
+        self.update_conditional_fields()
+
+        # Reconnect signals
+        self.category_combo.currentIndexChanged.connect(self.update_conditional_fields)
+        self.list_combo.currentTextChanged.connect(self.update_conditional_fields)
+        self.status_combo.currentTextChanged.connect(self.on_status_changed)
 
         # Check if case is finalized and disable editing if so
         if len(self.case_data) > 37 and self.case_data[37]:  # is_finalized
@@ -508,9 +544,6 @@ class EditCaseDialog(QDialog):
             self.persal_no_edit.setReadOnly(True)
             self.minutes_edit.setReadOnly(True)
             self.minutes_button.setEnabled(False)
-            self.loss_control_combo.setEnabled(False)
-            self.recovery_evidence_edit.setReadOnly(True)
-            self.recovery_evidence_button.setEnabled(False)
             self.source_doc_edit.setReadOnly(True)
             self.source_doc_button.setEnabled(False)
             self.supporting_evidence_edit.setReadOnly(True)
@@ -585,25 +618,58 @@ class EditCaseDialog(QDialog):
             print(f"Warning: Supporting evidence file not found: {self.case_data[13]}")
             self.supporting_evidence_edit.clear()
 
-        if len(self.case_data) > 14 and self.case_data[14] and os.path.exists(self.case_data[14]):  # minutes
-            self.minutes_edit.setText(self.case_data[14])
-        elif len(self.case_data) > 14 and self.case_data[14]:
-            print(f"Warning: Minutes file not found: {self.case_data[14]}")
+        if len(self.case_data) > 13 and self.case_data[13] and os.path.exists(self.case_data[13]):  # minutes at 13
+            self.minutes_edit.setText(self.case_data[13])
+        elif len(self.case_data) > 13 and self.case_data[13]:
+            print(f"Warning: Minutes file not found: {self.case_data[13]}")
             self.minutes_edit.clear()
 
-        if self.case_data[14] and os.path.exists(self.case_data[14]):  # evidence_path
+        if len(self.case_data) > 14 and self.case_data[14] and os.path.exists(self.case_data[14]):  # evidence_path at 14
             self.evidence_edit.setText(self.case_data[14])
-        elif self.case_data[14]:
+        elif len(self.case_data) > 14 and self.case_data[14]:
             print(f"Warning: Evidence file not found: {self.case_data[14]}")
             self.evidence_edit.clear()
 
-        # Assessment fields removed as requested
+        # Set Loss Control fields - use status from loss_control_recommendation field (index 40)
+        if len(self.case_data) > 40 and self.case_data[40]:  # loss_control_recommendation at index 40
+            self.loss_control_status_combo.setCurrentText(self.case_data[40])
+            # Update recovery evidence visibility, LC Minutes placeholder, and list status grid based on status
 
-        # Set Loss Control fields
-        if len(self.case_data) > 31 and self.case_data[31]:  # loss_control_recommendation
-            self.loss_control_combo.setCurrentText(self.case_data[31])
-        if len(self.case_data) > 32 and self.case_data[32]:  # recovery_evidence_path
-            self.recovery_evidence_edit.setText(self.case_data[32])
+            # First, reset all statuses to N/A
+            self.update_list_status_grid("Recovered", "N/A")
+            self.update_list_status_grid("Write-Off Recommended", "N/A")
+
+            status = self.case_data[40]
+            if status == "Recovered":
+                self.recovery_evidence_label.setVisible(True)
+                self.recovery_evidence_edit.setVisible(True)
+                self.recovery_evidence_button.setVisible(True)
+                self.recovery_evidence_view_button.setVisible(True)
+                self.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+                # Update List Status Information grid
+                self.update_list_status_grid("Recovered", "Recovered")
+            elif status == "Write Off Recommended":
+                self.recovery_evidence_label.setVisible(False)
+                self.recovery_evidence_edit.setVisible(False)
+                self.recovery_evidence_button.setVisible(False)
+                self.recovery_evidence_view_button.setVisible(False)
+                self.recovery_evidence_edit.clear()
+                self.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+                # Update List Status Information grid
+                self.update_list_status_grid("Write-Off Recommended", "Write Off Recommended")
+            else:
+                self.recovery_evidence_label.setVisible(False)
+                self.recovery_evidence_edit.setVisible(False)
+                self.recovery_evidence_button.setVisible(False)
+                self.recovery_evidence_view_button.setVisible(False)
+                self.recovery_evidence_edit.clear()
+                self.minutes_edit.setPlaceholderText("")
+
+        if len(self.case_data) > 19 and self.case_data[19] and os.path.exists(self.case_data[19]):  # recovery_evidence_path
+            self.recovery_evidence_edit.setText(self.case_data[19])
+        elif len(self.case_data) > 19 and self.case_data[19]:
+            print(f"Warning: Recovery evidence file not found: {self.case_data[19]}")
+            self.recovery_evidence_edit.clear()
 
 
     def select_responsibility(self):
@@ -666,6 +732,27 @@ class EditCaseDialog(QDialog):
             # Reset the compulsory flag for other statuses
             self.supporting_evidence_compulsory = False
 
+        # Update List Status Information grid based on new status
+        if status == "Confirmed" and current_list == "Checklist":
+            # When status becomes Confirmed in Checklist, show it will be copied to Lead Schedule
+            self.update_list_status_grid("Checklist", "Confirmed")
+            self.update_list_status_grid("Lead Schedule", "Awaiting LC determination")
+            # Reset other lists
+            self.update_list_status_grid("Recovered", "N/A")
+            self.update_list_status_grid("Write-Off Recommended", "N/A")
+            self.update_list_status_grid("Written Off", "N/A")
+            self.update_list_status_grid("Deleted Cases", "N/A")
+        elif status != "Confirmed":
+            # For non-Confirmed statuses, reset Lead Schedule and other workflow lists
+            self.update_list_status_grid("Lead Schedule", "N/A")
+            self.update_list_status_grid("Recovered", "N/A")
+            self.update_list_status_grid("Write-Off Recommended", "N/A")
+            self.update_list_status_grid("Written Off", "N/A")
+            self.update_list_status_grid("Deleted Cases", "N/A")
+            # Update current list status
+            if current_list in ["Checklist", "Lead Schedule", "Recovered", "Write-Off Recommended", "Written Off", "Deleted Cases"]:
+                self.update_list_status_grid(current_list, status)
+
         # Update conditional fields to show/hide assessment evidence based on new status
         # Temporarily disconnect signal to avoid recursion
         self.status_combo.currentTextChanged.disconnect(self.on_status_changed)
@@ -680,19 +767,16 @@ class EditCaseDialog(QDialog):
             selected_status = self.status_combo.currentText() if self.status_combo.count() > 0 else ""
             selected_category = self.category_combo.currentText() if self.category_combo.count() > 0 else ""
 
-            # Update status options based on list selection
+
+            # Update status options based on transaction_no (more reliable than list field)
             if hasattr(self, 'status_combo'):
                 current_status = self.status_combo.currentText()
 
-                # Determine the correct items for this list
-                if selected_list == "Lead Schedule":
+                # Determine the correct items based on transaction_no suffix
+                if "-LS" in self.transaction_no:
                     new_items = ["Awaiting LC determination", "Recovered", "Write Off Recommended"]
-                elif selected_list == "Recovered":
-                    new_items = ["Recovered"]
-                elif selected_list == "Write-Off Recommended":
+                elif "-WOR" in self.transaction_no:
                     new_items = ["Write Off Recommended", "Written Off"]
-                elif selected_list == "Written Off":
-                    new_items = ["Written Off"]
                 else:
                     new_items = ["Alleged", "Under Assessment", "Valid", "Confirmed"]
 
@@ -706,13 +790,11 @@ class EditCaseDialog(QDialog):
                     if current_status and current_status in new_items:
                         self.status_combo.setCurrentText(current_status)
                     else:
-                        # Set appropriate default based on list
-                        if selected_list == "Lead Schedule":
+                        # Set appropriate default based on transaction_no
+                        if "-LS" in self.transaction_no:
                             self.status_combo.setCurrentText("Awaiting LC determination")
-                        elif selected_list == "Write-Off Recommended":
+                        elif "-WOR" in self.transaction_no:
                             self.status_combo.setCurrentText("Write Off Recommended")
-                        elif selected_list == "Written Off":
-                            self.status_combo.setCurrentText("Written Off")
                         else:
                             self.status_combo.setCurrentText("Alleged")
 
@@ -747,7 +829,8 @@ class EditCaseDialog(QDialog):
                 self.persal_no_edit.setVisible(persal_comp)
 
             # Update assessment fields visibility (Checklist or Lead Schedule + Valid/Confirmed)
-            show_assessment = ((selected_list in ["Checklist", "Lead Schedule"]) and
+            # Use transaction_no to determine if it's a case that can have assessment
+            show_assessment = (not "-WOR" in self.transaction_no and
                               selected_status in ["Valid", "Confirmed"])
 
             # Assessment Evidence fields (Status + Evidence)
@@ -757,34 +840,61 @@ class EditCaseDialog(QDialog):
                 self.evidence_edit.setVisible(show_assessment)
             if hasattr(self, 'evidence_button'):
                 self.evidence_button.setVisible(show_assessment)
+            if hasattr(self, 'evidence_view_button'):
+                self.evidence_view_button.setVisible(show_assessment)
 
-            # Update Loss Control fields visibility (for cases that need Loss Control processing)
-            # Show for cases in Lead Schedule that have been through initial assessment
-            show_loss_control = (selected_list == "Lead Schedule")
+            # Update Loss Control fields visibility - show for all cases
+            show_loss_control = True
 
-            if hasattr(self, 'loss_control_label'):
-                self.loss_control_label.setVisible(show_loss_control)
-            if hasattr(self, 'loss_control_combo'):
-                self.loss_control_combo.setVisible(show_loss_control)
+            print(f"DEBUG: Setting Loss Control visibility to {show_loss_control}")
 
-            # Recovery evidence visibility depends on recommendation selection
-            if hasattr(self, 'loss_control_combo') and show_loss_control:
-                recommendation = self.loss_control_combo.currentText()
-                show_recovery = (recommendation == "Recovered")
-                if hasattr(self, 'recovery_evidence_label'):
-                    self.recovery_evidence_label.setVisible(show_recovery)
-                if hasattr(self, 'recovery_evidence_edit'):
-                    self.recovery_evidence_edit.setVisible(show_recovery)
-                if hasattr(self, 'recovery_evidence_button'):
-                    self.recovery_evidence_button.setVisible(show_recovery)
-            else:
-                # Hide recovery evidence if Loss Control is not visible
-                if hasattr(self, 'recovery_evidence_label'):
-                    self.recovery_evidence_label.setVisible(False)
-                if hasattr(self, 'recovery_evidence_edit'):
-                    self.recovery_evidence_edit.setVisible(False)
-                if hasattr(self, 'recovery_evidence_button'):
-                    self.recovery_evidence_button.setVisible(False)
+            # Set the group box visibility
+            if hasattr(self, 'loss_control_group'):
+                self.loss_control_group.setVisible(show_loss_control)
+
+            if show_loss_control:
+                # Populate status combo with merged options
+                loss_control_items = ["Awaiting LC determination", "Recovered", "Write Off Recommended"]
+                if self.loss_control_status_combo.count() != len(loss_control_items) or [self.loss_control_status_combo.itemText(i) for i in range(self.loss_control_status_combo.count())] != loss_control_items:
+                    self.loss_control_status_combo.clear()
+                    self.loss_control_status_combo.addItems(loss_control_items)
+                    # Set to Awaiting LC determination
+                    self.loss_control_status_combo.setCurrentText("Awaiting LC determination")
+                # Make it editable for user selection
+                self.loss_control_status_combo.setEnabled(True)
+
+            self.loss_control_status_combo.setVisible(show_loss_control)
+
+            # Recovery Evidence and LC Minutes visibility based on status
+            status = self.loss_control_status_combo.currentText()
+            show_recovery = show_loss_control and status == "Recovered"
+            self.recovery_evidence_label.setVisible(show_recovery)
+            self.recovery_evidence_edit.setVisible(show_recovery)
+            self.recovery_evidence_button.setVisible(show_recovery)
+            self.recovery_evidence_view_button.setVisible(show_recovery)
+
+            # Update List Status Information grid - reset all first, then set current
+            if show_loss_control:
+                # Reset all statuses
+                self.update_list_status_grid("Recovered", "N/A")
+                self.update_list_status_grid("Write-Off Recommended", "N/A")
+
+                # Set current status
+                if status == "Recovered":
+                    self.update_list_status_grid("Recovered", "Recovered")
+                elif status == "Write Off Recommended":
+                    self.update_list_status_grid("Write-Off Recommended", "Write Off Recommended")
+
+            # Set LC Minutes placeholder based on status
+            if show_loss_control and status in ["Recovered", "Write Off Recommended"]:
+                self.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+            elif show_loss_control:
+                self.minutes_edit.setPlaceholderText("")
+
+            self.minutes_label.setVisible(show_loss_control)
+            self.minutes_edit.setVisible(show_loss_control)
+            self.minutes_button.setVisible(show_loss_control)
+            self.minutes_view_button.setVisible(show_loss_control)
 
             # Update determination button visibility
             self.update_determination_button_visibility()
@@ -807,28 +917,140 @@ class EditCaseDialog(QDialog):
         if file_path:
             self.evidence_edit.setText(file_path)
 
+    def view_evidence(self):
+        """Open the assessment evidence file with the default application"""
+        file_path = self.evidence_edit.text().strip()
+        if file_path and os.path.exists(file_path):
+            try:
+                os.startfile(file_path)
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to open file: {str(e)}")
+        else:
+            QMessageBox.warning(self, "File Not Found", "The assessment evidence file could not be found.")
+
+    def view_minutes(self):
+        """Open the Loss Control minutes file with the default application"""
+        file_path = self.minutes_edit.text().strip()
+        if file_path and os.path.exists(file_path):
+            try:
+                os.startfile(file_path)
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to open file: {str(e)}")
+        else:
+            QMessageBox.warning(self, "File Not Found", "The Loss Control minutes file could not be found.")
+
+
+    def view_supporting_evidence(self):
+        """Open the supporting evidence file with the default application"""
+        file_path = self.supporting_evidence_edit.text().strip()
+        if file_path and os.path.exists(file_path):
+            try:
+                os.startfile(file_path)
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to open file: {str(e)}")
+        else:
+            QMessageBox.warning(self, "File Not Found", "The supporting evidence file could not be found.")
+
+    def view_source_doc(self):
+        """Open the source document file with the default application"""
+        file_path = self.source_doc_edit.text().strip()
+        if file_path and os.path.exists(file_path):
+            try:
+                os.startfile(file_path)
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to open file: {str(e)}")
+        else:
+            QMessageBox.warning(self, "File Not Found", "The source document file could not be found.")
+
     def browse_supporting_evidence(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Supporting Evidence", "", "PDF Files (*.pdf)")
         if file_path:
             self.supporting_evidence_edit.setText(file_path)
 
-    def on_loss_control_changed(self, recommendation):
-        """Handle Loss Control Recommendation change"""
-        if recommendation == "Recovered":
+    def on_loss_control_status_changed(self, status):
+        """Handle Loss Control Status change"""
+        # First, reset all statuses to N/A to clear any previous selections
+        self.update_list_status_grid("Recovered", "N/A")
+        self.update_list_status_grid("Write-Off Recommended", "N/A")
+
+        if status == "Recovered":
+            # Show recovery evidence fields
             self.recovery_evidence_label.setVisible(True)
             self.recovery_evidence_edit.setVisible(True)
             self.recovery_evidence_button.setVisible(True)
+            self.recovery_evidence_view_button.setVisible(True)
             self.recovery_evidence_edit.setPlaceholderText("Recovery evidence is REQUIRED")
-        else:
+
+            # Show LC Minutes as required
+            self.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+
+            # Update List Status Information grid
+            self.update_list_status_grid("Recovered", "Recovered")
+
+        elif status == "Write Off Recommended":
+            # Hide recovery evidence fields (not needed for Write Off)
             self.recovery_evidence_label.setVisible(False)
             self.recovery_evidence_edit.setVisible(False)
             self.recovery_evidence_button.setVisible(False)
+            self.recovery_evidence_view_button.setVisible(False)
             self.recovery_evidence_edit.clear()
+
+            # Show LC Minutes as required
+            self.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+
+            # Update List Status Information grid
+            self.update_list_status_grid("Write-Off Recommended", "Write Off Recommended")
+
+        else:
+            # Hide recovery evidence fields
+            self.recovery_evidence_label.setVisible(False)
+            self.recovery_evidence_edit.setVisible(False)
+            self.recovery_evidence_button.setVisible(False)
+            self.recovery_evidence_view_button.setVisible(False)
+            self.recovery_evidence_edit.clear()
+
+            # Reset LC Minutes placeholder
+            self.minutes_edit.setPlaceholderText("")
+
+    def update_list_status_grid(self, list_name, status):
+        """Update the List Status Information grid for a specific list"""
+        try:
+            if hasattr(self, 'list_status_grid_widget'):
+                grid_layout = self.list_status_grid_widget.layout()
+                if isinstance(grid_layout, QGridLayout):
+                    # The headers are in row 0, status values in row 1
+                    headers = ["Checklist", "Lead Schedule", "Recovered", "Write-Off Recommended", "Written Off", "Deleted Cases"]
+
+                    # Find the column index for the list_name
+                    if list_name in headers:
+                        col_index = headers.index(list_name)
+
+                        # Get the status label at row 1, col_index
+                        status_item = grid_layout.itemAtPosition(1, col_index)
+                        if status_item and status_item.widget():
+                            status_label = status_item.widget()
+                            if isinstance(status_label, QLabel):
+                                status_label.setText(status)
+        except Exception as e:
+            print(f"Warning: Error updating list status grid: {e}")
 
     def browse_recovery_evidence(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Recovery Evidence", "", "PDF Files (*.pdf)")
         if file_path:
             self.recovery_evidence_edit.setText(file_path)
+
+    def view_recovery_evidence(self):
+        """Open the recovery evidence file with the default application"""
+        file_path = self.recovery_evidence_edit.text().strip()
+        if file_path and os.path.exists(file_path):
+            try:
+                os.startfile(file_path)
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to open file: {str(e)}")
+        else:
+            QMessageBox.warning(self, "File Not Found", "The recovery evidence file could not be found.")
+
+
 
     def select_bas_payment_date(self):
         """Open calendar dialog for BAS Payment Date selection"""
@@ -982,20 +1204,18 @@ class EditCaseDialog(QDialog):
                 return
 
             # Validate Loss Control fields
-            loss_control_rec = self.loss_control_combo.currentText()
-            selected_list = self.list_combo.currentText()
-
-            # For Lead Schedule cases, Loss Control Minutes are required before making any recommendation
-            if selected_list == "Lead Schedule" and loss_control_rec and not self.minutes_edit.text().strip():
-                QMessageBox.warning(self, "Loss Control Minutes Required",
-                                  "Loss Control Minutes are compulsory before making a Loss Control recommendation.\n\n"
-                                  "Please upload the Loss Control Committee minutes before saving.")
+            loss_control_status = self.loss_control_status_combo.currentText()
+            if loss_control_status == "Recovered" and not self.recovery_evidence_edit.text().strip():
+                QMessageBox.warning(self, "Recovery Evidence Required",
+                                  "Recovery evidence is required when status is 'Recovered'.\n\n"
+                                  "Please select a recovery evidence file before saving.")
                 return
 
-            if loss_control_rec == "Recovered" and not self.recovery_evidence_edit.text().strip():
-                QMessageBox.warning(self, "Recovery Evidence Required",
-                                  "Recovery Evidence is compulsory when Loss Control Recommendation is 'Recovered'.\n\n"
-                                  "Please select a file before saving.")
+            # Validate LC Minutes for Recovered or Write Off Recommended
+            if loss_control_status in ["Recovered", "Write Off Recommended"] and not self.minutes_edit.text().strip():
+                QMessageBox.warning(self, "Loss Control Minutes Required",
+                                  f"Loss Control Minutes are required when status is '{loss_control_status}'.\n\n"
+                                  "Please select a Loss Control Minutes file before saving.")
                 return
 
             # Validate Assessment Evidence for Valid/Confirmed statuses
@@ -1091,15 +1311,15 @@ class EditCaseDialog(QDialog):
                 "assessment_assessed_by": "",
                 "assessment_date": "",
                 "assessment_result": "",
+                "loss_control_recommendation": self.loss_control_status_combo.currentText(),
+                "recovery_evidence_path": self.recovery_evidence_edit.text().strip(),
                 "criminal_charges": criminal_charges_text,
                 "disciplinary_process": disciplinary_text,
                 "loss_recovery": loss_recovery_text,
                 "prevention_steps": self.prevention_steps_edit.toPlainText().strip(),
                 "fy_id": existing_fy_id,
                 "period_id": existing_period_id,
-                "original_list": list_text,
-                "loss_control_recommendation": self.loss_control_combo.currentText(),
-                "recovery_evidence_path": self.recovery_evidence_edit.text().strip()
+                "original_list": list_text
             }
 
             # Handle file operations - create case-specific folder structure
@@ -1159,18 +1379,18 @@ class EditCaseDialog(QDialog):
                         date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
                         bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
                         source_document = ?, supporting_evidence_path = ?, minutes = ?, evidence_path = ?, attachments = ?, status = ?, list = ?, assessment_assessed_by = ?,
-                        assessment_date = ?, assessment_result = ?, fy_id = ?, period_id = ?, criminal_charges = ?, disciplinary_process = ?,
-                        loss_recovery = ?, prevention_steps = ?, original_list = ?, loss_control_recommendation = ?, recovery_evidence_path = ?
+                        assessment_date = ?, assessment_result = ?, loss_control_recommendation = ?, recovery_evidence_path = ?, fy_id = ?, period_id = ?, criminal_charges = ?, disciplinary_process = ?,
+                        loss_recovery = ?, prevention_steps = ?, original_list = ?
                     WHERE transaction_no = ?
                 """, (
                     case["date_incurred"], case["date_identified"], case["date_reported"],
                     case["description"], case["bas_payment_no"], case["bas_payment_date"], case["bas_journal_no"], case["bas_journal_date"], case["persal_no"],
                     case["category"], case["responsibility_id"], case["amount"], case["source_document"], case["supporting_evidence_path"],
                     case["minutes"], case["evidence_path"], case["attachments"], case["status"], case["list"],
-                    case["assessment_assessed_by"], case["assessment_date"], case["assessment_result"],
+                    case["assessment_assessed_by"], case["assessment_date"], case["assessment_result"], case["loss_control_recommendation"], case["recovery_evidence_path"],
                     case["fy_id"], case["period_id"],
                     case["criminal_charges"], case["disciplinary_process"], case["loss_recovery"],
-                    case["prevention_steps"], case["original_list"], case["loss_control_recommendation"], case["recovery_evidence_path"],
+                    case["prevention_steps"], case["original_list"],
                     case["transaction_no"]
                 ))
 
@@ -1179,33 +1399,24 @@ class EditCaseDialog(QDialog):
                 conn.close()
 
                 # Handle workflow transitions based on status change
-                old_status = self.case_data[17] if len(self.case_data) > 17 else None
+                old_status = self.case_data[15] if len(self.case_data) > 15 else None  # Assessment status
                 if old_status != status_text:
                     try:
                         handle_case_status_change(case_id, self.transaction_no, status_text, list_text)
                     except Exception as workflow_error:
                         QMessageBox.warning(self, "Workflow Error", f"Case saved but workflow transition failed: {str(workflow_error)}")
 
-                # Handle Loss Control Recommendation changes
-                loss_control_rec = self.loss_control_combo.currentText()
-                if loss_control_rec:
-                    # Update the case status based on Loss Control recommendation
-                    new_status = loss_control_rec  # "Recovered" or "Write Off"
-
-                    # Trigger workflow transition
+                # Handle Loss Control status changes
+                old_loss_control_status = self.case_data[40] if len(self.case_data) > 40 else None  # Loss Control status at index 40
+                new_loss_control_status = self.loss_control_status_combo.currentText()
+                if old_loss_control_status != new_loss_control_status and new_loss_control_status in ["Recovered", "Write Off Recommended"]:
                     try:
-                        handle_case_status_change(case_id, self.transaction_no, new_status, list_text)
-                        print(f"Workflow transition triggered for case {self.transaction_no}: {new_status}")
-
-                        if new_status == "Recovered":
-                            QMessageBox.information(self, "Case Moved",
-                                                  f"Case {self.transaction_no} has been moved to 'Recovered' list due to Loss Control Recommendation.")
-                        elif new_status == "Write Off":
-                            QMessageBox.information(self, "Write-Off Recommended",
-                                                  f"Case {self.transaction_no} has been marked for write-off recommendation.\n\n"
-                                                  "The case will remain visible in Lead Schedule and will also appear in the Write-Off Recommended list for approval.")
+                        from scripts.Utilities.workflow_utils import handle_loss_control_status_change
+                        success = handle_loss_control_status_change(case_id, self.transaction_no, new_loss_control_status)
+                        if not success:
+                            QMessageBox.warning(self, "Workflow Error", f"Failed to process Loss Control status change to {new_loss_control_status}.")
                     except Exception as workflow_error:
-                        QMessageBox.warning(self, "Workflow Error", f"Case saved but workflow transition failed: {str(workflow_error)}")
+                        QMessageBox.warning(self, "Workflow Error", f"Case saved but Loss Control workflow failed: {str(workflow_error)}")
 
                 try:
                     save_audit_log("edit_case", {
@@ -1306,9 +1517,9 @@ class EditCaseDialog(QDialog):
             selected_list = self.list_combo.currentText()
             selected_status = self.status_combo.currentText()
 
-            # Show determination button for cases in Lead Schedule with Confirmed status
+            # Show determination button for Lead Schedule cases with Confirmed status
             # that haven't been through determination yet
-            show_determination = (selected_list == "Lead Schedule" and
+            show_determination = ("-LS" in self.transaction_no and
                                 selected_status == "Confirmed")
 
             if hasattr(self, 'determination_button'):
@@ -1333,11 +1544,11 @@ class EditCaseDialog(QDialog):
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            # Query for all cases with this transaction number
+            # Query for all related cases (original, -LS, -WOR variants)
             cursor.execute("""
                 SELECT list, status
                 FROM cases
-                WHERE transaction_no = ?
+                WHERE (transaction_no = ? OR transaction_no = ? || '-LS' OR transaction_no = ? || '-WOR')
                 AND is_finalized = 0
                 ORDER BY
                     CASE
@@ -1349,7 +1560,7 @@ class EditCaseDialog(QDialog):
                         WHEN list = 'Deleted Cases' THEN 6
                         ELSE 7
                     END
-            """, (transaction_no,))
+            """, (transaction_no, transaction_no, transaction_no))
 
             results = cursor.fetchall()
             conn.close()
