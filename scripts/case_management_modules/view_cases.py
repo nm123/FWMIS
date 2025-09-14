@@ -1,4 +1,6 @@
+import os
 import sqlite3
+from datetime import datetime
 from functools import partial
 from PyQt5.QtWidgets import (
     QDialog,
@@ -28,7 +30,7 @@ from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
-from scripts.Utilities.financial_utils import get_all_financial_years, get_current_open_financial_year
+from scripts.Utilities.financial_utils import get_all_financial_years, get_current_open_financial_year, get_financial_year
 from collections import defaultdict
 
 
@@ -121,13 +123,36 @@ class ViewCasesDialog(QDialog):
         ])
         self.list_filter_combo.setCurrentText("All Cases")
         self.list_filter_combo.setFixedWidth(140)  # Increased width for longer list names
-        self.list_filter_combo.currentTextChanged.connect(lambda: self.refresh_cases())
+        self.list_filter_combo.currentTextChanged.connect(lambda: (self.refresh_cases(), self.update_write_off_buttons_visibility()))
 
         search_layout.addWidget(list_label)
         search_layout.addWidget(self.list_filter_combo)
 
         search_layout.addStretch()
         layout.addLayout(search_layout)
+
+        # Write-Off Recommended specific buttons (shown only when in that list)
+        self.write_off_buttons_layout = QHBoxLayout()
+        self.write_off_buttons_layout.setContentsMargins(5, 0, 5, 10)
+        self.write_off_buttons_layout.setSpacing(10)
+
+        self.create_submission_btn = create_professional_button("Create Write-Off Submission", "primary")
+        self.create_submission_btn.clicked.connect(self.create_write_off_submission)
+        self.create_submission_btn.setVisible(False)  # Hidden by default
+        self.write_off_buttons_layout.addWidget(self.create_submission_btn)
+
+        self.approve_submission_btn = create_professional_button("Approve Write-Off Submission", "success")
+        self.approve_submission_btn.clicked.connect(self.approve_write_off_submission)
+        self.approve_submission_btn.setVisible(False)  # Hidden by default
+        self.write_off_buttons_layout.addWidget(self.approve_submission_btn)
+
+        # Excel export button (available for all lists)
+        self.excel_export_btn = create_professional_button("Export to Excel", "info")
+        self.excel_export_btn.clicked.connect(self.export_to_excel)
+        self.write_off_buttons_layout.addWidget(self.excel_export_btn)
+
+        self.write_off_buttons_layout.addStretch()
+        layout.addLayout(self.write_off_buttons_layout)
 
         # Main content layout
         content_layout = QHBoxLayout()
@@ -139,9 +164,9 @@ class ViewCasesDialog(QDialog):
         splitter.addWidget(self.resp_tree)
 
         self.case_table = QTableWidget()
-        self.case_table.setColumnCount(7)
+        self.case_table.setColumnCount(8)
         self.case_table.setHorizontalHeaderLabels([
-            "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"
+            "Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do", "Actions"
         ])
 
         # Enable selection change to highlight responsibility
@@ -163,6 +188,7 @@ class ViewCasesDialog(QDialog):
         self.case_table.setColumnWidth(4, 120)  # List
         self.case_table.setColumnWidth(5, 120)  # Status
         self.case_table.setColumnWidth(6, 80)   # To-Do
+        self.case_table.setColumnWidth(7, 80)   # Actions
 
         # Set row height for better readability
         self.case_table.verticalHeader().setDefaultSectionSize(25)
@@ -258,33 +284,24 @@ class ViewCasesDialog(QDialog):
             self.resp_tree.clearSelection()
             return
 
-        # Get the first selected case's responsibility
+        # Get the first selected case's transaction number
         first_row = min(selected_rows)
-        display_case_no = self.case_table.item(first_row, 0).text()
-
-        # Convert display case number back to database format
-        # Try different suffixed versions to find the actual database record
-        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
+        transaction_no = self.case_table.item(first_row, 0).data(Qt.UserRole)
 
         # Get responsibility_id for this case
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            responsibility_id = None
-            for case_no in possible_case_nos:
-                cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
-                result = cursor.fetchone()
-                if result:
-                    responsibility_id = result[0]
-                    break
-
+            cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (transaction_no,))
+            result = cursor.fetchone()
             conn.close()
 
-            if responsibility_id:
+            if result:
+                responsibility_id = result[0]
                 self.highlight_responsibility(responsibility_id)
         except sqlite3.Error as e:
-            print(f"Error getting responsibility for case {display_case_no}: {e}")
+            print(f"Error getting responsibility for case {transaction_no}: {e}")
 
     def highlight_responsibility(self, responsibility_id):
         """Find and highlight the responsibility in the tree"""
@@ -343,25 +360,29 @@ class ViewCasesDialog(QDialog):
             base_conditions.append("fy_id = ?")
             params.append(selected_fy_id)
 
-        # Add list filter condition
+        # Add list filter condition using new single-case model
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            # Checklist shows cases in Checklist list
-            base_conditions.append("list = 'Checklist'")
+            # Checklist shows all cases (no additional filter)
+            pass
         elif selected_list == "Lead Schedule":
-            # Lead Schedule shows cases in Lead Schedule list
-            base_conditions.append("list = 'Lead Schedule'")
+            # Lead Schedule shows Confirmed cases with -LS suffix, not finalized
+            base_conditions.append("assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'")
         elif selected_list == "Recovered":
-            base_conditions.append("list = 'Recovered'")
+            # Recovered shows cases with -REC suffix
+            base_conditions.append("suffixes LIKE '%-REC%'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("list = 'Write-Off Recommended'")
+            # Write-Off Recommended shows cases with -WOR suffix
+            base_conditions.append("suffixes LIKE '%-WOR%'")
         elif selected_list == "Written Off":
-            base_conditions.append("list = 'Written Off'")
+            # Written Off shows cases with -WO suffix
+            base_conditions.append("suffixes LIKE '%-WO%'")
         elif selected_list == "To-Do List":
             # Show both actual To-Do List cases and GJ cases with outstanding actions
             base_conditions.append("(list = 'To-Do List' OR bas_journal_no IS NOT NULL)")
         elif selected_list == "Deleted Cases":
-            base_conditions.append("list = 'Deleted Cases'")
+            # Deleted Cases shows cases with -DEL suffix
+            base_conditions.append("suffixes LIKE '%-DEL%'")
         # For "All Cases", we don't add any additional list condition
 
         # Add responsibility filter if provided
@@ -371,76 +392,117 @@ class ViewCasesDialog(QDialog):
             params.extend(resp_ids)
 
         where_clause = " AND ".join(base_conditions)
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
+        query = f"SELECT id, transaction_no, date_reported, category, amount, assessment_status, lc_status, suffixes, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
         for row_data in cursor.fetchall():
             row = self.case_table.rowCount()
             self.case_table.insertRow(row)
-            for col, data in enumerate(row_data):
-                if col == 6:  # To-Do column (check both bas_payment_no and bas_journal_no)
-                    bas_payment_no = row_data[6] if len(row_data) > 6 else None
-                    bas_journal_no = row_data[7] if len(row_data) > 7 else None
-                    todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
-                    self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
-                elif col == 3:  # Amount column
-                    amount_item = format_currency_amount(data, right_align=True)
-                    self.case_table.setItem(row, col, amount_item)
-                elif col == 0:  # Case No column - handle suffixes based on view
-                    # Handle NULL values properly
-                    full_value = str(data) if data is not None else ""
-                    display_value = full_value
 
-                    # For "All Cases" view, show the suffix; for specific list views, strip it
-                    if selected_list == "All Cases":
-                        # Keep suffixes in All Cases view
-                        pass
-                    else:
-                        # Strip workflow suffixes for display (-LS, -WOR) in specific list views
-                        if display_value.endswith('-LS') or display_value.endswith('-WOR'):
-                            display_value = display_value.rsplit('-', 1)[0]
+            # Extract data from new query structure
+            case_id = row_data[0]
+            transaction_no = row_data[1]
+            date_reported = row_data[2]
+            category = row_data[3]
+            amount = row_data[4]
+            assessment_status = row_data[5]
+            lc_status = row_data[6]
+            suffixes = row_data[7]
+            bas_payment_no = row_data[8] if len(row_data) > 8 else None
+            bas_journal_no = row_data[9] if len(row_data) > 9 else None
 
-                    item = QTableWidgetItem(display_value)
-                    item.setData(Qt.UserRole, full_value)  # Store full transaction_no
-                    self.case_table.setItem(row, col, item)
-                elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
-                    # Handle NULL values properly
-                    display_value = str(data) if data is not None else ""
+            # Handle case where transaction_no is None (migration not run or test data issue)
+            if transaction_no is None:
+                # Fallback to case_id as transaction number for test data
+                transaction_no = str(case_id)
 
-                    # Special display logic for Lead Schedule filter
-                    if selected_list == "Lead Schedule" and col == 4 and row_data[5] == "Confirmed":
-                        # Override list display for Confirmed cases in Lead Schedule view
-                        display_value = "Lead Schedule"
-                    elif selected_list == "Lead Schedule" and col == 5 and row_data[5] == "Confirmed":
-                        # Override status display for Confirmed cases in Lead Schedule view
-                        display_value = "Awaiting LC"
+            # Generate display transaction number
+            from scripts.Utilities.workflow_utils import get_display_transaction_no
+            display_transaction_no = get_display_transaction_no(transaction_no, suffixes)
 
-                    self.case_table.setItem(row, col, QTableWidgetItem(display_value))
+            # Determine display list and status based on current view
+            if selected_list == "All Cases":
+                display_list = "Checklist"  # All cases are in checklist
+                display_status = assessment_status
+            elif selected_list == "Lead Schedule":
+                display_list = "Lead Schedule"
+                display_status = lc_status or "Awaiting LC determination"
+            elif selected_list == "Recovered":
+                display_list = "Recovered"
+                display_status = "Recovered"
+            elif selected_list == "Write-Off Recommended":
+                display_list = "Write-Off Recommended"
+                display_status = "Write Off Recommended"
+            elif selected_list == "Written Off":
+                display_list = "Written Off"
+                display_status = "Written Off"
+            else:
+                display_list = selected_list
+                display_status = assessment_status
+
+            # Set columns
+            # Case No
+            case_item = QTableWidgetItem(display_transaction_no)
+            case_item.setData(Qt.UserRole, transaction_no)  # Store transaction_no for lookup
+            self.case_table.setItem(row, 0, case_item)
+
+            # Date Reported
+            self.case_table.setItem(row, 1, QTableWidgetItem(str(date_reported) if date_reported else ""))
+
+            # Category
+            self.case_table.setItem(row, 2, QTableWidgetItem(str(category) if category else ""))
+
+            # Amount
+            amount_item = format_currency_amount(amount, right_align=True)
+            self.case_table.setItem(row, 3, amount_item)
+
+            # List
+            self.case_table.setItem(row, 4, QTableWidgetItem(display_list))
+
+            # Status
+            self.case_table.setItem(row, 5, QTableWidgetItem(display_status))
+
+            # To-Do
+            todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
+            self.case_table.setItem(row, 6, QTableWidgetItem(todo_value))
 
             # Add Edit button in the last column
             button = QPushButton("Edit")
-            button.clicked.connect(partial(self.edit_case, row))
+            button.clicked.connect(lambda: self.edit_case(transaction_no))
             self.case_table.setCellWidget(row, 7, button)
         conn.close()
 
     def show_case_details(self, item, selected_list=None):
         """Show detailed case information when double-clicking a case"""
-        full_case_no = item.data(Qt.UserRole)
-        print(f"DEBUG: Opening case: {full_case_no}")
+        transaction_no = item.data(Qt.UserRole)
+        print(f"DEBUG: Opening case: {transaction_no}")
 
         case_data = None
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (full_case_no,))
+        # Try to find case by transaction_no first, then fallback to case_id if transaction_no is None
+        if transaction_no:
+            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,))
+        else:
+            # If transaction_no is None, we need to get the case_id from the table data
+            # This shouldn't happen with our fallback, but just in case
+            print("DEBUG: transaction_no is None, cannot open case details")
+            conn.close()
+            return
+
         case_data = cursor.fetchone()
-        print(f"DEBUG: Case data found: {case_data is not None}, list: {case_data[16] if case_data else 'None'}")
+        print(f"DEBUG: Case data found: {case_data is not None}")
 
         conn.close()
 
         if case_data:
+            # Convert to dictionary for easier handling with new schema
+            columns = [desc[0] for desc in cursor.description] if cursor.description else []
+            case_dict = dict(zip(columns, case_data)) if columns else {}
+
             # Check if case is finalized
-            is_finalized = len(case_data) > 26 and case_data[26]
+            is_finalized = case_dict.get('is_finalized', False)
 
             if is_finalized:
                 # Show read-only details for finalized cases
@@ -449,17 +511,23 @@ class ViewCasesDialog(QDialog):
             else:
                 # Open editable dialog for non-finalized cases
                 from .edit_case_dialog import EditCaseDialog
-                dialog = EditCaseDialog(case_data, self, selected_list=selected_list)
+                dialog = EditCaseDialog(case_dict, self, selected_list=selected_list)
+                dialog.case_modified.connect(self.refresh_cases)  # Connect refresh signal
                 dialog.exec_()
 
-    def edit_case(self, row):
+    def edit_case(self, transaction_no):
         """Edit case when Edit button is clicked"""
-        print(f"DEBUG: edit_case called for row {row}")
-        item = self.case_table.item(row, 0)
-        if item:
-            self.show_case_details(item, selected_list=self.list_filter_combo.currentText())
+        print(f"DEBUG: edit_case called for transaction_no: {transaction_no}")
+
+        if transaction_no:
+            # Create a mock item with the transaction_no in Qt.UserRole
+            from PyQt5.QtCore import Qt
+            from PyQt5.QtWidgets import QTableWidgetItem
+            mock_item = QTableWidgetItem()
+            mock_item.setData(Qt.UserRole, transaction_no)
+            self.show_case_details(mock_item, selected_list=self.list_filter_combo.currentText())
         else:
-            print(f"DEBUG: No item in row {row}")
+            print("DEBUG: No transaction_no provided")
 
     def filter_responsibilities(self, text):
         """Filter responsibilities based on search text"""
@@ -525,6 +593,207 @@ class ViewCasesDialog(QDialog):
 
         add_filtered_items(None, None)
         self.resp_tree.expandAll()
+
+    def update_write_off_buttons_visibility(self):
+        """Update visibility of write-off buttons based on current list filter"""
+        selected_list = self.list_filter_combo.currentText()
+        show_buttons = selected_list == "Write-Off Recommended"
+
+        self.create_submission_btn.setVisible(show_buttons)
+        self.approve_submission_btn.setVisible(show_buttons)
+
+    def create_write_off_submission(self):
+        """Open dialog to create a write-off submission"""
+        from .write_off_submission_dialog import WriteOffSubmissionDialog
+        dialog = WriteOffSubmissionDialog(self)
+        dialog.exec_()
+        # Refresh the case list after creating submission
+        self.refresh_cases()
+
+    def approve_write_off_submission(self):
+        """Open dialog to approve a write-off submission"""
+        # Get available group IDs for approval
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                SELECT DISTINCT write_off_group_id
+                FROM cases
+                WHERE write_off_group_id IS NOT NULL AND lc_status = 'Write Off Recommended'
+                ORDER BY write_off_group_id
+            """)
+
+            groups = cursor.fetchall()
+            conn.close()
+
+            if not groups:
+                QMessageBox.information(self, "No Submissions", "No write-off submissions available for approval.")
+                return
+
+            # For now, just approve the first group (in a real app, you'd show a selection dialog)
+            group_id = groups[0][0]
+
+            from .write_off_submission_dialog import WriteOffApprovalDialog
+            dialog = WriteOffApprovalDialog(group_id, self)
+            dialog.exec_()
+            # Refresh the case list after approval
+            self.refresh_cases()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to load submissions: {str(e)}")
+
+    def export_to_excel(self):
+        """Export the current case list to Excel format"""
+        try:
+            # Check if there are cases to export - show dialog if no data
+            if self.case_table.rowCount() == 0:
+                QMessageBox.warning(self, "No Data", "No cases to export.")
+                return
+
+            # Get current list filter for filename - replace spaces with underscores for valid filename
+            current_list = self.list_filter_combo.currentText().replace(" ", "_")
+
+            # Create year folder if it doesn't exist - ensures export directory structure
+            from scripts.Utilities.financial_utils import create_year_folder
+            year_folder = create_year_folder(get_financial_year())
+            export_dir = os.path.join(year_folder, "Exports")
+            os.makedirs(export_dir, exist_ok=True)
+
+            # Generate filename with timestamp - format: List_Export_{list_name}_{timestamp}.xlsx
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"List_Export_{current_list}_{timestamp}.xlsx"
+            filepath = os.path.join(export_dir, filename)
+
+            # Collect data from table - extract headers and row data for DataFrame creation
+            data = []
+            headers = []
+
+            # Get headers from table horizontal header
+            for col in range(self.case_table.columnCount()):
+                header_item = self.case_table.horizontalHeaderItem(col)
+                if header_item:
+                    headers.append(header_item.text())
+
+            # Get data rows - iterate through all table rows and columns
+            for row in range(self.case_table.rowCount()):
+                row_data = {}
+                for col in range(self.case_table.columnCount()):
+                    item = self.case_table.item(row, col)
+                    if item:
+                        # Handle special case for Case No (extract transaction number from Qt.UserRole)
+                        if col == 0:  # Case No column
+                            transaction_no = item.data(Qt.UserRole)
+                            row_data[headers[col]] = transaction_no if transaction_no else item.text()
+                        else:
+                            row_data[headers[col]] = item.text()
+                    else:
+                        # Check for widget (like buttons) - extract text if available
+                        widget = self.case_table.cellWidget(row, col)
+                        if widget and hasattr(widget, 'text'):
+                            row_data[headers[col]] = widget.text()
+                        else:
+                            row_data[headers[col]] = ""
+
+                data.append(row_data)
+
+            # Create DataFrame and export to Excel - use pandas for data manipulation and openpyxl for Excel formatting
+            import pandas as pd
+
+            df = pd.DataFrame(data)
+
+            # Calculate totals for Amount column if it exists - parse currency strings and sum
+            total_amount = 0.0
+            if 'Amount' in df.columns:
+                for amount_str in df['Amount']:
+                    try:
+                        # Remove currency formatting (R prefix, commas) for numeric conversion
+                        clean_amount = amount_str.replace('R ', '').replace(',', '').strip()
+                        total_amount += float(clean_amount)
+                    except (ValueError, AttributeError):
+                        pass
+
+            # Create Excel writer with openpyxl engine for advanced formatting capabilities
+            with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+                # Write DataFrame to Excel with specified sheet name, excluding DataFrame index
+                df.to_excel(writer, sheet_name=f'{current_list} Cases', index=False)
+
+                # Get workbook and worksheet references for post-processing formatting
+                workbook = writer.book
+                worksheet = writer.sheets[f'{current_list} Cases']
+
+                # Format amount column as South African currency if it exists (R with commas and 2 decimals)
+                amount_col = None
+                for col_num, column_title in enumerate(df.columns, 1):
+                    if column_title == 'Amount':
+                        amount_col = col_num
+                        break
+
+                if amount_col:
+                    from openpyxl.styles import NamedStyle
+                    currency_style = NamedStyle(name='currency', number_format='R #,##0.00')
+                    workbook.add_named_style(currency_style)
+
+                    # Apply currency formatting to data rows (skip header row)
+                    for row_num in range(2, len(df) + 2):  # Start from row 2 (after header)
+                        cell = worksheet.cell(row=row_num, column=amount_col)
+                        cell.style = 'currency'
+
+                # Add summary information at the top of the worksheet
+                worksheet.insert_rows(1)
+                worksheet['A1'] = f'{current_list} Cases Export'
+                worksheet['A2'] = f'Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+                worksheet['A3'] = f'Total Cases: {len(df)}'
+
+                if total_amount > 0:
+                    worksheet['A4'] = f'Total Amount: R {total_amount:,.2f}'
+
+                # Merge cells for title row spanning all columns
+                from openpyxl.utils import get_column_letter
+                last_col = get_column_letter(len(df.columns))
+                worksheet.merge_cells(f'A1:{last_col}1')
+
+                # Auto-adjust column widths based on content length for better readability
+                for column in worksheet.columns:
+                    max_length = 0
+                    column_letter = column[0].column_letter if hasattr(column[0], 'column_letter') else None
+                    if column_letter is None:
+                        # Handle merged cells by getting column letter from coordinate
+                        for cell in column:
+                            if hasattr(cell, 'column_letter'):
+                                column_letter = cell.column_letter
+                                break
+                        if column_letter is None:
+                            continue  # Skip if we can't determine column letter
+
+                    for cell in column:
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(str(cell.value))
+                        except:
+                            pass
+                    adjusted_width = min(max_length + 2, 50)  # Cap at 50 characters for readability
+                    worksheet.column_dimensions[column_letter].width = adjusted_width
+
+            # Show success message with file details
+            QMessageBox.information(
+                self, "Export Successful",
+                f"Case list exported successfully!\n\n"
+                f"File: {filename}\n"
+                f"Location: {export_dir}\n"
+                f"Cases exported: {len(df)}"
+            )
+
+        except ImportError:
+            # Handle missing pandas/openpyxl dependencies with user-friendly error
+            QMessageBox.critical(
+                self, "Missing Dependencies",
+                "Excel export requires pandas and openpyxl.\n\n"
+                "Please install with: pip install pandas openpyxl"
+            )
+        except Exception as e:
+            # Catch any other export errors and show to user
+            QMessageBox.critical(self, "Export Error", f"Failed to export to Excel: {str(e)}")
 
 
 class CaseDetailsDialog(QDialog):

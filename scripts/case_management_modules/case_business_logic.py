@@ -156,38 +156,38 @@ class CaseBusinessLogic:
             print(f"Error getting current open period: {e}")
             return None
 
-    def is_valid_status_transition(self, current_list, current_status, new_status):
-        """Validate if a status transition is allowed based on workflow rules"""
-        if current_status == new_status:
-            return True  # Allow staying in same status
+    def is_valid_status_transition(self, current_assessment_status, current_lc_status, new_assessment_status, new_lc_status):
+        """Validate if a status transition is allowed based on workflow rules in single-case model"""
+        # Allow staying in same status
+        if current_assessment_status == new_assessment_status and current_lc_status == new_lc_status:
+            return True
 
-        # Define valid transitions for each list
-        valid_transitions = {
-            "Checklist": {
-                "Alleged": ["Under Assessment", "Valid", "Confirmed"],
-                "Under Assessment": ["Valid", "Confirmed"],
-                "Valid": [],  # End state
-                "Confirmed": []  # Should be copied to Lead Schedule
-            },
-            "Lead Schedule": {
-                "Awaiting LC determination": ["Recovered", "Write Off"],
-                "Recovered": [],  # End state
-                "Write Off": []  # Should be copied to Write-Off Recommended
-            },
-            "Write-Off Recommended": {
-                "Write Off Recommended": ["Written Off"],
-                "Written Off": []  # End state
-            },
-            "Recovered": {
-                "Recovered": []  # End state
-            },
-            "Written Off": {
-                "Written Off": []  # End state
-            }
+        # Assessment status transitions (Checklist workflow)
+        valid_assessment_transitions = {
+            "Alleged": ["Under Assessment", "Valid", "Confirmed"],
+            "Under Assessment": ["Valid", "Confirmed"],
+            "Valid": [],  # End state - finalized
+            "Confirmed": []  # Leads to LC workflow
         }
 
-        # Get valid transitions for current list and status
-        list_transitions = valid_transitions.get(current_list, {})
-        allowed_transitions = list_transitions.get(current_status, [])
+        # LC status transitions (for Confirmed cases)
+        valid_lc_transitions = {
+            "Awaiting LC determination": ["Recovered", "Write Off Recommended"],
+            "Recovered": [],  # End state - finalized
+            "Write Off Recommended": [],  # Can be written off later
+            "Written Off": []  # End state - finalized
+        }
 
-        return new_status in allowed_transitions
+        # Validate assessment status transition
+        if new_assessment_status != current_assessment_status:
+            allowed_assessment = valid_assessment_transitions.get(current_assessment_status, [])
+            if new_assessment_status not in allowed_assessment:
+                return False
+
+        # Validate LC status transition (only for Confirmed cases)
+        if current_assessment_status == "Confirmed" and new_lc_status != current_lc_status:
+            allowed_lc = valid_lc_transitions.get(current_lc_status or "Awaiting LC determination", [])
+            if new_lc_status not in allowed_lc:
+                return False
+
+        return True

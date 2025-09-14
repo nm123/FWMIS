@@ -270,7 +270,7 @@ class EditCasesDialog(QDialog):
             cursor = conn.cursor()
 
             # Build query with financial year filter (but not for "All Cases" list filter)
-            query = "SELECT DISTINCT responsibility_id FROM cases WHERE list != 'Deleted Cases'"
+            query = "SELECT DISTINCT responsibility_id FROM cases WHERE suffixes NOT LIKE '%-DEL%'"
             params = []
 
             # Add financial year filter if selected
@@ -353,21 +353,25 @@ class EditCasesDialog(QDialog):
             base_conditions.append("fy_id = ?")
             params.append(selected_fy_id)
 
-        # Add list filter condition based on transaction_no suffixes
+        # Add list filter condition using new single-case model
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "All Cases":
-            base_conditions.append("list != 'Deleted Cases'")
+            base_conditions.append("suffixes NOT LIKE '%-DEL%'")
         elif selected_list == "Checklist":
-            # Checklist shows only cases without -LS or -WOR suffixes (original cases)
-            base_conditions.append("transaction_no NOT LIKE '%-LS' AND transaction_no NOT LIKE '%-WOR'")
+            # Checklist shows all cases (no additional filter)
+            pass
         elif selected_list == "Lead Schedule":
-            base_conditions.append("transaction_no LIKE '%-LS'")
+            # Lead Schedule shows Confirmed cases with -LS suffix, not finalized
+            base_conditions.append("assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("transaction_no LIKE '%-WOR'")
+            # Write-Off Recommended shows cases with -WOR suffix
+            base_conditions.append("suffixes LIKE '%-WOR%'")
         elif selected_list == "Recovered":
-            base_conditions.append("list = 'Recovered'")
+            # Recovered shows cases with -REC suffix
+            base_conditions.append("suffixes LIKE '%-REC%'")
         elif selected_list == "Written Off":
-            base_conditions.append("list = 'Written Off'")
+            # Written Off shows cases with -WO suffix
+            base_conditions.append("suffixes LIKE '%-WO%'")
 
         # Add responsibility filter if provided
         if resp_ids:
@@ -376,7 +380,7 @@ class EditCasesDialog(QDialog):
             params.extend(resp_ids)
 
         where_clause = " AND ".join(base_conditions) if base_conditions else "1=1"
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
+        query = f"SELECT transaction_no, date_reported, category, amount, assessment_status, lc_status, suffixes, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
         print(f"DEBUG: Executing query: {query}")
         print(f"DEBUG: Query params: {params}")
 
@@ -397,35 +401,50 @@ class EditCasesDialog(QDialog):
                     for col, data in enumerate(row_data):
                         try:
                             if col == 6:  # To-Do column (check both bas_payment_no and bas_journal_no)
-                                bas_payment_no = row_data[6] if len(row_data) > 6 else None
-                                bas_journal_no = row_data[7] if len(row_data) > 7 else None
+                                bas_payment_no = row_data[7] if len(row_data) > 7 else None
+                                bas_journal_no = row_data[8] if len(row_data) > 8 else None
                                 todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
                                 self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
                             elif col == 3:  # Amount column
                                 amount_item = format_currency_amount(data, right_align=True)
                                 self.case_table.setItem(row, col, amount_item)
-                            elif col == 0:  # Case No column - handle suffixes based on view
-                                display_value = str(data)
+                            elif col == 0:  # Case No column - transaction_no
+                                transaction_no = str(data) if data else ""
 
-                                # For "All Cases" view, show the suffix; for specific list views, strip it
+                                # For "All Cases" view, show the full transaction_no; for specific list views, strip workflow suffixes
                                 if selected_list == "All Cases":
-                                    # Keep suffixes in All Cases view
-                                    pass
+                                    display_value = transaction_no
                                 else:
-                                    # Strip workflow suffixes for display (-LS, -WOR) in specific list views
-                                    if display_value.endswith('-LS') or display_value.endswith('-WOR'):
-                                        display_value = display_value.rsplit('-', 1)[0]
+                                    # Strip workflow suffixes for display (-LS, -WOR, -REC, -WO) in specific list views
+                                    display_value = transaction_no
+                                    for suffix in ['-LS', '-WOR', '-REC', '-WO']:
+                                        if display_value.endswith(suffix):
+                                            display_value = display_value.rsplit('-', 1)[0]
+                                            break
 
                                 self.case_table.setItem(row, col, QTableWidgetItem(display_value))
-                            elif col == 0:  # Case No column - strip suffixes for display
-                                display_value = str(data)
-            
-                                # Strip workflow suffixes for display (-LS, -WOR)
-                                if display_value.endswith('-LS') or display_value.endswith('-WOR'):
-                                    display_value = display_value.rsplit('-', 1)[0]
-            
-                                self.case_table.setItem(row, col, QTableWidgetItem(display_value))
-                            elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
+                            elif col == 4:  # List column - derive from suffixes
+                                suffixes = row_data[6] if len(row_data) > 6 else ""
+                                if '-WO' in suffixes:
+                                    list_value = "Written Off"
+                                elif '-REC' in suffixes:
+                                    list_value = "Recovered"
+                                elif '-WOR' in suffixes:
+                                    list_value = "Write-Off Recommended"
+                                elif '-LS' in suffixes:
+                                    list_value = "Lead Schedule"
+                                else:
+                                    list_value = "Checklist"
+                                self.case_table.setItem(row, col, QTableWidgetItem(list_value))
+                            elif col == 5:  # Status column - combine assessment_status and lc_status
+                                assessment_status = row_data[4] if len(row_data) > 4 else ""
+                                lc_status = row_data[5] if len(row_data) > 5 else ""
+                                if lc_status:
+                                    status_value = f"{assessment_status}/{lc_status}"
+                                else:
+                                    status_value = assessment_status
+                                self.case_table.setItem(row, col, QTableWidgetItem(status_value))
+                            elif col in [1, 2]:  # Date Reported, Category
                                 display_value = str(data)
                                 self.case_table.setItem(row, col, QTableWidgetItem(display_value))
                         except Exception as cell_error:
@@ -472,19 +491,22 @@ class EditCasesDialog(QDialog):
         row = item.row()
         display_case_no = self.case_table.item(row, 0).text()
 
-        # Convert display case number back to database format
-        # Try different suffixed versions to find the actual database record
-        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
-
-        case_data = None
+        # With new schema, transaction_no is base_transaction_no + suffixes
+        # display_case_no might be stripped, so we need to find the actual transaction_no
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        for case_no in possible_case_nos:
-            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
-            case_data = cursor.fetchone()
-            if case_data:
-                break
+        # Try to find case by base_transaction_no (display might be stripped)
+        cursor.execute("SELECT * FROM cases WHERE base_transaction_no = ? OR transaction_no = ?", (display_case_no, display_case_no))
+        case_data = cursor.fetchone()
+
+        # If not found and display_case_no has no suffix, try with common suffixes
+        if not case_data and '-' not in display_case_no:
+            for suffix in ['-LS', '-WOR', '-REC', '-WO']:
+                cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (f"{display_case_no}{suffix}",))
+                case_data = cursor.fetchone()
+                if case_data:
+                    break
 
         conn.close()
 
@@ -515,24 +537,28 @@ class EditCasesDialog(QDialog):
             base_conditions.append("fy_id = ?")
             params.append(selected_fy_id)
 
-        # Add list filter condition based on transaction_no suffixes
+        # Add list filter condition using new single-case model
         selected_list = self.list_filter_combo.currentText()
         if selected_list == "All Cases":
-            base_conditions.append("list != 'Deleted Cases'")
+            base_conditions.append("suffixes NOT LIKE '%-DEL%'")
         elif selected_list == "Checklist":
-            # Checklist shows ALL cases - both without suffixes AND with -LS suffix (so moved cases appear in both places)
-            base_conditions.append("transaction_no NOT LIKE '%-WOR'")
+            # Checklist shows all cases (no additional filter)
+            pass
         elif selected_list == "Lead Schedule":
-            base_conditions.append("transaction_no LIKE '%-LS'")
+            # Lead Schedule shows Confirmed cases with -LS suffix, not finalized
+            base_conditions.append("assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'")
         elif selected_list == "Write-Off Recommended":
-            base_conditions.append("transaction_no LIKE '%-WOR'")
+            # Write-Off Recommended shows cases with -WOR suffix
+            base_conditions.append("suffixes LIKE '%-WOR%'")
         elif selected_list == "Recovered":
-            base_conditions.append("list = 'Recovered'")
+            # Recovered shows cases with -REC suffix
+            base_conditions.append("suffixes LIKE '%-REC%'")
         elif selected_list == "Written Off":
-            base_conditions.append("list = 'Written Off'")
+            # Written Off shows cases with -WO suffix
+            base_conditions.append("suffixes LIKE '%-WO%'")
 
         where_clause = " AND ".join(base_conditions)
-        query = f"SELECT transaction_no, date_reported, category, amount, list, status, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
+        query = f"SELECT transaction_no, date_reported, category, amount, assessment_status, lc_status, suffixes, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
 
         cursor.execute(query, params)
         for row_data in cursor.fetchall():
@@ -540,14 +566,50 @@ class EditCasesDialog(QDialog):
             self.case_table.insertRow(row)
             for col, data in enumerate(row_data):
                 if col == 6:  # To-Do column (check both bas_payment_no and bas_journal_no)
-                    bas_payment_no = row_data[6] if len(row_data) > 6 else None
-                    bas_journal_no = row_data[7] if len(row_data) > 7 else None
+                    bas_payment_no = row_data[7] if len(row_data) > 7 else None
+                    bas_journal_no = row_data[8] if len(row_data) > 8 else None
                     todo_value = "Yes" if (bas_payment_no or bas_journal_no) else "No"
                     self.case_table.setItem(row, col, QTableWidgetItem(todo_value))
                 elif col == 3:  # Amount column
                     amount_item = format_currency_amount(data, right_align=True)
                     self.case_table.setItem(row, col, amount_item)
-                elif col < 6:  # Regular columns (skip the extra bas_payment_no column)
+                elif col == 0:  # Case No column - transaction_no
+                    transaction_no = str(data) if data else ""
+
+                    # For "All Cases" view, show the full transaction_no; for specific list views, strip workflow suffixes
+                    if selected_list == "All Cases":
+                        display_value = transaction_no
+                    else:
+                        # Strip workflow suffixes for display (-LS, -WOR, -REC, -WO) in specific list views
+                        display_value = transaction_no
+                        for suffix in ['-LS', '-WOR', '-REC', '-WO']:
+                            if display_value.endswith(suffix):
+                                display_value = display_value.rsplit('-', 1)[0]
+                                break
+
+                    self.case_table.setItem(row, col, QTableWidgetItem(display_value))
+                elif col == 4:  # List column - derive from suffixes
+                    suffixes = row_data[6] if len(row_data) > 6 else ""
+                    if '-WO' in suffixes:
+                        list_value = "Written Off"
+                    elif '-REC' in suffixes:
+                        list_value = "Recovered"
+                    elif '-WOR' in suffixes:
+                        list_value = "Write-Off Recommended"
+                    elif '-LS' in suffixes:
+                        list_value = "Lead Schedule"
+                    else:
+                        list_value = "Checklist"
+                    self.case_table.setItem(row, col, QTableWidgetItem(list_value))
+                elif col == 5:  # Status column - combine assessment_status and lc_status
+                    assessment_status = row_data[4] if len(row_data) > 4 else ""
+                    lc_status = row_data[5] if len(row_data) > 5 else ""
+                    if lc_status:
+                        status_value = f"{assessment_status}/{lc_status}"
+                    else:
+                        status_value = assessment_status
+                    self.case_table.setItem(row, col, QTableWidgetItem(status_value))
+                elif col in [1, 2]:  # Date Reported, Category
                     display_value = str(data)
                     self.case_table.setItem(row, col, QTableWidgetItem(display_value))
 
@@ -579,22 +641,25 @@ class EditCasesDialog(QDialog):
         first_row = min(selected_rows)
         display_case_no = self.case_table.item(first_row, 0).text()
 
-        # Convert display case number back to database format
-        # Try different suffixed versions to find the actual database record
-        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
-
-        # Get responsibility_id for this case
+        # With new schema, find case by base_transaction_no or transaction_no
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
             responsibility_id = None
-            for case_no in possible_case_nos:
-                cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
-                result = cursor.fetchone()
-                if result:
-                    responsibility_id = result[0]
-                    break
+            # Try to find case by base_transaction_no (display might be stripped)
+            cursor.execute("SELECT responsibility_id FROM cases WHERE base_transaction_no = ? OR transaction_no = ?", (display_case_no, display_case_no))
+            result = cursor.fetchone()
+            if result:
+                responsibility_id = result[0]
+            # If not found and display_case_no has no suffix, try with common suffixes
+            elif '-' not in display_case_no:
+                for suffix in ['-LS', '-WOR', '-REC', '-WO']:
+                    cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (f"{display_case_no}{suffix}",))
+                    result = cursor.fetchone()
+                    if result:
+                        responsibility_id = result[0]
+                        break
 
             conn.close()
 
@@ -712,26 +777,61 @@ class EditCasesDialog(QDialog):
 
     def edit_case_by_row(self, row):
         """Edit case by table row"""
+        print(f"DEBUG: edit_case_by_row called with row {row}")
         display_case_no = self.case_table.item(row, 0).text()
+        print(f"DEBUG: display_case_no = '{display_case_no}'")
 
-        # Convert display case number back to database format
-        # Try different suffixed versions to find the actual database record
-        possible_case_nos = [display_case_no, f"{display_case_no}-LS", f"{display_case_no}-WOR"]
+        # With new schema, transaction_no is base_transaction_no + suffixes
+        # display_case_no might be stripped, so we need to find the actual transaction_no
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            print("DEBUG: Database connection established in edit_case_by_row")
 
-        case_data = None
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
-        for case_no in possible_case_nos:
-            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (case_no,))
+            # Try to find case by base_transaction_no (display might be stripped)
+            print(f"DEBUG: Executing query: SELECT * FROM cases WHERE base_transaction_no = ? OR transaction_no = ? with params ({display_case_no}, {display_case_no})")
+            cursor.execute("SELECT * FROM cases WHERE base_transaction_no = ? OR transaction_no = ?", (display_case_no, display_case_no))
             case_data = cursor.fetchone()
+            print(f"DEBUG: Query result: {case_data is not None}")
             if case_data:
-                break
+                print(f"DEBUG: Found case data with {len(case_data)} columns")
+                print(f"DEBUG: First few columns: {case_data[:5]}")
 
-        conn.close()
+            # If not found and display_case_no has no suffix, try with common suffixes
+            if not case_data and '-' not in display_case_no:
+                print("DEBUG: Case not found, trying with suffixes")
+                for suffix in ['-LS', '-WOR', '-REC', '-WO']:
+                    print(f"DEBUG: Trying suffix {suffix}")
+                    cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (f"{display_case_no}{suffix}",))
+                    case_data = cursor.fetchone()
+                    if case_data:
+                        print(f"DEBUG: Found case with suffix {suffix}")
+                        break
+
+            conn.close()
+            print("DEBUG: Database connection closed")
+
+        except Exception as e:
+            print(f"DEBUG: Exception in edit_case_by_row database operations: {e}")
+            import traceback
+            traceback.print_exc()
+            return
 
         if case_data:
-            dialog = EditCaseDialog(case_data, self)
-            if dialog.exec_():
-                # Refresh the table after editing
-                self.refresh_cases()
+            print("DEBUG: Creating EditCaseDialog")
+            try:
+                dialog = EditCaseDialog(case_data, self)
+                print("DEBUG: EditCaseDialog created successfully")
+                result = dialog.exec_()
+                print(f"DEBUG: EditCaseDialog.exec_() returned {result}")
+                if result:
+                    print("DEBUG: Refreshing cases after dialog")
+                    # Refresh the table after editing
+                    self.refresh_cases()
+            except Exception as e:
+                print(f"DEBUG: Exception creating or executing EditCaseDialog: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print(f"DEBUG: No case data found for display_case_no '{display_case_no}'")
+            QMessageBox.warning(self, "Case Not Found", f"Could not find case data for case number '{display_case_no}'")
