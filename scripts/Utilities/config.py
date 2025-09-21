@@ -8,6 +8,15 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 DB_PATH = os.path.join(DATA_DIR, 'fruitless.db')
 os.makedirs(DATA_DIR, exist_ok=True)
 
+# Check for and remove empty FMIS.db if it exists
+fmis_db_path = os.path.join(DATA_DIR, 'fwmis.db')
+if os.path.exists(fmis_db_path):
+    if os.path.getsize(fmis_db_path) == 0:
+        os.remove(fmis_db_path)
+        print("Removed empty fwmis.db file")
+    else:
+        print("Warning: Non-empty fwmis.db found, not removing")
+
 # Configure logging
 logging.basicConfig(
     filename=os.path.join(DATA_DIR, 'app.log'),

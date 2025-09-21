@@ -62,7 +62,28 @@ def generate_transaction_no(fy):
         conn.close()
 
         # Format as YYYY00001 (padded to 5 digits)
-        return f"{fy_end_year}{counter:05d}"
+        transaction_no = f"{fy_end_year}{counter:05d}"
+
+        # Check for uniqueness and increment if necessary
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        while True:
+            cursor.execute("SELECT COUNT(*) FROM cases WHERE transaction_no = ?", (transaction_no,))
+            if cursor.fetchone()[0] == 0:
+                break  # Unique, proceed
+            # Not unique, increment counter
+            counter += 1
+            transaction_no = f"{fy_end_year}{counter:05d}"
+            # Update the counter in database for future calls
+            cursor.execute("""
+                UPDATE fy_case_counters SET counter = ? WHERE fy_id = (
+                    SELECT id FROM financial_years WHERE start_year = ?
+                )
+            """, (counter, fy_end_year - 1))
+        conn.commit()
+        conn.close()
+
+        return transaction_no
 
     except sqlite3.Error as e:
         logging.error(f"Failed to generate transaction number: {e}")

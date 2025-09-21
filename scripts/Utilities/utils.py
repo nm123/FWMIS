@@ -24,14 +24,18 @@ def format_currency_amount(amount, include_currency=False, right_align=False):
         If right_align=True: QTableWidgetItem with right alignment
         If right_align=False: Formatted string
     """
-    if amount is None or amount == 0:
+    if amount is None or amount == 0 or amount == "0" or amount == "":
         formatted = "0.00"
     else:
-        abs_amount = abs(amount)
-        if include_currency:
-            formatted = f"R {abs_amount:,.2f}"
-        else:
-            formatted = f"{abs_amount:,.2f}"
+        try:
+            numeric_amount = float(amount) if isinstance(amount, str) else amount
+            abs_amount = abs(numeric_amount)
+            if include_currency:
+                formatted = f"R {abs_amount:,.2f}"
+            else:
+                formatted = f"{abs_amount:,.2f}"
+        except (ValueError, TypeError):
+            formatted = "0.00"
 
     if right_align:
         from PyQt5.QtWidgets import QTableWidgetItem

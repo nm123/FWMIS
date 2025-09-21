@@ -6,23 +6,25 @@ try:
     from .case_management_modules.responsibility_selection import ResponsibilitySelectionDialog
     from .case_management_modules.add_case import AddNewCaseDialog, AssessmentDialog
     from .case_management_modules.view_cases import ViewCasesDialog, CaseDetailsDialog
-    from .case_management_modules.edit_case_dialog import EditCaseDialog
+    from scripts.ui.dialogs.edit_case import EditCaseDialog
     from .case_management_modules.edit_cases_dialog import EditCasesDialog
     from .case_management_modules.deleted_cases import ViewDeletedCasesDialog
     from .case_management_modules.todo_list import ToDoListDialog
     # Import from new modular structure
-    from .ui.dialogs.import_cases_dialog import ImportUndisclosedCasesDialog, import_undisclosed_cases
+    from .ui.dialogs.import_cases_dialog_core import ImportUndisclosedCasesDialog
+    from .ui.dialogs.import_cases_dialog import import_undisclosed_cases
 except ImportError:
     # Fall back to absolute imports (when run directly)
     from scripts.case_management_modules.responsibility_selection import ResponsibilitySelectionDialog
     from scripts.case_management_modules.add_case import AddNewCaseDialog, AssessmentDialog
     from scripts.case_management_modules.view_cases import ViewCasesDialog, CaseDetailsDialog
-    from scripts.case_management_modules.edit_case_dialog import EditCaseDialog
+    from scripts.ui.dialogs.edit_case import EditCaseDialog
     from scripts.case_management_modules.edit_cases_dialog import EditCasesDialog
     from scripts.case_management_modules.deleted_cases import ViewDeletedCasesDialog
     from scripts.case_management_modules.todo_list import ToDoListDialog
     # Import from new modular structure
-    from scripts.ui.dialogs.import_cases_dialog import ImportUndisclosedCasesDialog, import_undisclosed_cases
+    from scripts.ui.dialogs.import_cases_dialog_core import ImportUndisclosedCasesDialog
+    from scripts.ui.dialogs.import_cases_dialog import import_undisclosed_cases
 
 # Make all dialogs available at the package level
 __all__ = [

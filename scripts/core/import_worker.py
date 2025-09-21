@@ -210,20 +210,23 @@ class ImportWorker(QThread):
 
             # Use the case number that was already assigned during preview
             case_number = transaction.get('case_number')
+            base_transaction_no = transaction.get('base_transaction_no', case_number)
             if not case_number:
                 print("DEBUG: No case number assigned, using fallback")
-                # Fallback if no case number was assigned
+                # Fallback if no case number was assigned - use base_transaction_no for numbering
                 cursor.execute("""
-                    SELECT MAX(CAST(SUBSTR(transaction_no, 5) AS INTEGER))
+                    SELECT MAX(CAST(SUBSTR(base_transaction_no, 5) AS INTEGER))
                     FROM cases
                     WHERE fy_id = ?
                     AND fy_id IS NOT NULL
+                    AND base_transaction_no IS NOT NULL
                     AND list != 'Deleted Cases'
                 """, (fy_id,))
                 max_num = cursor.fetchone()[0]
                 next_num = (max_num or 0) + 1
                 fy_end_year = int(fy.split('-')[1])
                 case_number = f"{fy_end_year}{next_num:05d}"
+                base_transaction_no = case_number
 
             print(f"DEBUG: Using case number: {case_number}, fy_id: {fy_id}, period_id: {period_id}, resp_id: {resp_id}")
 
@@ -288,15 +291,15 @@ class ImportWorker(QThread):
             print(f"DEBUG: ImportWorker inserting case {case_number} with fy_id: {fy_id}")
             cursor.execute("""
                 INSERT INTO cases (
-                    transaction_no, date_incurred, date_identified, date_reported,
+                    transaction_no, base_transaction_no, date_incurred, date_identified, date_reported,
                     description, bas_payment_no, bas_payment_date, persal_no, category,
                     responsibility_id, amount, source_document, minutes, evidence_path,
                     status, list, assessment_assessed_by, assessment_date, assessment_result,
                     fy_id, period_id, criminal_charges, disciplinary_process, loss_recovery,
                     prevention_steps, original_list, attachments, shared_document_id, bas_journal_no, bas_journal_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                case_number, date_str, date_str, date_str,
+                case_number, base_transaction_no, date_str, date_str, date_str,
                 description, bas_payment_no, bas_payment_date, None, self.category['name'],
                 resp_id, abs(transaction['amount']), None, None, None,  # Will set evidence later
                 status, list_name, None, None, None,

@@ -28,15 +28,14 @@ from PyQt5.QtWidgets import (
 )
 
 # Set Qt attributes BEFORE creating QApplication
-print("DEBUG: Setting Qt attributes before QApplication creation")
 QApplication.setAttribute(Qt.AA_UseSoftwareOpenGL, True)  # Force software OpenGL
 QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings, True)  # Prevent native widget issues
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, False)  # Disable high DPI pixmaps
-print("DEBUG: Qt application attributes set before QApplication creation")
 from scripts.Utilities.ui_theme import apply_theme, create_status_label
 from scripts.case_management import AddNewCaseDialog, ViewCasesDialog, EditCasesDialog, ToDoListDialog, ViewDeletedCasesDialog
+from scripts.ui.dialogs.import_cases_dialog_core import ImportUndisclosedCasesDialog
 from scripts.ui.dialogs.import_cases_dialog import import_undisclosed_cases
-from scripts.case_management_modules.bulk_case_entry import BulkCaseEntryWizard
+from scripts.ui.dialogs.checklist_dialog import ChecklistDialog
 from scripts.case_management_modules.write_off_submission_dialog import WriteOffSubmissionDialog
 from scripts.case_management_modules.write_off_management_dialog import WriteOffManagementDialog
 from scripts.category_management import ManageCategoriesDialog
@@ -68,11 +67,8 @@ class FWManagementApp(QMainWindow):
 
         # Initialize database tables
         try:
-            print("DEBUG: Initializing database tables")
             initialize_shared_documents_table()
-            print("DEBUG: Database tables initialized successfully")
         except Exception as e:
-            print(f"DEBUG: Error initializing database: {e}")
             QMessageBox.warning(self, "Database Warning", f"Failed to initialize database tables: {str(e)}")
 
         self.setup_ui()
@@ -179,7 +175,6 @@ class FWManagementApp(QMainWindow):
 
     def refresh_cases(self):
         """Refresh cases display - placeholder for future implementation"""
-        print("DEBUG: refresh_cases called on main window")
         # This method can be implemented later if needed for refreshing the main window
         pass
 
@@ -210,9 +205,6 @@ class FWManagementApp(QMainWindow):
         add_case_action.triggered.connect(self.add_new_case)
         cases_menu.addAction(add_case_action)
 
-        bulk_case_action = QAction("Bulk Case Entry", self)
-        bulk_case_action.triggered.connect(self.bulk_case_entry)
-        cases_menu.addAction(bulk_case_action)
 
         import_cases_action = QAction("Import Undisclosed Cases", self)
         import_cases_action.triggered.connect(self.import_undisclosed_cases)
@@ -302,12 +294,6 @@ class FWManagementApp(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to open Add New Case dialog: {str(e)}")
 
-    def bulk_case_entry(self):
-        try:
-            wizard = BulkCaseEntryWizard(self)
-            wizard.exec_()
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Bulk Case Entry wizard: {str(e)}")
 
     def import_undisclosed_cases(self):
         try:
@@ -324,137 +310,10 @@ class FWManagementApp(QMainWindow):
 
     def manage_cases(self):
         try:
-            print("DEBUG: Opening Edit Cases dialog")
             dialog = EditCasesDialog(self)
-            print("DEBUG: EditCasesDialog created successfully")
-
-            # Test dialog display before showing
-            try:
-                dialog.show()
-                dialog.hide()  # Hide immediately to test
-                print("DEBUG: Dialog display test successful")
-            except Exception as display_test_error:
-                print(f"DEBUG: Dialog display test failed: {display_test_error}")
-                # Try to create a simplified fallback dialog
-                self.show_fallback_edit_dialog()
-                return
-
-            # Connect to dialog's signals to monitor for issues
-            def on_dialog_finished(result):
-                print(f"DEBUG: EditCasesDialog finished with result: {result}")
-
-            def on_dialog_destroyed():
-                print("DEBUG: EditCasesDialog destroyed")
-
-            dialog.finished.connect(on_dialog_finished)
-            dialog.destroyed.connect(on_dialog_destroyed)
-            print("DEBUG: Connected to dialog finished and destroyed signals")
-
-            # Add additional Qt error monitoring
-            print("DEBUG: About to call dialog.show()")
-            dialog.show()
-            print("DEBUG: dialog.show() completed")
-
-            print("DEBUG: About to call dialog.raise_()")
-            dialog.raise_()
-            print("DEBUG: dialog.raise_() completed")
-
-            print("DEBUG: About to call dialog.activateWindow()")
-            dialog.activateWindow()
-            print("DEBUG: dialog.activateWindow() completed")
-
-            print("DEBUG: About to call app.processEvents()")
-            from PyQt5.QtWidgets import QApplication
-            app = QApplication.instance()
-            if app:
-                app.processEvents()
-                print("DEBUG: app.processEvents() completed")
-
-            print("DEBUG: About to call dialog.exec_()")
-
-            # Add emergency crash protection
-            import signal
-            import os
-
-            def emergency_handler(signum, frame):
-                print("EMERGENCY: Application received termination signal")
-                print(f"EMERGENCY: Signal: {signum}")
-                try:
-                    # Try to show emergency dialog
-                    from PyQt5.QtWidgets import QMessageBox
-                    QMessageBox.critical(None, "Emergency Shutdown",
-                                       "Application experienced a critical error and must shut down.\n\n"
-                                       "Please restart the application and try again.")
-                except:
-                    print("EMERGENCY: Could not show emergency dialog")
-
-                # Force exit
-                os._exit(1)
-
-            # Set up emergency signal handlers
-            old_sigterm = signal.signal(signal.SIGTERM, emergency_handler)
-            old_sigint = signal.signal(signal.SIGINT, emergency_handler)
-
-            print("DEBUG: Using non-modal dialog approach to avoid Qt crash")
-
-            # Use non-modal approach to avoid Qt modal dialog crash
-            dialog.show()
-            dialog.raise_()
-            dialog.activateWindow()
-
-            # Set up result tracking for non-modal dialog
-            dialog_result = [None]  # Use list to allow modification in nested function
-
-            def on_dialog_finished(result):
-                print(f"DEBUG: Non-modal dialog finished with result: {result}")
-                dialog_result[0] = result
-                # Refresh cases if dialog was accepted
-                if result == 1:  # QDialog.Accepted
-                    print("DEBUG: Dialog accepted, refreshing cases")
-                    try:
-                        self.refresh_cases()
-                        print("DEBUG: Cases refreshed successfully")
-                    except Exception as refresh_error:
-                        print(f"DEBUG: Error refreshing cases: {refresh_error}")
-
-            # Connect to finished signal
-            dialog.finished.connect(on_dialog_finished)
-
-            # Process events to allow dialog to be displayed
-            from PyQt5.QtWidgets import QApplication
-            app = QApplication.instance()
-            if app:
-                app.processEvents()
-
-            print("DEBUG: Non-modal dialog displayed successfully")
-            print("DEBUG: Dialog will remain open until user closes it")
-
-            # Return success since dialog is displayed
-            result = True
-
-            # Clean up signal handlers
-            try:
-                signal.signal(signal.SIGTERM, old_sigterm)
-                signal.signal(signal.SIGINT, old_sigint)
-                print("DEBUG: Signal handlers restored")
-            except:
-                print("DEBUG: Could not restore signal handlers")
-
-            # Clean up
-            try:
-                dialog.finished.disconnect(on_dialog_finished)
-                print("DEBUG: Disconnected dialog signals")
-            except:
-                print("DEBUG: Could not disconnect dialog signals")
-
+            dialog.exec_()
         except Exception as e:
-            print(f"DEBUG: Error in manage_cases: {e}")
-            import traceback
-            traceback.print_exc()
-            try:
-                QMessageBox.critical(self, "Error", f"Failed to open Edit Cases dialog: {str(e)}")
-            except Exception as msg_error:
-                print(f"DEBUG: Could not show error dialog: {msg_error}")
+            QMessageBox.critical(self, "Error", f"Failed to open Edit Cases dialog: {str(e)}")
 
     def todo_list(self):
         try:
@@ -513,12 +372,14 @@ class FWManagementApp(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to open Wipe Cases dialog: {str(e)}")
 
     def view_checklist(self):
-        """Placeholder for Checklist view - to be implemented"""
-        QMessageBox.information(self, "Checklist", "Checklist view functionality will be implemented here.")
+        try:
+            dialog = ChecklistDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open Checklist dialog: {str(e)}")
 
     def view_lead_schedule(self):
-        """Placeholder for Lead Schedule view - to be implemented"""
-        QMessageBox.information(self, "Lead Schedule", "Lead Schedule view functionality will be implemented here.")
+        pass
 
     def view_deleted_items(self):
         """Placeholder for Deleted Items view - to be implemented"""
@@ -548,76 +409,6 @@ class FWManagementApp(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to open Write-Off Management dialog: {str(e)}")
 
-    def show_fallback_edit_dialog(self):
-        """Show a simplified fallback dialog when the main Edit Cases dialog fails"""
-        try:
-            from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QListWidget, QListWidgetItem
-
-            dialog = QDialog(self)
-            dialog.setWindowTitle("Edit Cases (Fallback Mode)")
-            dialog.setFixedSize(600, 400)
-            dialog.setAttribute(Qt.WA_DeleteOnClose, False)
-
-            layout = QVBoxLayout(dialog)
-
-            # Warning message
-            warning_label = QLabel("⚠️ Advanced Edit Cases dialog failed to load.\nUsing simplified fallback mode.")
-            warning_label.setStyleSheet("color: orange; font-weight: bold;")
-            layout.addWidget(warning_label)
-
-            # Simple case list
-            list_label = QLabel("Available Cases:")
-            layout.addWidget(list_label)
-
-            case_list = QListWidget()
-            # Load basic case list
-            try:
-                conn = sqlite3.connect(DB_PATH)
-                cursor = conn.cursor()
-                cursor.execute("SELECT transaction_no, category, amount FROM cases WHERE list != 'Deleted Cases' LIMIT 50")
-                for row in cursor.fetchall():
-                    case_no, category, amount = row
-                    item_text = f"{case_no} - {category} - R{amount or 0}"
-                    case_list.addItem(QListWidgetItem(item_text))
-                conn.close()
-            except Exception as db_error:
-                case_list.addItem(QListWidgetItem(f"Error loading cases: {db_error}"))
-
-            layout.addWidget(case_list)
-
-            # Buttons
-            button_layout = QHBoxLayout()
-            refresh_btn = QPushButton("Refresh")
-            refresh_btn.clicked.connect(lambda: self.refresh_fallback_list(case_list))
-            close_btn = QPushButton("Close")
-            close_btn.clicked.connect(dialog.accept)
-
-            button_layout.addWidget(refresh_btn)
-            button_layout.addStretch()
-            button_layout.addWidget(close_btn)
-            layout.addLayout(button_layout)
-
-            dialog.exec_()
-
-        except Exception as fallback_error:
-            QMessageBox.critical(self, "Fallback Error",
-                               f"Even the fallback dialog failed: {str(fallback_error)}\n\n"
-                               "Please restart the application and try again.")
-
-    def refresh_fallback_list(self, case_list):
-        """Refresh the case list in the fallback dialog"""
-        try:
-            case_list.clear()
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute("SELECT transaction_no, category, amount FROM cases WHERE list != 'Deleted Cases' LIMIT 50")
-            for row in cursor.fetchall():
-                case_no, category, amount = row
-                item_text = f"{case_no} - {category} - R{amount or 0}"
-                case_list.addItem(QListWidgetItem(item_text))
-            conn.close()
-        except Exception as refresh_error:
-            case_list.addItem(QListWidgetItem(f"Error refreshing cases: {refresh_error}"))
 
 def exception_handler(exctype, value, traceback):
     """Global exception handler to catch unhandled exceptions"""
@@ -673,52 +464,37 @@ if __name__ == "__main__":
     sys.excepthook = exception_handler
 
     # Run Qt diagnostics and apply fixes
-    print("DEBUG: Running Qt diagnostics...")
     apply_qt_fixes()
     issues = check_qt_compatibility()
     if issues:
-        print("DEBUG: Qt compatibility issues detected:")
         for issue in issues:
-            print(f"  - {issue}")
+            pass  # Issues detected, but no print
     else:
-        print("DEBUG: No Qt compatibility issues detected")
+        pass
 
     try:
-        print("DEBUG: Creating QApplication with optimized settings")
         app = QApplication(sys.argv)
-        print("DEBUG: QApplication created successfully")
 
         # Note: Qt message handler not available in this PyQt5 version
         # Qt internal errors will be caught by the global exception handler
 
-        print("DEBUG: Creating main window")
         window = FWManagementApp()
-        print("DEBUG: Main window created successfully")
-
-        print("DEBUG: Showing main window")
         window.show()
-        print("DEBUG: Main window shown successfully")
 
         # Force process events before starting main loop
         app.processEvents()
-        print("DEBUG: Initial events processed")
 
         # Run the application with error handling
-        print("DEBUG: About to start Qt event loop with app.exec_()")
         try:
             exit_code = app.exec_()
-            print(f"DEBUG: Qt event loop completed with exit code: {exit_code}")
         except Exception as event_error:
-            print(f"DEBUG: Error in Qt event loop: {event_error}")
             import traceback
             traceback.print_exc()
             exit_code = 1
 
-        print(f"Application exited with code: {exit_code}")
         sys.exit(exit_code)
 
     except Exception as e:
-        print(f"Critical error starting application: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

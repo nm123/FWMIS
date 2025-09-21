@@ -39,8 +39,8 @@ class ToDoListDialog(QDialog):
 
         # Cases table on the right
         self.todo_table = QTableWidget()
-        self.todo_table.setColumnCount(6)
-        self.todo_table.setHorizontalHeaderLabels(["Case No", "Description", "Status", "Assessment Evidence", "Supporting Evidence", "Due Date"])
+        self.todo_table.setColumnCount(3)
+        self.todo_table.setHorizontalHeaderLabels(["Transaction No", "List", "Status"])
 
         # Enable selection change to highlight responsibility
         self.todo_table.itemSelectionChanged.connect(self.on_case_select)
@@ -52,12 +52,9 @@ class ToDoListDialog(QDialog):
         header.setStretchLastSection(True)  # Last column stretches to fill remaining space
 
         # Set default column widths for better layout
-        self.todo_table.setColumnWidth(0, 120)  # Case No
-        self.todo_table.setColumnWidth(1, 300)  # Description
+        self.todo_table.setColumnWidth(0, 120)  # Transaction No
+        self.todo_table.setColumnWidth(1, 120)  # List
         self.todo_table.setColumnWidth(2, 120)  # Status
-        self.todo_table.setColumnWidth(3, 150)  # Assessment Evidence
-        self.todo_table.setColumnWidth(4, 150)  # Supporting Evidence
-        self.todo_table.setColumnWidth(5, 100)  # Due Date
 
         # Set row height for better readability
         self.todo_table.verticalHeader().setDefaultSectionSize(25)
@@ -78,24 +75,27 @@ class ToDoListDialog(QDialog):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Build query with optional responsibility filter
-        base_conditions = ["status IN ('Alleged', 'Under Assessment', 'Awaiting Evidence', 'Outstanding BAS Details', 'Missing Supporting Evidence')"]
+        # Build responsibility filter
+        resp_filter = ""
         params = []
-
-        # Add responsibility filter if provided
         if resp_ids:
             placeholders = ",".join("?" for _ in resp_ids)
-            base_conditions.append(f"responsibility_id IN ({placeholders})")
+            resp_filter = f"AND responsibility_id IN ({placeholders})"
             params.extend(resp_ids)
 
-        where_clause = " AND ".join(base_conditions)
         query = f"""
-            SELECT transaction_no, description, status, evidence_path, bas_payment_no, persal_no, category
+            SELECT transaction_no, 'Checklist' as list, assessment_status as status
             FROM cases
-            WHERE {where_clause}
+            WHERE list = 'Checklist' AND assessment_status IN ('Alleged', 'Under Assessment') {resp_filter}
+
+            UNION ALL
+
+            SELECT transaction_no, 'Lead Schedule' as list, lc_status as status
+            FROM cases
+            WHERE list = 'Lead Schedule' AND lc_status = 'Awaiting LC determination' {resp_filter}
         """
 
-        cursor.execute(query, params)
+        cursor.execute(query, params + params if resp_ids else params)
 
         for row_data in cursor.fetchall():
             row = self.todo_table.rowCount()
@@ -104,18 +104,6 @@ class ToDoListDialog(QDialog):
             # Basic columns
             for col in range(3):
                 self.todo_table.setItem(row, col, QTableWidgetItem(str(row_data[col])))
-
-            # Assessment Evidence column (col 3)
-            assessment_status = "✓" if row_data[3] else "✗"  # evidence_path
-            self.todo_table.setItem(row, 3, QTableWidgetItem(assessment_status))
-
-            # Supporting Evidence column (col 4)
-            supporting_status = self._get_supporting_evidence_status(row_data[4], row_data[5], row_data[6], conn)
-            self.todo_table.setItem(row, 4, QTableWidgetItem(supporting_status))
-
-            # Due Date column (col 5)
-            due_date = QDate.currentDate().addDays(7).toString("yyyy-MM-dd")
-            self.todo_table.setItem(row, 5, QTableWidgetItem(due_date))
 
         conn.close()
 
@@ -138,7 +126,11 @@ class ToDoListDialog(QDialog):
             cursor = conn.cursor()
 
             # Get all responsibility IDs that have cases with todo status
-            cursor.execute("SELECT DISTINCT responsibility_id FROM cases WHERE status IN ('Alleged', 'Under Assessment', 'Awaiting Evidence', 'Outstanding BAS Details', 'Missing Supporting Evidence')")
+            cursor.execute("""
+                SELECT DISTINCT responsibility_id FROM cases WHERE list = 'Checklist' AND assessment_status IN ('Alleged', 'Under Assessment')
+                UNION ALL
+                SELECT DISTINCT responsibility_id FROM cases WHERE list = 'Lead Schedule' AND lc_status = 'Awaiting LC determination'
+            """)
             case_resp_ids = {row[0] for row in cursor.fetchall()}
 
             # Include parent responsibilities

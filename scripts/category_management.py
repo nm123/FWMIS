@@ -295,7 +295,7 @@ class AddCategoryDialog(QDialog):
             return
 
         # Check for circular reference
-        if parent_id and self.would_create_cycle(parent_id, self.categories):
+        if parent_id and self.parent.would_create_cycle(parent_id, self.categories):
             QMessageBox.warning(self, "Invalid Input", "Cannot create circular parent-child relationship.")
             return
 
@@ -305,17 +305,6 @@ class AddCategoryDialog(QDialog):
 
         self.accept()
 
-    def would_create_cycle(self, parent_id, categories):
-        """Check if assigning parent_id would create a circular reference."""
-        seen = set()
-        current_id = parent_id
-        while current_id:
-            if current_id in seen:
-                return True
-            seen.add(current_id)
-            parent = next((c["parent_id"] for c in categories if c["id"] == current_id), None)
-            current_id = parent
-        return False
 
     def get_category_data(self):
         return {
@@ -399,7 +388,7 @@ class EditCategoryDialog(QDialog):
             QMessageBox.warning(self, "Invalid Input", "Category name must be unique.")
             return
 
-        if parent_id and (parent_id == self.category["id"] or self.would_create_cycle(parent_id, self.categories, self.category["id"])):
+        if parent_id and (parent_id == self.category["id"] or self.parent.would_create_cycle(parent_id, self.categories, self.category["id"])):
             QMessageBox.warning(self, "Invalid Input", "Cannot create circular parent-child relationship.")
             return
 
@@ -409,19 +398,6 @@ class EditCategoryDialog(QDialog):
 
         self.accept()
 
-    def would_create_cycle(self, parent_id, categories, editing_id=None):
-        """Check if assigning parent_id would create a circular reference."""
-        seen = set()
-        current_id = parent_id
-        while current_id:
-            if current_id in seen:
-                return True
-            seen.add(current_id)
-            if current_id == editing_id:  # Prevent self-referencing during edit
-                return True
-            parent = next((c["parent_id"] for c in categories if c["id"] == current_id), None)
-            current_id = parent
-        return False
 
     def get_category_data(self):
         return {
