@@ -196,6 +196,16 @@ class EditCaseLogic:
             disciplinary_text = self.dialog.disciplinary_combo.currentText()
             loss_recovery_text = self.dialog.loss_recovery_combo.currentText()
 
+            # New: Determine assessment_status and lc_status based on selected_list
+            assessment_status: str
+            lc_status: str | None
+            if self.dialog.selected_list == "Lead Schedule":
+                assessment_status = "Confirmed"
+                lc_status = status_text
+            else:
+                assessment_status = status_text
+                lc_status = None
+
             # Get existing fy_id and period_id
             existing_fy_id = self.case_data[21] if len(self.case_data) > 21 else None
             existing_period_id = (
@@ -236,34 +246,33 @@ class EditCaseLogic:
                 existing_period_id = period_result[0] if period_result else None
                 conn_temp.close()
 
-            # Handle transaction_no suffix changes
-            base_transaction_no = self.transaction_no
-            has_ls = base_transaction_no.endswith(
-                "-LS"
-            )  # New flag to track if original had -LS
-            if base_transaction_no.endswith("-LS"):
-                base_transaction_no = base_transaction_no[:-3]
-            elif base_transaction_no.endswith("-WOR"):
-                base_transaction_no = base_transaction_no[:-4]
+            # Validate required IDs to prevent orphans
+            if not existing_fy_id or not existing_period_id or not self.dialog.selected_responsibility_id:
+                QMessageBox.critical(
+                    self.dialog,
+                    "Validation Error",
+                    "Cannot save case: Missing required IDs (FY, Period, or Responsibility)."
+                )
+                return
 
-            transaction_no_with_suffix = base_transaction_no
-            if status_text == "Confirmed":
-                transaction_no_with_suffix = f"{base_transaction_no}-LS"
-                list_text = "Lead Schedule"
-            elif status_text == "Write Off Recommended":
-                if (
-                    has_ls
-                ):  # If original had -LS, preserve it for Lead Schedule visibility
-                    transaction_no_with_suffix = f"{base_transaction_no}-LS-WOR"
+            # Determine lc_status, list_text, and is_finalized
+            if self.dialog.selected_list == "Lead Schedule":
+                lc_status = status_text
+                if status_text == "Recovered":
+                    list_text = "Recovered"
+                    is_finalized = True
+                elif status_text == "Written Off":
+                    list_text = "Written Off"
+                    is_finalized = True
                 else:
-                    transaction_no_with_suffix = f"{base_transaction_no}-WOR"
-                list_text = "Write-Off Recommended"
+                    list_text = "Lead Schedule"
+                    is_finalized = False
             else:
+                lc_status = None
                 list_text = "Checklist"
+                is_finalized = (status_text == "Valid")
 
-            print(
-                f"Updated transaction_no: {transaction_no_with_suffix}, has_ls: {has_ls}"
-            )
+            transaction_no_with_suffix = self.transaction_no
 
             case = {
                 "transaction_no": transaction_no_with_suffix,
@@ -281,11 +290,13 @@ class EditCaseLogic:
                 "minutes": self.dialog.minutes_edit.text().strip(),
                 "evidence_path": self.dialog.evidence_edit.text().strip(),
                 "attachments": "[]",
-                "status": status_text,
+                "status": assessment_status,
                 "list": list_text,
                 "assessment_assessed_by": self.dialog.assessed_by_edit.text().strip(),
                 "assessment_date": assessment_date_str,
                 "assessment_result": "",
+                "lc_status": lc_status,
+                "is_finalized": is_finalized,
                 "criminal_charges": criminal_charges_text,
                 "disciplinary_process": disciplinary_text,
                 "loss_recovery": loss_recovery_text,
@@ -352,7 +363,7 @@ class EditCaseLogic:
                     transaction_no = ?, date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
                     bas_payment_no = ?, bas_payment_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
                     source_document = ?, minutes = ?, evidence_path = ?, attachments = ?, status = ?, list = ?, assessment_assessed_by = ?,
-                    assessment_date = ?, assessment_result = ?, fy_id = ?, period_id = ?, criminal_charges = ?, disciplinary_process = ?,
+                    assessment_date = ?, assessment_result = ?, lc_status = ?, is_finalized = ?, fy_id = ?, period_id = ?, criminal_charges = ?, disciplinary_process = ?,
                     loss_recovery = ?, prevention_steps = ?, original_list = ?
                 WHERE transaction_no = ?
             """,
@@ -377,6 +388,8 @@ class EditCaseLogic:
                     case["assessment_assessed_by"],
                     case["assessment_date"],
                     case["assessment_result"],
+                    case["lc_status"],
+                    case["is_finalized"],
                     case["fy_id"],
                     case["period_id"],
                     case["criminal_charges"],
@@ -391,8 +404,6 @@ class EditCaseLogic:
             conn.commit()
             case_id = self.case_data[0]
             conn.close()
-
-            assert transaction_no_with_suffix.endswith(("-LS", "-WOR", "-LS-WOR", ""))
 
             save_audit_log(
                 "edit_case",

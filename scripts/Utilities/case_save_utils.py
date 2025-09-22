@@ -35,12 +35,7 @@ def save_case(dialog_instance) -> bool:
 
         # Create case dictionary
         category_text = dialog_instance.category_combo.currentText()
-        assessment_status_text = dialog_instance.assessment_status_combo.currentText()
-        lc_status_text = (
-            dialog_instance.lc_status_combo.currentText()
-            if dialog_instance.lc_status_combo.isVisible()
-            else None
-        )
+        status_text = dialog_instance.lc_status_combo.currentText()
         criminal_charges_text = dialog_instance.criminal_charges_combo.currentText()
         disciplinary_text = dialog_instance.disciplinary_combo.currentText()
         loss_recovery_text = dialog_instance.loss_recovery_combo.currentText()
@@ -107,8 +102,65 @@ def save_case(dialog_instance) -> bool:
                 print(f"Warning: Could not determine period ID: {e}")
                 existing_period_id = None
 
+        # Handle transaction_no suffix changes
+        import re
+
+        base_transaction_no = re.sub(
+            r"(-LS|-WOR|-REC|-WO)+$", "", dialog_instance.base_transaction_no
+        )
+        has_ls = (
+            "-LS" in dialog_instance.case_data[32]
+            if len(dialog_instance.case_data) > 32
+            else False
+        )
+
+        if dialog_instance.selected_list == "Lead Schedule":
+            assessment_status_text = "Confirmed"
+            lc_status_text = status_text
+            if lc_status_text == "Write Off Recommended":
+                if has_ls:
+                    transaction_no_with_suffix = f"{base_transaction_no}-LS-WOR"
+                else:
+                    transaction_no_with_suffix = f"{base_transaction_no}-WOR"
+            else:
+                transaction_no_with_suffix = f"{base_transaction_no}-LS"
+            list_text = "Lead Schedule"
+        else:
+            assessment_status_text = status_text
+            lc_status_text = None
+            if assessment_status_text == "Confirmed":
+                transaction_no_with_suffix = f"{base_transaction_no}-LS"
+                list_text = "Lead Schedule"
+            elif assessment_status_text == "Write Off Recommended":
+                transaction_no_with_suffix = f"{base_transaction_no}-WOR"
+                list_text = "Write-Off Recommended"
+            else:
+                transaction_no_with_suffix = base_transaction_no
+                list_text = "Checklist"
+
+        # Compute suffixes from transaction_no_with_suffix
+        suffixes_list = []
+        if "-LS" in transaction_no_with_suffix:
+            suffixes_list.append("-LS")
+        if "-WOR" in transaction_no_with_suffix:
+            suffixes_list.append("-WOR")
+        if "-REC" in transaction_no_with_suffix:
+            suffixes_list.append("-REC")
+        if "-WO" in transaction_no_with_suffix:
+            suffixes_list.append("-WO")
+
+        suffixes = ",".join(suffixes_list)
+
+        if lc_status_text == "Write Off Recommended":
+            suffixes = ",".join([s for s in suffixes.split(",") if s != "-WO"])
+
+        print(f"has_ls: {has_ls}, suffixes: {suffixes}")
+
         case = {
             "base_transaction_no": dialog_instance.base_transaction_no,
+            "transaction_no": transaction_no_with_suffix,
+            "suffixes": suffixes,
+            "list": list_text,
             "date_incurred": str(date_incurred_str),
             "date_identified": str(date_identified_str),
             "date_reported": str(date_reported_str),
@@ -129,6 +181,7 @@ def save_case(dialog_instance) -> bool:
             "criminal_charges": criminal_charges_text,
             "disciplinary_process": disciplinary_text,
             "loss_recovery": loss_recovery_text,
+            "assessment_status": assessment_status_text,
             "lc_status": lc_status_text,
             "prevention_steps": dialog_instance.prevention_steps_edit.toPlainText().strip(),
             "fy_id": existing_fy_id,

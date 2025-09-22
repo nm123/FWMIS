@@ -100,10 +100,10 @@ def populate_case_table(
         # Case No (with suffix stripping for display)
         display_value = transaction_no
         if list_name != "All Cases":
-            for suffix in ["-LS", "-WOR", "-REC", "-WO"]:
-                if display_value.endswith(suffix):
-                    display_value = display_value.rsplit("-", 1)[0]
-                    break
+            while any(
+                display_value.endswith(s) for s in ["-LS", "-WOR", "-REC", "-WO"]
+            ):
+                display_value = display_value.rsplit("-", 1)[0]
         case_item = QTableWidgetItem(str(display_value) if display_value else "")
         case_item.setData(Qt.UserRole, transaction_no)
         table.setItem(row, 0, case_item)

@@ -274,27 +274,20 @@ class AddCaseLogic:
             # Get case data
             case = get_case_data(self.dialog)
 
-            # Get current financial year ID
-            current_fy = get_current_open_financial_year()
-            fy_id = current_fy[0] if current_fy else None
-
-            if fy_id is None:
-                QMessageBox.critical(
-                    self.dialog,
-                    "Financial Year Error",
-                    "Cannot save case: No open financial year found.\n\n"
-                    "Please ensure a financial year is open in Financial Year Management.",
-                )
+            # Validate and set date_reported
+            if not case.get("date_reported"):
+                QMessageBox.warning(self.dialog, "Required Field", "Date Reported is mandatory.")
                 return
 
-            # Get period ID for the transaction date
-            period_id = None
-            if fy_id:
+            # Auto-set fy_id and period_id
+            fy = get_current_open_financial_year()
+            if fy:
+                case["fy_id"] = fy[0]
+                # Get period for date_reported
+                period_id = None
                 try:
                     conn_temp = sqlite3.connect(DB_PATH)
                     cursor_temp = conn_temp.cursor()
-
-                    # Find the period that contains the date incurred
                     cursor_temp.execute(
                         """
                         SELECT p.id FROM periods p
@@ -302,18 +295,26 @@ class AddCaseLogic:
                         WHERE p.fy_id = ? AND p.start_date <= ? AND p.end_date >= ?
                         ORDER BY p.period_number DESC LIMIT 1
                     """,
-                        (fy_id, case["date_incurred"], case["date_incurred"]),
+                        (fy[0], case["date_reported"], case["date_reported"]),
                     )
                     period_result = cursor_temp.fetchone()
                     period_id = period_result[0] if period_result else None
-
                     conn_temp.close()
                 except Exception as e:
                     print(f"Warning: Could not determine period ID: {e}")
                     period_id = None
+                case["period_id"] = period_id
+            else:
+                QMessageBox.critical(self.dialog, "FY Error", "No open FY found.")
+                return
 
-            case["fy_id"] = fy_id
-            case["period_id"] = period_id
+            # Validate responsibility_id and category
+            if not self.dialog.selected_responsibility_id:
+                QMessageBox.warning(self.dialog, "Invalid", "Select responsibility.")
+                return
+            if not case.get("category"):
+                QMessageBox.warning(self.dialog, "Invalid", "Select category.")
+                return
 
             # Handle file operations
             if not handle_file_operations(

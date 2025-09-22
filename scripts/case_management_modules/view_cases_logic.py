@@ -176,6 +176,7 @@ class ViewCasesLogic:
 
         # Build base query with list filtering
         base_conditions = ["list != 'Deleted Cases'"]
+        base_conditions.append("fy_id IS NOT NULL AND responsibility_id IS NOT NULL")
         params = []
 
         # Add financial year filter
@@ -187,22 +188,20 @@ class ViewCasesLogic:
         # Add list filter condition using new single-case model
         selected_list = dialog.list_filter_combo.currentText()
         if selected_list == "Checklist":
-            # Checklist shows all cases (no additional filter)
+            # Checklist shows all cases
             pass
         elif selected_list == "Lead Schedule":
-            # Lead Schedule shows Confirmed cases with -LS suffix, not finalized
-            base_conditions.append(
-                "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'"
-            )
-        elif selected_list == "Recovered":
-            # Recovered shows cases with -REC suffix
-            base_conditions.append("suffixes LIKE '%-REC%'")
+            # Lead Schedule shows cases with list = 'Lead Schedule'
+            base_conditions.append("list = 'Lead Schedule'")
         elif selected_list == "Write-Off Recommended":
-            # Write-Off Recommended shows cases with -WOR suffix
-            base_conditions.append("suffixes LIKE '%-WOR%'")
+            # Write-Off Recommended shows cases with lc_status = 'Write Off Recommended' and not finalized
+            base_conditions.append("lc_status = 'Write Off Recommended' AND is_finalized = 0")
+        elif selected_list == "Recovered":
+            # Recovered shows cases with list = 'Recovered'
+            base_conditions.append("list = 'Recovered'")
         elif selected_list == "Written Off":
-            # Written Off shows cases with -WO suffix
-            base_conditions.append("suffixes LIKE '%-WO%'")
+            # Written Off shows cases with list = 'Written Off'
+            base_conditions.append("list = 'Written Off'")
         elif selected_list == "To-Do List":
             # Show both actual To-Do List cases and GJ cases with outstanding actions
             base_conditions.append(
@@ -222,8 +221,12 @@ class ViewCasesLogic:
         # Select columns for shared table population (match Edit Cases query)
         query = f"SELECT transaction_no, date_reported, category, amount, assessment_status, lc_status, suffixes, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
 
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
+        try:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+        except sqlite3.Error as e:
+            QMessageBox.warning(dialog, "Query Error", str(e))
+            rows = []
         conn.close()
         populate_case_table(dialog.case_table, rows, selected_list, include_edit=False)
 
@@ -273,7 +276,7 @@ class ViewCasesLogic:
                 dialog_details.exec_()
             else:
                 # Open editable dialog for non-finalized cases
-                from scripts.case_management_modules.edit_case_dialog import \
+                from scripts.ui.dialogs.edit_case.edit_case_dialog import \
                     EditCaseDialog
 
                 edit_dialog = EditCaseDialog(

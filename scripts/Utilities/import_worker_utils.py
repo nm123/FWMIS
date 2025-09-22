@@ -48,8 +48,7 @@ def import_cases(dialog):
 
 
 def perform_import(dialog):
-    """Perform the actual import using the worker thread"""
-    # Filter out transactions marked for removal (already done in import_cases, but being safe)
+    """Perform the actual import synchronously"""
     transactions_to_import = [
         t for t in dialog.transactions if not t.get("marked_for_removal", False)
     ]
@@ -62,25 +61,52 @@ def perform_import(dialog):
         )
         return
 
-    print(
-        f"DEBUG: Starting import with {len(transactions_to_import)} transactions (filtered from {len(dialog.transactions)})"
-    )
+    dialog.cancelled = False
+    imported_cases = []
+    imported_ids = []
+    total = len(transactions_to_import)
 
     dialog.progress_bar.setVisible(True)
     dialog.progress_bar.setValue(0)
     dialog.import_button.setEnabled(False)
 
-    dialog.worker = ImportWorker(
-        transactions_to_import,
-        dialog.category,
-        dialog.date_from,
-        dialog.date_to,
-        dialog.bas_file_path,
-    )
-    dialog.worker.progress.connect(lambda p, m: update_progress(dialog, p, m))
-    dialog.worker.finished.connect(lambda ic: import_finished(dialog, ic))
-    dialog.worker.error.connect(lambda em: import_error(dialog, em))
-    dialog.worker.start()
+    for i, transaction in enumerate(transactions_to_import):
+        from PyQt5.QtCore import QCoreApplication
+        QCoreApplication.processEvents()
+        if dialog.cancelled:
+            break
+        dialog.progress_bar.setValue(int((i / total) * 100))
+        dialog.results_label.setText(f"Importing case {i+1} of {total}...")
+        case_number, case_id = _import_transaction_sync(transaction, dialog.category, dialog.date_from, dialog.date_to, dialog.bas_file_path)
+        if case_number:
+            imported_cases.append(case_number)
+            imported_ids.append(case_id)
+
+    dialog.progress_bar.setVisible(False)
+
+    if dialog.cancelled:
+        if imported_ids:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            placeholders = ','.join('?' * len(imported_ids))
+            cursor.execute(f"DELETE FROM cases WHERE id IN ({placeholders})", imported_ids)
+            conn.commit()
+            conn.close()
+        QMessageBox.information(dialog, "Import Cancelled", "Import was cancelled. Imported cases have been deleted.")
+        dialog.reject()
+    else:
+        QMessageBox.information(
+            dialog,
+            "Import Complete",
+            f"Successfully imported {len(imported_cases)} cases:\n\n"
+            + "\n".join(imported_cases[:10])
+            + (
+                f"\n... and {len(imported_cases) - 10} more"
+                if len(imported_cases) > 10
+                else ""
+            ),
+        )
+        dialog.accept()
 
 
 def update_progress(dialog, percentage, message):

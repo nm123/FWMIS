@@ -266,8 +266,9 @@ def handle_case_status_change(
             # Case is F&W, add -LS suffix to appear in Lead Schedule
             if "-LS" not in suffixes:
                 suffixes.append("-LS")
-            # Reset LC status
-            current_lc_status = "Awaiting LC determination"
+            # Reset LC status only if not already set
+            if current_lc_status in (None, "Awaiting LC determination"):
+                current_lc_status = "Awaiting LC determination"
             is_finalized = False
             finalization_reason = None
 

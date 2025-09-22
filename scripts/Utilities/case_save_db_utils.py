@@ -39,16 +39,18 @@ def update_database_and_workflow(dialog_instance, case: dict) -> bool:
 
         evidence_paths_json = json.dumps(evidence_paths) if evidence_paths else None
 
-        assessment_status_text = dialog_instance.assessment_status_combo.currentText()
+        assessment_status_text = case.get("assessment_status")
         lc_status_text = case.get("lc_status")
-        print(f"DEBUG: lc_status_text={lc_status_text}")
+        print(
+            f"DEBUG: assessment_status_text={assessment_status_text}, lc_status_text={lc_status_text}"
+        )
 
         cursor.execute(
             """
             UPDATE cases SET
                 date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
                 bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
-                base_transaction_no = ?, evidence_paths = ?, evidence_path = ?, assessment_status = ?, lc_status = ?, criminal_charges = ?, disciplinary_process = ?,
+                base_transaction_no = ?, evidence_paths = ?, evidence_path = ?, transaction_no = ?, suffixes = ?, assessment_status = ?, lc_status = ?, criminal_charges = ?, disciplinary_process = ?,
                 loss_recovery = ?, prevention_steps = ?
             WHERE id = ?
         """,
@@ -68,6 +70,8 @@ def update_database_and_workflow(dialog_instance, case: dict) -> bool:
                 case["base_transaction_no"],
                 evidence_paths_json,
                 case["evidence_path"],
+                case["transaction_no"],
+                case["suffixes"],
                 assessment_status_text,
                 lc_status_text,
                 case["criminal_charges"],

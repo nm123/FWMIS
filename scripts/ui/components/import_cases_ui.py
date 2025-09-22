@@ -280,7 +280,7 @@ def setup_import_ui(dialog):
     dialog.import_button.setMinimumHeight(50)
 
     dialog.cancel_button = create_professional_button("❌ Cancel", "secondary")
-    dialog.cancel_button.clicked.connect(dialog.reject)
+    dialog.cancel_button.clicked.connect(lambda: setattr(dialog, 'cancelled', True))
     dialog.cancel_button.setMinimumHeight(45)
 
     final_actions_layout.addWidget(dialog.import_button)

@@ -2,7 +2,7 @@ import sqlite3
 
 from PyQt5.QtWidgets import QMessageBox
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import get_financial_year
+from scripts.Utilities.financial_utils import get_current_open_financial_year
 
 
 def assign_case_numbers(dialog):
@@ -14,9 +14,6 @@ def assign_case_numbers(dialog):
         return
 
     try:
-        # Get financial year
-        fy = get_financial_year()
-
         # Clear any test data to avoid sequence skew
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -34,23 +31,23 @@ def assign_case_numbers(dialog):
 
         conn.commit()
 
-        # Extract the ending year from financial year (e.g., "2025-2026" -> 2026)
-        fy_end_year = int(fy.split("-")[1])
+        # Get financial year
+        fy = get_current_open_financial_year()
+        fy_year = fy[1].split('-')[1] if fy else '26'
 
-        # Get the highest existing base_transaction_no for this financial year
-        # Use base_transaction_no for numbering as per requirements
+        # Get the highest existing transaction_no
         cursor.execute(
             """
-            SELECT MAX(CAST(SUBSTR(base_transaction_no, 5) AS INTEGER))
+            SELECT MAX(CAST(SUBSTR(transaction_no, -5) AS INTEGER))
             FROM cases
-            WHERE base_transaction_no LIKE ?
-            AND base_transaction_no IS NOT NULL
+            WHERE transaction_no LIKE ?
+            AND transaction_no IS NOT NULL
         """,
-            (f"{fy_end_year}%",),
+            (f"{fy_year}%",),
         )
 
-        max_existing = cursor.fetchone()[0]
-        current_counter = max_existing or 0
+        max_id = cursor.fetchone()[0]
+        current_counter = max_id or 0
         conn.close()
 
         # Filter out transactions marked for removal before assigning case numbers
@@ -61,7 +58,7 @@ def assign_case_numbers(dialog):
         # Assign preview case numbers (don't increment database counter yet)
         for i, transaction in enumerate(transactions_to_assign):
             preview_number = current_counter + i + 1
-            case_number = f"{fy_end_year}{preview_number:05d}"
+            case_number = f"{fy_year}{preview_number:05d}"
             transaction["case_number"] = case_number
             # Also store base_transaction_no for the import worker
             transaction["base_transaction_no"] = case_number
@@ -84,7 +81,7 @@ def assign_case_numbers(dialog):
             "Case Numbers Assigned",
             f"✅ Case numbers have been assigned to {len(transactions_to_assign)} transactions "
             f"(out of {len(dialog.transactions)} total).\n\n"
-            f"Next available case number: {fy_end_year}{(current_counter + len(transactions_to_assign) + 1):05d}\n\n"
+            f"Next available case number: {fy_year}{(current_counter + len(transactions_to_assign) + 1):05d}\n\n"
             "You can now proceed with importing the cases.",
         )
 
