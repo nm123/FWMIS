@@ -1,7 +1,10 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QMessageBox
-from PyQt5.QtCore import Qt
-from scripts.Utilities.config import DB_PATH
 import sqlite3
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QDialog, QHeaderView, QMessageBox, QTableWidget,
+                             QTableWidgetItem, QVBoxLayout)
+from scripts.Utilities.config import DB_PATH
+
 
 class ChecklistDialog(QDialog):
     def __init__(self, parent=None):
@@ -17,7 +20,9 @@ class ChecklistDialog(QDialog):
     def setup_table(self):
         # Set table headers
         self.table.setColumnCount(3)
-        self.table.setHorizontalHeaderLabels(["Transaction No", "Category", "Assessment Status"])
+        self.table.setHorizontalHeaderLabels(
+            ["Transaction No", "Category", "Assessment Status"]
+        )
 
         # Make headers stretch to fit
         header = self.table.horizontalHeader()
@@ -30,7 +35,9 @@ class ChecklistDialog(QDialog):
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT transaction_no, category, assessment_status FROM cases WHERE list = 'Checklist'")
+            cursor.execute(
+                "SELECT transaction_no, category, assessment_status FROM cases WHERE list = 'Checklist'"
+            )
             rows = cursor.fetchall()
             conn.close()
 
@@ -39,7 +46,9 @@ class ChecklistDialog(QDialog):
                 for col_num, data in enumerate(row):
                     self.table.setItem(row_num, col_num, QTableWidgetItem(str(data)))
         except Exception as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load checklist: {str(e)}")
+            QMessageBox.critical(
+                self, "Database Error", f"Failed to load checklist: {str(e)}"
+            )
 
     def on_item_double_clicked(self, item):
         row = item.row()
@@ -53,18 +62,26 @@ class ChecklistDialog(QDialog):
             # Fetch full case data
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,))
+            cursor.execute(
+                "SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,)
+            )
             case_data = cursor.fetchone()
             conn.close()
 
             if case_data:
                 # Import here to avoid circular imports
-                from scripts.case_management_modules.edit_case_dialog import EditCaseDialog
+                from scripts.case_management_modules.edit_case_dialog import \
+                    EditCaseDialog
+
                 dialog = EditCaseDialog(case_data, self, "Checklist")
                 dialog.exec_()
                 # Refresh the table after editing
                 self.load_checklist()
             else:
-                QMessageBox.warning(self, "Case Not Found", f"Case with transaction number {transaction_no} not found.")
+                QMessageBox.warning(
+                    self,
+                    "Case Not Found",
+                    f"Case with transaction number {transaction_no} not found.",
+                )
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to open edit dialog: {str(e)}")

@@ -1,6 +1,7 @@
 """
 Theme CSS utilities.
 """
+
 from .theme_colors_utils import COLORS
 
 
@@ -204,9 +205,9 @@ def get_main_stylesheet():
     """
 
 
-def get_groupbox_style(theme='default'):
+def get_groupbox_style(theme="default"):
     """Get group box style based on theme"""
-    if theme == 'blue':
+    if theme == "blue":
         return f"""
             QGroupBox {{
                 font-weight: bold;
@@ -223,7 +224,7 @@ def get_groupbox_style(theme='default'):
                 font-size: 14px;
             }}
         """
-    elif theme == 'green':
+    elif theme == "green":
         return f"""
             QGroupBox {{
                 font-weight: bold;
@@ -240,7 +241,7 @@ def get_groupbox_style(theme='default'):
                 font-size: 14px;
             }}
         """
-    elif theme == 'purple':
+    elif theme == "purple":
         return f"""
             QGroupBox {{
                 font-weight: bold;
@@ -257,7 +258,7 @@ def get_groupbox_style(theme='default'):
                 font-size: 14px;
             }}
         """
-    elif theme == 'red':
+    elif theme == "red":
         return f"""
             QGroupBox {{
                 font-weight: bold;

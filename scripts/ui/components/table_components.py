@@ -1,9 +1,9 @@
-from PyQt5.QtWidgets import (
-    QTableWidget, QTableWidgetItem, QHeaderView, QVBoxLayout,
-    QHBoxLayout, QWidget, QLabel, QPushButton, QAbstractItemView
-)
 from PyQt5.QtCore import Qt
-from scripts.Utilities.ui_theme import setup_professional_table, create_professional_button
+from PyQt5.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView,
+                             QLabel, QPushButton, QTableWidget,
+                             QTableWidgetItem, QVBoxLayout, QWidget)
+from scripts.Utilities.ui_theme import (create_professional_button,
+                                        setup_professional_table)
 
 
 class ProfessionalTable:
@@ -28,7 +28,9 @@ class ProfessionalTable:
             for i, emoji in enumerate(self.emojis):
                 if i < len(self.headers):
                     current_text = self.headers[i]
-                    self.table.setHorizontalHeaderItem(i, QTableWidgetItem(f"{emoji} {current_text}"))
+                    self.table.setHorizontalHeaderItem(
+                        i, QTableWidgetItem(f"{emoji} {current_text}")
+                    )
 
         setup_professional_table(self.table)
 
@@ -62,7 +64,13 @@ class ProfessionalTable:
         # Add data columns
         for col, value in enumerate(data):
             if col < self.table.columnCount():
-                if isinstance(value, str) and value.replace('.', '').replace('-', '').replace('/', '').isdigit():
+                if (
+                    isinstance(value, str)
+                    and value.replace(".", "")
+                    .replace("-", "")
+                    .replace("/", "")
+                    .isdigit()
+                ):
                     # Right-align numeric values
                     item = QTableWidgetItem(value)
                     item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -147,7 +155,9 @@ class TableWithControls:
         # Title
         if title:
             title_label = QLabel(title)
-            title_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #495057;")
+            title_label.setStyleSheet(
+                "font-size: 14px; font-weight: bold; color: #495057;"
+            )
             self.layout.addWidget(title_label)
 
         # Create table
@@ -266,7 +276,9 @@ class DataTable:
             self.table.add_row(row_data)
 
         # Update pagination controls
-        total_pages = max(1, (len(self.filtered_data) + self.page_size - 1) // self.page_size)
+        total_pages = max(
+            1, (len(self.filtered_data) + self.page_size - 1) // self.page_size
+        )
         self.page_label.setText(f"Page {self.current_page + 1} of {total_pages}")
 
         self.prev_button.setEnabled(self.current_page > 0)
@@ -280,7 +292,9 @@ class DataTable:
 
     def next_page(self):
         """Go to next page"""
-        total_pages = max(1, (len(self.filtered_data) + self.page_size - 1) // self.page_size)
+        total_pages = max(
+            1, (len(self.filtered_data) + self.page_size - 1) // self.page_size
+        )
         if self.current_page < total_pages - 1:
             self.current_page += 1
             self.update_display()

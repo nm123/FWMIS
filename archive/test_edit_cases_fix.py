@@ -3,22 +3,23 @@
 Test script to verify Edit Cases dialog functionality after Qt fixes
 """
 
-import sys
 import os
+import sys
 
 # Apply Qt fixes before importing PyQt5
-os.environ['QT_QPA_PLATFORM'] = 'windows'
-os.environ['QT_OPENGL'] = 'software'
-os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '0'
-os.environ['QT_ENABLE_HIGHDPI_SCALING'] = '0'
-os.environ['QT_SCALE_FACTOR'] = '1'
-os.environ['QT_LOGGING_RULES'] = 'qt.qpa.plugin=false'
+os.environ["QT_QPA_PLATFORM"] = "windows"
+os.environ["QT_OPENGL"] = "software"
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "0"
+os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
+os.environ["QT_SCALE_FACTOR"] = "1"
+os.environ["QT_LOGGING_RULES"] = "qt.qpa.plugin=false"
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication
 from scripts.case_management_modules.edit_cases_dialog import EditCasesDialog
+
 
 def test_edit_cases_dialog():
     """Test the Edit Cases dialog creation and display"""
@@ -64,8 +65,10 @@ def test_edit_cases_dialog():
     except Exception as e:
         print(f"[FAIL] Edit Cases dialog test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = test_edit_cases_dialog()

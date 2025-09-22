@@ -1,58 +1,64 @@
-import sys
 import os
 import sqlite3
+import sys
 from datetime import datetime
 
 # Qt Graphics/Platform Configuration for crash prevention
-os.environ['QT_QPA_PLATFORM'] = 'windows'
-os.environ['QT_OPENGL'] = 'software'  # Force software rendering to avoid graphics driver issues
-os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '0'  # Disable auto scaling
-os.environ['QT_SCALE_FACTOR'] = '1'  # Fixed scale factor
-os.environ['QT_ENABLE_HIGHDPI_SCALING'] = '0'  # Disable high DPI scaling
-os.environ['QT_LOGGING_RULES'] = 'qt.qpa.plugin=false'  # Reduce plugin logging
+os.environ["QT_QPA_PLATFORM"] = "windows"
+os.environ["QT_OPENGL"] = (
+    "software"  # Force software rendering to avoid graphics driver issues
+)
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "0"  # Disable auto scaling
+os.environ["QT_SCALE_FACTOR"] = "1"  # Fixed scale factor
+os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"  # Disable high DPI scaling
+os.environ["QT_LOGGING_RULES"] = "qt.qpa.plugin=false"  # Reduce plugin logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # Import PyQt5 modules
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QAction,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QMessageBox,
-    QLabel,
-    QListWidgetItem,
-)
+from PyQt5.QtWidgets import (QAction, QApplication, QHBoxLayout, QLabel,
+                             QListWidgetItem, QMainWindow, QMessageBox,
+                             QVBoxLayout, QWidget)
 
 # Set Qt attributes BEFORE creating QApplication
 QApplication.setAttribute(Qt.AA_UseSoftwareOpenGL, True)  # Force software OpenGL
-QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings, True)  # Prevent native widget issues
+QApplication.setAttribute(
+    Qt.AA_DontCreateNativeWidgetSiblings, True
+)  # Prevent native widget issues
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, False)  # Disable high DPI pixmaps
-from scripts.Utilities.ui_theme import apply_theme, create_status_label
-from scripts.case_management import AddNewCaseDialog, ViewCasesDialog, EditCasesDialog, ToDoListDialog, ViewDeletedCasesDialog
-from scripts.ui.dialogs.import_cases_dialog_core import ImportUndisclosedCasesDialog
-from scripts.ui.dialogs.import_cases_dialog import import_undisclosed_cases
-from scripts.ui.dialogs.checklist_dialog import ChecklistDialog
-from scripts.case_management_modules.write_off_submission_dialog import WriteOffSubmissionDialog
-from scripts.case_management_modules.write_off_management_dialog import WriteOffManagementDialog
+from scripts.case_management import (AddNewCaseDialog, EditCasesDialog,
+                                     ToDoListDialog, ViewCasesDialog,
+                                     ViewDeletedCasesDialog)
+from scripts.case_management_modules.write_off_management_dialog import \
+    WriteOffManagementDialog
+from scripts.case_management_modules.write_off_submission_dialog import \
+    WriteOffSubmissionDialog
 from scripts.category_management import ManageCategoriesDialog
-from scripts.list_management import ManageListsDialog
 from scripts.email_template_management import ManageEmailTemplatesDialog
-from scripts.responsibility_management_ui import ResponsibilityManagementDialog
-from scripts.report_management import ReportManagementDialog
 from scripts.financial_year_management import FinancialYearManagementDialog
-from scripts.wipe_cases_dialog import WipeCasesDialog
-from scripts.Utilities.config import initialize_shared_documents_table, DB_PATH
+from scripts.list_management import ManageListsDialog
+from scripts.report_management import ReportManagementDialog
+from scripts.responsibility_management_ui import ResponsibilityManagementDialog
+from scripts.ui.dialogs.checklist_dialog import ChecklistDialog
+from scripts.ui.dialogs.import_cases_dialog import import_undisclosed_cases
+from scripts.ui.dialogs.import_cases_dialog_core import \
+    ImportUndisclosedCasesDialog
+from scripts.Utilities.config import DB_PATH, initialize_shared_documents_table
 from scripts.Utilities.financial_utils import get_active_period_display
-from scripts.Utilities.qt_diagnostics import apply_qt_fixes, print_qt_diagnostics, check_qt_compatibility
+from scripts.Utilities.qt_diagnostics import (apply_qt_fixes,
+                                              check_qt_compatibility,
+                                              print_qt_diagnostics)
+from scripts.Utilities.ui_theme import apply_theme, create_status_label
+from scripts.wipe_cases_dialog import WipeCasesDialog
+
 
 class FWManagementApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("🎯 FWMIS - Fruitless and Wasteful Expenditure Management System")
+        self.setWindowTitle(
+            "🎯 FWMIS - Fruitless and Wasteful Expenditure Management System"
+        )
 
         # Set minimum size and allow resizing/maximizing
         self.setMinimumSize(1000, 700)
@@ -60,7 +66,11 @@ class FWManagementApp(QMainWindow):
         self.center_window()
 
         # Enable maximize button and window resizing
-        self.setWindowFlags(self.windowFlags() | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint)
+        self.setWindowFlags(
+            self.windowFlags()
+            | Qt.WindowMaximizeButtonHint
+            | Qt.WindowMinimizeButtonHint
+        )
 
         # Apply professional theme
         apply_theme(self)
@@ -69,7 +79,11 @@ class FWManagementApp(QMainWindow):
         try:
             initialize_shared_documents_table()
         except Exception as e:
-            QMessageBox.warning(self, "Database Warning", f"Failed to initialize database tables: {str(e)}")
+            QMessageBox.warning(
+                self,
+                "Database Warning",
+                f"Failed to initialize database tables: {str(e)}",
+            )
 
         self.setup_ui()
         self.setup_menu()
@@ -77,6 +91,7 @@ class FWManagementApp(QMainWindow):
     def center_window(self):
         """Center the window on the screen"""
         from PyQt5.QtWidgets import QDesktopWidget
+
         screen = QDesktopWidget().screenGeometry()
         # Use the default size for centering calculations
         window_width = 1200
@@ -102,25 +117,31 @@ class FWManagementApp(QMainWindow):
 
         welcome_label = QLabel(welcome_text)
         welcome_label.setWordWrap(True)
-        welcome_label.setStyleSheet("""
+        welcome_label.setStyleSheet(
+            """
             QLabel {
                 font-size: 24px;
                 font-weight: bold;
                 color: #343a40;
                 margin-bottom: 10px;
             }
-        """)
+        """
+        )
         layout.addWidget(welcome_label, alignment=Qt.AlignCenter)
 
         # Subtitle
-        subtitle_label = QLabel("Fruitless and Wasteful Expenditure Management Information System")
-        subtitle_label.setStyleSheet("""
+        subtitle_label = QLabel(
+            "Fruitless and Wasteful Expenditure Management Information System"
+        )
+        subtitle_label.setStyleSheet(
+            """
             QLabel {
                 font-size: 16px;
                 color: #6c757d;
                 margin-bottom: 30px;
             }
-        """)
+        """
+        )
         layout.addWidget(subtitle_label, alignment=Qt.AlignCenter)
 
         # Quick actions section
@@ -129,14 +150,16 @@ class FWManagementApp(QMainWindow):
         actions_layout.setSpacing(15)
 
         actions_title = QLabel("🚀 Quick Actions")
-        actions_title.setStyleSheet("""
+        actions_title.setStyleSheet(
+            """
             QLabel {
                 font-size: 18px;
                 font-weight: bold;
                 color: #495057;
                 margin-bottom: 15px;
             }
-        """)
+        """
+        )
         actions_layout.addWidget(actions_title, alignment=Qt.AlignCenter)
 
         # Action buttons in a grid
@@ -155,11 +178,15 @@ class FWManagementApp(QMainWindow):
         view_cases_btn.clicked.connect(self.view_cases)
         buttons_layout.addWidget(view_cases_btn, 0, 1)
 
-        import_cases_btn = create_professional_button("📊 Import Cases", "info", "large")
+        import_cases_btn = create_professional_button(
+            "📊 Import Cases", "info", "large"
+        )
         import_cases_btn.clicked.connect(self.import_undisclosed_cases)
         buttons_layout.addWidget(import_cases_btn, 1, 0)
 
-        reports_btn = create_professional_button("📈 Generate Reports", "warning", "large")
+        reports_btn = create_professional_button(
+            "📈 Generate Reports", "warning", "large"
+        )
         reports_btn.clicked.connect(self.generate_reports)
         buttons_layout.addWidget(reports_btn, 1, 1)
 
@@ -167,7 +194,10 @@ class FWManagementApp(QMainWindow):
         layout.addWidget(actions_group)
 
         # Status information
-        status_label = create_status_label("ℹ️ System ready. Use the menu above or quick actions below to get started.", "info")
+        status_label = create_status_label(
+            "ℹ️ System ready. Use the menu above or quick actions below to get started.",
+            "info",
+        )
         layout.addWidget(status_label)
 
         # Add stretch to push everything to the top
@@ -205,7 +235,6 @@ class FWManagementApp(QMainWindow):
         add_case_action.triggered.connect(self.add_new_case)
         cases_menu.addAction(add_case_action)
 
-
         import_cases_action = QAction("Import Undisclosed Cases", self)
         import_cases_action.triggered.connect(self.import_undisclosed_cases)
         cases_menu.addAction(import_cases_action)
@@ -216,7 +245,9 @@ class FWManagementApp(QMainWindow):
         view_cases_action.triggered.connect(self.view_cases)
         cases_menu.addAction(view_cases_action)
         edit_cases_action = QAction("Edit Cases", self)
-        edit_cases_action.triggered.connect(self.manage_cases)  # Reusing existing method
+        edit_cases_action.triggered.connect(
+            self.manage_cases
+        )  # Reusing existing method
         cases_menu.addAction(edit_cases_action)
 
         cases_menu.addSeparator()  # Add separator
@@ -278,7 +309,9 @@ class FWManagementApp(QMainWindow):
         # Wipe Cases action (dangerous operation)
         wipe_cases_action = QAction("🗑️ Wipe Cases (DANGER)", self)
         wipe_cases_action.triggered.connect(self.wipe_cases)
-        wipe_cases_action.setToolTip("Permanently delete all cases for a selected financial year")
+        wipe_cases_action.setToolTip(
+            "Permanently delete all cases for a selected financial year"
+        )
         admin_menu.addAction(wipe_cases_action)
 
         # Reports menu
@@ -292,98 +325,133 @@ class FWManagementApp(QMainWindow):
             dialog = AddNewCaseDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Add New Case dialog: {str(e)}")
-
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Add New Case dialog: {str(e)}"
+            )
 
     def import_undisclosed_cases(self):
         try:
             import_undisclosed_cases(self)
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Import Undisclosed Cases dialog: {str(e)}")
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to open Import Undisclosed Cases dialog: {str(e)}",
+            )
 
     def view_cases(self):
         try:
             dialog = ViewCasesDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open View Cases dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open View Cases dialog: {str(e)}"
+            )
 
     def manage_cases(self):
         try:
             dialog = EditCasesDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Edit Cases dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Edit Cases dialog: {str(e)}"
+            )
 
     def todo_list(self):
         try:
             dialog = ToDoListDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open To-Do List dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open To-Do List dialog: {str(e)}"
+            )
 
     def manage_categories(self):
         try:
             dialog = ManageCategoriesDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Manage Categories dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Manage Categories dialog: {str(e)}"
+            )
 
     def manage_lists(self):
         try:
             dialog = ManageListsDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Manage Lists dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Manage Lists dialog: {str(e)}"
+            )
 
     def manage_responsibilities(self):
         try:
             dialog = ResponsibilityManagementDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Manage Responsibilities dialog: {str(e)}")
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to open Manage Responsibilities dialog: {str(e)}",
+            )
 
     def manage_email_templates(self):
         try:
             dialog = ManageEmailTemplatesDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Manage Email Templates dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Manage Email Templates dialog: {str(e)}"
+            )
 
     def generate_reports(self):
         try:
             dialog = ReportManagementDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Generate Reports dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Generate Reports dialog: {str(e)}"
+            )
 
     def manage_financial_years(self):
         try:
             dialog = FinancialYearManagementDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Financial Year Management dialog: {str(e)}")
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to open Financial Year Management dialog: {str(e)}",
+            )
 
     def wipe_cases(self):
         try:
             dialog = WipeCasesDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Wipe Cases dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Wipe Cases dialog: {str(e)}"
+            )
 
     def view_checklist(self):
         try:
             dialog = ChecklistDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Checklist dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Checklist dialog: {str(e)}"
+            )
 
     def view_lead_schedule(self):
         pass
 
     def view_deleted_items(self):
         """Placeholder for Deleted Items view - to be implemented"""
-        QMessageBox.information(self, "Deleted Items", "Deleted Items view functionality will be implemented here.")
+        QMessageBox.information(
+            self,
+            "Deleted Items",
+            "Deleted Items view functionality will be implemented here.",
+        )
 
     def view_deleted_cases(self):
         """View cases in the Deleted Cases list"""
@@ -391,7 +459,9 @@ class FWManagementApp(QMainWindow):
             dialog = ViewDeletedCasesDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Deleted Cases view: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Deleted Cases view: {str(e)}"
+            )
 
     def create_write_off_submission(self):
         """Create a new write-off submission"""
@@ -399,7 +469,9 @@ class FWManagementApp(QMainWindow):
             dialog = WriteOffSubmissionDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Write-Off Submission dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Write-Off Submission dialog: {str(e)}"
+            )
 
     def manage_write_off_submissions(self):
         """Manage existing write-off submissions"""
@@ -407,37 +479,46 @@ class FWManagementApp(QMainWindow):
             dialog = WriteOffManagementDialog(self)
             dialog.exec_()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open Write-Off Management dialog: {str(e)}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Write-Off Management dialog: {str(e)}"
+            )
 
 
 def exception_handler(exctype, value, traceback):
     """Global exception handler to catch unhandled exceptions"""
     import traceback as tb
-    error_msg = ''.join(tb.format_exception(exctype, value, traceback))
+
+    error_msg = "".join(tb.format_exception(exctype, value, traceback))
     print(f"CRITICAL: Unhandled exception: {error_msg}")
 
     # Try to save emergency recovery information
     try:
-        with open('emergency_recovery.log', 'w') as f:
+        with open("emergency_recovery.log", "w") as f:
             f.write(f"Emergency Recovery Log\n")
             f.write(f"Timestamp: {datetime.now().isoformat()}\n")
             f.write(f"Exception: {exctype.__name__}: {value}\n")
             f.write(f"Traceback:\n{error_msg}\n")
-        print("CRITICAL: Emergency recovery information saved to emergency_recovery.log")
+        print(
+            "CRITICAL: Emergency recovery information saved to emergency_recovery.log"
+        )
     except:
         print("CRITICAL: Could not save emergency recovery information")
 
     # Show error dialog if QApplication exists
     try:
-        from PyQt5.QtWidgets import QMessageBox, QApplication
+        from PyQt5.QtWidgets import QApplication, QMessageBox
+
         app = QApplication.instance()
         if app:
-            reply = QMessageBox.critical(None, "Critical Application Error",
-                                       f"A critical error occurred:\n\n{str(value)}\n\n"
-                                       "Emergency recovery information has been saved.\n\n"
-                                       "Would you like to restart the application?",
-                                       QMessageBox.Yes | QMessageBox.No,
-                                       QMessageBox.No)
+            reply = QMessageBox.critical(
+                None,
+                "Critical Application Error",
+                f"A critical error occurred:\n\n{str(value)}\n\n"
+                "Emergency recovery information has been saved.\n\n"
+                "Would you like to restart the application?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
 
             if reply == QMessageBox.Yes:
                 print("CRITICAL: User requested application restart")
@@ -445,19 +526,24 @@ def exception_handler(exctype, value, traceback):
                 try:
                     import subprocess
                     import sys
+
                     subprocess.Popen([sys.executable] + sys.argv)
                     print("CRITICAL: Application restart initiated")
                 except Exception as restart_error:
                     print(f"CRITICAL: Could not restart application: {restart_error}")
         else:
-            QMessageBox.critical(None, "Unexpected Error",
-                               f"An unexpected error occurred:\n\n{str(value)}\n\nThe application will now close.")
+            QMessageBox.critical(
+                None,
+                "Unexpected Error",
+                f"An unexpected error occurred:\n\n{str(value)}\n\nThe application will now close.",
+            )
     except Exception as dialog_error:
         print(f"CRITICAL: Could not show error dialog: {dialog_error}")
 
     # Exit gracefully
     print("CRITICAL: Application shutting down due to critical error")
     sys.exit(1)
+
 
 if __name__ == "__main__":
     # Install global exception handler
@@ -489,6 +575,7 @@ if __name__ == "__main__":
             exit_code = app.exec_()
         except Exception as event_error:
             import traceback
+
             traceback.print_exc()
             exit_code = 1
 
@@ -496,5 +583,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

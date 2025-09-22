@@ -1,16 +1,9 @@
 import sqlite3
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QSplitter,
-)
-from PyQt5.QtCore import Qt, QDate
+
+from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtWidgets import (QDialog, QHBoxLayout, QHeaderView, QSplitter,
+                             QTableWidget, QTableWidgetItem, QTreeWidget,
+                             QTreeWidgetItem, QVBoxLayout)
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
@@ -49,7 +42,9 @@ class ToDoListDialog(QDialog):
         header = self.todo_table.horizontalHeader()
         header.setMinimumSectionSize(80)  # Minimum width for each column
         header.setSectionResizeMode(QHeaderView.Interactive)  # Allow manual resizing
-        header.setStretchLastSection(True)  # Last column stretches to fill remaining space
+        header.setStretchLastSection(
+            True
+        )  # Last column stretches to fill remaining space
 
         # Set default column widths for better layout
         self.todo_table.setColumnWidth(0, 120)  # Transaction No
@@ -126,18 +121,22 @@ class ToDoListDialog(QDialog):
             cursor = conn.cursor()
 
             # Get all responsibility IDs that have cases with todo status
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT DISTINCT responsibility_id FROM cases WHERE list = 'Checklist' AND assessment_status IN ('Alleged', 'Under Assessment')
                 UNION ALL
                 SELECT DISTINCT responsibility_id FROM cases WHERE list = 'Lead Schedule' AND lc_status = 'Awaiting LC determination'
-            """)
+            """
+            )
             case_resp_ids = {row[0] for row in cursor.fetchall()}
 
             # Include parent responsibilities
             for resp_id in case_resp_ids:
                 responsibilities_with_cases.add(resp_id)
                 # Find and add parent IDs
-                resp = next((r for r in self.responsibilities if r["id"] == resp_id), None)
+                resp = next(
+                    (r for r in self.responsibilities if r["id"] == resp_id), None
+                )
                 if resp and resp["parent_id"]:
                     responsibilities_with_cases.add(resp["parent_id"])
 
@@ -193,7 +192,10 @@ class ToDoListDialog(QDialog):
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (case_no,))
+            cursor.execute(
+                "SELECT responsibility_id FROM cases WHERE transaction_no = ?",
+                (case_no,),
+            )
             result = cursor.fetchone()
             conn.close()
 
@@ -205,6 +207,7 @@ class ToDoListDialog(QDialog):
 
     def highlight_responsibility(self, responsibility_id):
         """Find and highlight the responsibility in the tree"""
+
         def find_item_by_id(parent_item, target_id):
             """Recursively search for an item with the given ID"""
             if parent_item is None:
@@ -245,14 +248,19 @@ class ToDoListDialog(QDialog):
                 parent.setExpanded(True)
                 parent = parent.parent()
 
-    def _get_supporting_evidence_status(self, bas_payment_no, persal_no, category_name, conn):
+    def _get_supporting_evidence_status(
+        self, bas_payment_no, persal_no, category_name, conn
+    ):
         """Determine supporting evidence status based on category compulsory settings"""
         if not category_name:
             return "N/A"
 
         # Query category compulsory settings
         cursor = conn.cursor()
-        cursor.execute("SELECT bas_payment_compulsory, persal_compulsory FROM categories WHERE name = ?", (category_name,))
+        cursor.execute(
+            "SELECT bas_payment_compulsory, persal_compulsory FROM categories WHERE name = ?",
+            (category_name,),
+        )
         category_data = cursor.fetchone()
 
         if not category_data:
@@ -269,7 +277,9 @@ class ToDoListDialog(QDialog):
             return "✗ BAS Required"
         elif persal_compulsory and not persal_provided:
             return "✗ Persal Required"
-        elif (bas_compulsory and bas_provided) or (persal_compulsory and persal_provided):
+        elif (bas_compulsory and bas_provided) or (
+            persal_compulsory and persal_provided
+        ):
             return "✓"
         else:
             return "N/A"

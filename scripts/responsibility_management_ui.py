@@ -1,21 +1,26 @@
-import sqlite3
 import os
 import re
+import sqlite3
 from collections import defaultdict
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
-    QRadioButton, QPushButton, QTreeWidget, QTreeWidgetItem,
-    QTableWidget, QTableWidgetItem, QHeaderView, QMessageBox, QGroupBox,
-    QLabel
-)
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from scripts.responsibility_management_actions import add_responsibility, edit_responsibility, delete_responsibility
+from PyQt5.QtWidgets import (QDialog, QFormLayout, QGroupBox, QHBoxLayout,
+                             QHeaderView, QLabel, QLineEdit, QMessageBox,
+                             QPushButton, QRadioButton, QTableWidget,
+                             QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
+                             QVBoxLayout)
+from scripts.responsibility_management_actions import (add_responsibility,
+                                                       delete_responsibility,
+                                                       edit_responsibility)
 from scripts.Utilities.config import BASE_DIR, DB_PATH
 from scripts.Utilities.validation_utils import is_valid_email
 
+
 class AddResponsibilityDialog(QDialog):
-    def __init__(self, parent=None, parent_id=None, parent_name=None, inherited_contacts=None):
+    def __init__(
+        self, parent=None, parent_id=None, parent_name=None, inherited_contacts=None
+    ):
         super().__init__(parent)
         self.setWindowTitle("Add Child Responsibility")
         self.resize(750, 500)  # Increased width by 25% for easier email capture
@@ -38,12 +43,16 @@ class AddResponsibilityDialog(QDialog):
         self.parent_label = QLineEdit(self)
         self.parent_label.setText(self.parent_name)
         self.parent_label.setReadOnly(True)
-        self.parent_label.setToolTip("Parent responsibility (selected from main dialog)")
+        self.parent_label.setToolTip(
+            "Parent responsibility (selected from main dialog)"
+        )
         form_layout.addRow("Parent:", self.parent_label)
 
         # Name input
         self.name_edit = QLineEdit(self)
-        self.name_edit.setToolTip("Enter a unique responsibility name, max 100 characters")
+        self.name_edit.setToolTip(
+            "Enter a unique responsibility name, max 100 characters"
+        )
         form_layout.addRow("Name:", self.name_edit)
 
         # Posting level radio buttons
@@ -64,11 +73,13 @@ class AddResponsibilityDialog(QDialog):
         contacts_layout = QVBoxLayout()
         self.contacts_table = QTableWidget(self)
         self.contacts_table.setColumnCount(7)
-        self.contacts_table.setHorizontalHeaderLabels(["Title", "Initials", "Names", "Surname", "Job Title", "Telephone", "Email"])
+        self.contacts_table.setHorizontalHeaderLabels(
+            ["Title", "Initials", "Names", "Surname", "Job Title", "Telephone", "Email"]
+        )
         header = self.contacts_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
-        self.contacts_table.setColumnWidth(0, 80)   # Title
-        self.contacts_table.setColumnWidth(1, 80)   # Initials
+        self.contacts_table.setColumnWidth(0, 80)  # Title
+        self.contacts_table.setColumnWidth(1, 80)  # Initials
         self.contacts_table.setColumnWidth(2, 120)  # Names
         self.contacts_table.setColumnWidth(3, 120)  # Surname
         self.contacts_table.setColumnWidth(4, 120)  # Job Title
@@ -76,8 +87,12 @@ class AddResponsibilityDialog(QDialog):
         self.contacts_table.setColumnWidth(6, 200)  # Email
         self.contacts_table.setSelectionMode(QTableWidget.SingleSelection)
         self.contacts_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.contacts_table.setEditTriggers(QTableWidget.AllEditTriggers)  # Enable editing on any trigger
-        self.contacts_table.setToolTip("Click on cells to edit contacts. Use Add/Remove buttons or double-click to edit.")
+        self.contacts_table.setEditTriggers(
+            QTableWidget.AllEditTriggers
+        )  # Enable editing on any trigger
+        self.contacts_table.setToolTip(
+            "Click on cells to edit contacts. Use Add/Remove buttons or double-click to edit."
+        )
         contacts_layout.addWidget(self.contacts_table)
         contacts_group.setLayout(contacts_layout)
         layout.addWidget(contacts_group)
@@ -105,13 +120,27 @@ class AddResponsibilityDialog(QDialog):
         for contact in self.inherited_contacts:
             row = self.contacts_table.rowCount()
             self.contacts_table.insertRow(row)
-            self.contacts_table.setItem(row, 0, QTableWidgetItem(contact.get("title", "")))
-            self.contacts_table.setItem(row, 1, QTableWidgetItem(contact.get("initials", "")))
-            self.contacts_table.setItem(row, 2, QTableWidgetItem(contact.get("names", contact.get("name", ""))))
-            self.contacts_table.setItem(row, 3, QTableWidgetItem(contact.get("surname", "")))
-            self.contacts_table.setItem(row, 4, QTableWidgetItem(contact.get("job_title", "")))
-            self.contacts_table.setItem(row, 5, QTableWidgetItem(contact.get("telephone", "")))
-            self.contacts_table.setItem(row, 6, QTableWidgetItem(contact.get("email", "")))
+            self.contacts_table.setItem(
+                row, 0, QTableWidgetItem(contact.get("title", ""))
+            )
+            self.contacts_table.setItem(
+                row, 1, QTableWidgetItem(contact.get("initials", ""))
+            )
+            self.contacts_table.setItem(
+                row, 2, QTableWidgetItem(contact.get("names", contact.get("name", "")))
+            )
+            self.contacts_table.setItem(
+                row, 3, QTableWidgetItem(contact.get("surname", ""))
+            )
+            self.contacts_table.setItem(
+                row, 4, QTableWidgetItem(contact.get("job_title", ""))
+            )
+            self.contacts_table.setItem(
+                row, 5, QTableWidgetItem(contact.get("telephone", ""))
+            )
+            self.contacts_table.setItem(
+                row, 6, QTableWidgetItem(contact.get("email", ""))
+            )
 
     def copy_from_parent(self):
         # Clear existing contacts first
@@ -120,13 +149,27 @@ class AddResponsibilityDialog(QDialog):
         for contact in self.inherited_contacts:
             row = self.contacts_table.rowCount()
             self.contacts_table.insertRow(row)
-            self.contacts_table.setItem(row, 0, QTableWidgetItem(contact.get("title", "")))
-            self.contacts_table.setItem(row, 1, QTableWidgetItem(contact.get("initials", "")))
-            self.contacts_table.setItem(row, 2, QTableWidgetItem(contact.get("names", contact.get("name", ""))))
-            self.contacts_table.setItem(row, 3, QTableWidgetItem(contact.get("surname", "")))
-            self.contacts_table.setItem(row, 4, QTableWidgetItem(contact.get("job_title", "")))
-            self.contacts_table.setItem(row, 5, QTableWidgetItem(contact.get("telephone", "")))
-            self.contacts_table.setItem(row, 6, QTableWidgetItem(contact.get("email", "")))
+            self.contacts_table.setItem(
+                row, 0, QTableWidgetItem(contact.get("title", ""))
+            )
+            self.contacts_table.setItem(
+                row, 1, QTableWidgetItem(contact.get("initials", ""))
+            )
+            self.contacts_table.setItem(
+                row, 2, QTableWidgetItem(contact.get("names", contact.get("name", "")))
+            )
+            self.contacts_table.setItem(
+                row, 3, QTableWidgetItem(contact.get("surname", ""))
+            )
+            self.contacts_table.setItem(
+                row, 4, QTableWidgetItem(contact.get("job_title", ""))
+            )
+            self.contacts_table.setItem(
+                row, 5, QTableWidgetItem(contact.get("telephone", ""))
+            )
+            self.contacts_table.setItem(
+                row, 6, QTableWidgetItem(contact.get("email", ""))
+            )
 
     def add_contact_row(self):
         row = self.contacts_table.rowCount()
@@ -160,23 +203,28 @@ class AddResponsibilityDialog(QDialog):
             # Require at least names or surname for a valid contact
             if names or surname:
                 if email and not is_valid_email(email):
-                    QMessageBox.warning(self, "Invalid Email", f"Invalid email format: {email}")
+                    QMessageBox.warning(
+                        self, "Invalid Email", f"Invalid email format: {email}"
+                    )
                     return
-                contacts.append({
-                    "title": title,
-                    "initials": initials,
-                    "names": names,
-                    "surname": surname,
-                    "job_title": job_title,
-                    "telephone": telephone,
-                    "email": email
-                })
+                contacts.append(
+                    {
+                        "title": title,
+                        "initials": initials,
+                        "names": names,
+                        "surname": surname,
+                        "job_title": job_title,
+                        "telephone": telephone,
+                        "email": email,
+                    }
+                )
         return {
             "name": self.name_edit.text().strip(),
             "parent_id": self.parent_id,
             "is_posting_level": self.posting_yes.isChecked(),
-            "contacts": contacts
+            "contacts": contacts,
         }
+
 
 class ResponsibilityManagementDialog(QDialog):
     def __init__(self, parent=None):
@@ -228,7 +276,9 @@ class ResponsibilityManagementDialog(QDialog):
         form_layout.setContentsMargins(10, 10, 10, 10)
 
         self.name_edit = QLineEdit()
-        self.name_edit.setToolTip("Enter a unique responsibility name, max 100 characters")
+        self.name_edit.setToolTip(
+            "Enter a unique responsibility name, max 100 characters"
+        )
         form_layout.addRow("Name:", self.name_edit)
 
         # Posting level radio buttons
@@ -249,11 +299,13 @@ class ResponsibilityManagementDialog(QDialog):
         contacts_layout = QVBoxLayout()
         self.contacts_table = QTableWidget()
         self.contacts_table.setColumnCount(7)
-        self.contacts_table.setHorizontalHeaderLabels(["Title", "Initials", "Names", "Surname", "Job Title", "Telephone", "Email"])
+        self.contacts_table.setHorizontalHeaderLabels(
+            ["Title", "Initials", "Names", "Surname", "Job Title", "Telephone", "Email"]
+        )
         header = self.contacts_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
-        self.contacts_table.setColumnWidth(0, 80)   # Title
-        self.contacts_table.setColumnWidth(1, 80)   # Initials
+        self.contacts_table.setColumnWidth(0, 80)  # Title
+        self.contacts_table.setColumnWidth(1, 80)  # Initials
         self.contacts_table.setColumnWidth(2, 120)  # Names
         self.contacts_table.setColumnWidth(3, 120)  # Surname
         self.contacts_table.setColumnWidth(4, 120)  # Job Title
@@ -262,7 +314,9 @@ class ResponsibilityManagementDialog(QDialog):
         self.contacts_table.setSelectionMode(QTableWidget.SingleSelection)
         self.contacts_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.contacts_table.setEditTriggers(QTableWidget.AllEditTriggers)
-        self.contacts_table.setToolTip("Click on cells to edit contacts. Use Add/Remove buttons or double-click to edit.")
+        self.contacts_table.setToolTip(
+            "Click on cells to edit contacts. Use Add/Remove buttons or double-click to edit."
+        )
         contacts_layout.addWidget(self.contacts_table)
         contacts_group.setLayout(contacts_layout)
         form_widget.addWidget(contacts_group)
@@ -294,11 +348,24 @@ class ResponsibilityManagementDialog(QDialog):
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT id, name, parent_id, is_posting_level, sort_order FROM responsibilities ORDER BY sort_order")
-            self.responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3], "sort_order": row[4]} for row in cursor.fetchall()]
+            cursor.execute(
+                "SELECT id, name, parent_id, is_posting_level, sort_order FROM responsibilities ORDER BY sort_order"
+            )
+            self.responsibilities = [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "parent_id": row[2],
+                    "is_posting_level": row[3],
+                    "sort_order": row[4],
+                }
+                for row in cursor.fetchall()
+            ]
             conn.close()
         except sqlite3.Error as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load responsibilities: {e}")
+            QMessageBox.critical(
+                self, "Database Error", f"Failed to load responsibilities: {e}"
+            )
             return
 
         parent_map = defaultdict(list)
@@ -306,7 +373,9 @@ class ResponsibilityManagementDialog(QDialog):
             parent_map[resp["parent_id"]].append(resp)
 
         def add_items(parent_item, parent_id):
-            for resp in sorted(parent_map[parent_id], key=lambda x: x.get("sort_order", 0)):
+            for resp in sorted(
+                parent_map[parent_id], key=lambda x: x.get("sort_order", 0)
+            ):
                 item = QTreeWidgetItem([resp["name"]])
                 item.setData(0, Qt.UserRole, resp["id"])
                 if parent_id is None:
@@ -322,7 +391,10 @@ class ResponsibilityManagementDialog(QDialog):
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT name, is_posting_level FROM responsibilities WHERE id = ?", (resp_id,))
+            cursor.execute(
+                "SELECT name, is_posting_level FROM responsibilities WHERE id = ?",
+                (resp_id,),
+            )
             result = cursor.fetchone()
             if result:
                 self.name_edit.setText(result[0])
@@ -330,23 +402,53 @@ class ResponsibilityManagementDialog(QDialog):
                     self.posting_yes.setChecked(True)
                 else:
                     self.posting_no.setChecked(True)
-            cursor.execute("SELECT title, initials, names, surname, job_title, telephone, email FROM contacts WHERE responsibility_id = ?", (resp_id,))
-            contacts = [{"title": row[0], "initials": row[1], "names": row[2], "surname": row[3], "job_title": row[4], "telephone": row[5], "email": row[6]} for row in cursor.fetchall()]
+            cursor.execute(
+                "SELECT title, initials, names, surname, job_title, telephone, email FROM contacts WHERE responsibility_id = ?",
+                (resp_id,),
+            )
+            contacts = [
+                {
+                    "title": row[0],
+                    "initials": row[1],
+                    "names": row[2],
+                    "surname": row[3],
+                    "job_title": row[4],
+                    "telephone": row[5],
+                    "email": row[6],
+                }
+                for row in cursor.fetchall()
+            ]
             conn.close()
 
             self.contacts_table.setRowCount(0)
             for contact in contacts:
                 row = self.contacts_table.rowCount()
                 self.contacts_table.insertRow(row)
-                self.contacts_table.setItem(row, 0, QTableWidgetItem(contact["title"] or ""))
-                self.contacts_table.setItem(row, 1, QTableWidgetItem(contact["initials"] or ""))
-                self.contacts_table.setItem(row, 2, QTableWidgetItem(contact["names"] or ""))
-                self.contacts_table.setItem(row, 3, QTableWidgetItem(contact["surname"] or ""))
-                self.contacts_table.setItem(row, 4, QTableWidgetItem(contact["job_title"] or ""))
-                self.contacts_table.setItem(row, 5, QTableWidgetItem(contact["telephone"] or ""))
-                self.contacts_table.setItem(row, 6, QTableWidgetItem(contact["email"] or ""))
+                self.contacts_table.setItem(
+                    row, 0, QTableWidgetItem(contact["title"] or "")
+                )
+                self.contacts_table.setItem(
+                    row, 1, QTableWidgetItem(contact["initials"] or "")
+                )
+                self.contacts_table.setItem(
+                    row, 2, QTableWidgetItem(contact["names"] or "")
+                )
+                self.contacts_table.setItem(
+                    row, 3, QTableWidgetItem(contact["surname"] or "")
+                )
+                self.contacts_table.setItem(
+                    row, 4, QTableWidgetItem(contact["job_title"] or "")
+                )
+                self.contacts_table.setItem(
+                    row, 5, QTableWidgetItem(contact["telephone"] or "")
+                )
+                self.contacts_table.setItem(
+                    row, 6, QTableWidgetItem(contact["email"] or "")
+                )
         except sqlite3.Error as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load responsibility details: {e}")
+            QMessageBox.critical(
+                self, "Database Error", f"Failed to load responsibility details: {e}"
+            )
 
     def add_responsibility(self):
         selected_item = self.tree.currentItem()
@@ -359,17 +461,40 @@ class ResponsibilityManagementDialog(QDialog):
                 cursor = conn.cursor()
                 current_id = parent_id
                 while current_id:
-                    cursor.execute("SELECT title, initials, names, surname, job_title, telephone, email FROM contacts WHERE responsibility_id = ?", (current_id,))
-                    inherited_contacts.extend([{"title": row[0], "initials": row[1], "names": row[2], "surname": row[3], "job_title": row[4], "telephone": row[5], "email": row[6]} for row in cursor.fetchall()])
-                    cursor.execute("SELECT parent_id FROM responsibilities WHERE id = ?", (current_id,))
+                    cursor.execute(
+                        "SELECT title, initials, names, surname, job_title, telephone, email FROM contacts WHERE responsibility_id = ?",
+                        (current_id,),
+                    )
+                    inherited_contacts.extend(
+                        [
+                            {
+                                "title": row[0],
+                                "initials": row[1],
+                                "names": row[2],
+                                "surname": row[3],
+                                "job_title": row[4],
+                                "telephone": row[5],
+                                "email": row[6],
+                            }
+                            for row in cursor.fetchall()
+                        ]
+                    )
+                    cursor.execute(
+                        "SELECT parent_id FROM responsibilities WHERE id = ?",
+                        (current_id,),
+                    )
                     result = cursor.fetchone()
                     current_id = result[0] if result else None
                 conn.close()
             except sqlite3.Error as e:
-                QMessageBox.critical(self, "Database Error", f"Failed to load inherited contacts: {e}")
+                QMessageBox.critical(
+                    self, "Database Error", f"Failed to load inherited contacts: {e}"
+                )
                 return
 
-        dialog = AddResponsibilityDialog(self, parent_id, parent_name, inherited_contacts)
+        dialog = AddResponsibilityDialog(
+            self, parent_id, parent_name, inherited_contacts
+        )
         if dialog.exec_():
             data = dialog.get_data()
             data["inherited_contacts"] = inherited_contacts
@@ -408,22 +533,31 @@ class ResponsibilityManagementDialog(QDialog):
     def update_sort_order(self, parent_item):
         try:
             from Utilities.utils import DB_PATH
+
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             if parent_item == self.tree.invisibleRootItem():
                 for i in range(self.tree.topLevelItemCount()):
                     item = self.tree.topLevelItem(i)
                     resp_id = item.data(0, Qt.UserRole)
-                    cursor.execute("UPDATE responsibilities SET sort_order = ? WHERE id = ?", (i, resp_id))
+                    cursor.execute(
+                        "UPDATE responsibilities SET sort_order = ? WHERE id = ?",
+                        (i, resp_id),
+                    )
             else:
                 for i in range(parent_item.childCount()):
                     item = parent_item.child(i)
                     resp_id = item.data(0, Qt.UserRole)
-                    cursor.execute("UPDATE responsibilities SET sort_order = ? WHERE id = ?", (i, resp_id))
+                    cursor.execute(
+                        "UPDATE responsibilities SET sort_order = ? WHERE id = ?",
+                        (i, resp_id),
+                    )
             conn.commit()
             conn.close()
         except sqlite3.Error as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to update sort order: {e}")
+            QMessageBox.critical(
+                self, "Database Error", f"Failed to update sort order: {e}"
+            )
 
     def clear_form(self):
         self.contacts_table.setRowCount(0)

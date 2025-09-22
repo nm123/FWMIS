@@ -1,11 +1,12 @@
-import sqlite3
 import os
+import sqlite3
 import sys
 
 # Add the parent directory to the path so we can import utils
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from utils import DB_PATH
+
 
 def clean_test_cases():
     """Clean up test cases from the database"""
@@ -34,6 +35,7 @@ def clean_test_cases():
 
     except sqlite3.Error as e:
         print(f"Database error: {e}")
+
 
 if __name__ == "__main__":
     print("=== DATABASE CLEANUP ===")

@@ -2,18 +2,19 @@
 """
 Test script to verify EditCaseDialog can be instantiated correctly
 """
-import sys
 import os
 import sqlite3
+import sys
 
 # Add scripts directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
 
 try:
     from scripts.Utilities.config import DB_PATH
 except ImportError:
     # Fallback path
-    DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'fruitless.db')
+    DB_PATH = os.path.join(os.path.dirname(__file__), "data", "fruitless.db")
+
 
 def test_edit_case_dialog():
     """Test that EditCaseDialog can be instantiated without errors"""
@@ -25,8 +26,9 @@ def test_edit_case_dialog():
 
     try:
         # Import required modules
-        from scripts.case_management_modules.edit_case_dialog import EditCaseDialog
         from PyQt5.QtWidgets import QApplication
+        from scripts.case_management_modules.edit_case_dialog import \
+            EditCaseDialog
 
         # Create QApplication if it doesn't exist
         app = QApplication.instance()
@@ -59,14 +61,17 @@ def test_edit_case_dialog():
         except Exception as e:
             print(f"ERROR: Failed to create EditCaseDialog: {e}")
             import traceback
+
             traceback.print_exc()
             return False
 
     except Exception as e:
         print(f"ERROR: Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     print("Testing EditCaseDialog")

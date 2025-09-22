@@ -1,21 +1,24 @@
-import sqlite3
 import os
+import sqlite3
 import sys
 
 # Add scripts directory to Python path
-scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(scripts_dir)
 
 try:
     from config import DB_PATH
 except ImportError:
     # Fallback if config.py is missing
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
-    DB_PATH = os.path.join(BASE_DIR, 'fruitless.db')
+    BASE_DIR = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "data")
+    )
+    DB_PATH = os.path.join(BASE_DIR, "fruitless.db")
     print(f"Warning: config.py not found, using fallback paths")
 except Exception as e:
     print(f"Error loading config: {e}")
     sys.exit(1)
+
 
 def check_database_schema():
     """Check the database schema to identify missing columns"""
@@ -49,8 +52,10 @@ def check_database_schema():
         column_names = [col[1] for col in cursor.fetchall()]
 
         required_columns = [
-            'bas_journal_no', 'bas_journal_date',
-            'bas_payment_no', 'bas_payment_date'
+            "bas_journal_no",
+            "bas_journal_date",
+            "bas_payment_no",
+            "bas_payment_date",
         ]
 
         print("\nCHECKING REQUIRED BAS COLUMNS:")
@@ -66,28 +71,33 @@ def check_database_schema():
         print(f"\nTotal cases in database: {case_count}")
 
         if case_count > 0:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT transaction_no, responsibility_id, bas_journal_no, bas_payment_no
                 FROM cases
                 ORDER BY transaction_no DESC
                 LIMIT 3
-            """)
+            """
+            )
             sample_cases = cursor.fetchall()
 
             print("\nSample case data:")
             for case in sample_cases:
-                print(f"  Case {case[0]}: RespID={case[1]}, Journal={case[2]}, Payment={case[3]}")
+                print(
+                    f"  Case {case[0]}: RespID={case[1]}, Journal={case[2]}, Payment={case[3]}"
+                )
 
         conn.close()
 
     except sqlite3.Error as e:
         print(f"Database error: {e}")
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.close()
     except Exception as e:
         print(f"Unexpected error: {e}")
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.close()
+
 
 if __name__ == "__main__":
     print("DATABASE SCHEMA CHECKER")

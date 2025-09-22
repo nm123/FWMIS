@@ -1,19 +1,20 @@
-import sqlite3
 import os
+import sqlite3
 import sys
 
 # Add scripts directory to Python path
-scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(scripts_dir)
 
 try:
     from scripts.Utilities.config import DB_PATH
 except ImportError:
     # Fallback if config.py is missing
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    DATA_DIR = os.path.join(BASE_DIR, 'data')
-    DB_PATH = os.path.join(DATA_DIR, 'fruitless.db')
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    DATA_DIR = os.path.join(BASE_DIR, "data")
+    DB_PATH = os.path.join(DATA_DIR, "fruitless.db")
     print(f"Warning: config.py not found, using fallback paths")
+
 
 def clean_all_cases():
     """Delete all cases from the database while keeping other data intact"""
@@ -53,13 +54,14 @@ def clean_all_cases():
 
     except sqlite3.Error as e:
         print(f"Database error: {e}")
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.rollback()
             conn.close()
     except Exception as e:
         print(f"Unexpected error: {e}")
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.close()
+
 
 if __name__ == "__main__":
     print("Starting database cleanup - deleting all cases...")

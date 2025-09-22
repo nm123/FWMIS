@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QVBoxLayout
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 
 
@@ -41,7 +41,9 @@ class BaseDialog(QDialog):
         button_layout.addStretch()
         return button_layout
 
-    def create_action_buttons(self, save_callback=None, cancel_callback=None, delete_callback=None):
+    def create_action_buttons(
+        self, save_callback=None, cancel_callback=None, delete_callback=None
+    ):
         """Create standard action buttons (Save, Delete, Cancel)"""
         buttons_config = []
 
@@ -71,11 +73,11 @@ class BaseDialog(QDialog):
         errors = []
 
         for field_name, (widget, display_name) in fields.items():
-            if hasattr(widget, 'text'):
+            if hasattr(widget, "text"):
                 value = widget.text().strip()
-            elif hasattr(widget, 'toPlainText'):
+            elif hasattr(widget, "toPlainText"):
                 value = widget.toPlainText().strip()
-            elif hasattr(widget, 'currentText'):
+            elif hasattr(widget, "currentText"):
                 value = widget.currentText().strip()
             else:
                 value = str(widget).strip()
@@ -90,7 +92,9 @@ class BaseDialog(QDialog):
         from PyQt5.QtWidgets import QMessageBox
 
         if errors:
-            error_text = "Please correct the following errors:\n\n" + "\n".join(f"• {error}" for error in errors)
+            error_text = "Please correct the following errors:\n\n" + "\n".join(
+                f"• {error}" for error in errors
+            )
             QMessageBox.warning(self, "Validation Error", error_text)
             return False
         return True
@@ -108,20 +112,24 @@ class BaseDialog(QDialog):
     def show_success_message(self, title, message):
         """Show success message"""
         from PyQt5.QtWidgets import QMessageBox
+
         QMessageBox.information(self, title, message)
 
     def show_error_message(self, title, message):
         """Show error message"""
         from PyQt5.QtWidgets import QMessageBox
+
         QMessageBox.critical(self, title, message)
 
-    def load_combo_box_data(self, combo_box, data_list, value_field='name', display_field='name'):
+    def load_combo_box_data(
+        self, combo_box, data_list, value_field="name", display_field="name"
+    ):
         """Load data into a combo box"""
         combo_box.clear()
         for item in data_list:
             if isinstance(item, dict):
-                display_text = item.get(display_field, '')
-                value = item.get(value_field, '')
+                display_text = item.get(display_field, "")
+                value = item.get(value_field, "")
             else:
                 display_text = str(item)
                 value = item

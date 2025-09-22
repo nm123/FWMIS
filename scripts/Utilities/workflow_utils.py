@@ -1,11 +1,15 @@
-import sqlite3
 import json
+import sqlite3
 from datetime import datetime
-from scripts.Utilities.config import DB_PATH
+
 from scripts.Utilities.audit_utils import save_audit_log
+from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
 
-def handle_loss_control_status_change(case_id, base_transaction_no, loss_control_status, user_id=None):
+
+def handle_loss_control_status_change(
+    case_id, base_transaction_no, loss_control_status, user_id=None
+):
     """
     Handle Loss Control status changes in the single-case model.
 
@@ -25,22 +29,31 @@ def handle_loss_control_status_change(case_id, base_transaction_no, loss_control
         bool: Success status
     """
 
-    print(f"DEBUG: handle_loss_control_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, loss_control_status: {loss_control_status}")
+    print(
+        f"DEBUG: handle_loss_control_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, loss_control_status: {loss_control_status}"
+    )
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     try:
         # Get current case data
-        cursor.execute("SELECT assessment_status, lc_status, suffixes, is_finalized FROM cases WHERE id = ?", (case_id,))
+        cursor.execute(
+            "SELECT assessment_status, lc_status, suffixes, is_finalized FROM cases WHERE id = ?",
+            (case_id,),
+        )
         current_data = cursor.fetchone()
 
         if not current_data:
             print(f"DEBUG: Case {case_id} not found")
             return False
 
-        assessment_status, current_lc_status, current_suffixes, is_finalized = current_data
-        print(f"DEBUG: Case {case_id} assessment_status: {assessment_status}, lc_status: {current_lc_status}, suffixes: {current_suffixes}")
+        assessment_status, current_lc_status, current_suffixes, is_finalized = (
+            current_data
+        )
+        print(
+            f"DEBUG: Case {case_id} assessment_status: {assessment_status}, lc_status: {current_lc_status}, suffixes: {current_suffixes}"
+        )
 
         # Prevent changes to finalized cases
         if is_finalized:
@@ -48,7 +61,9 @@ def handle_loss_control_status_change(case_id, base_transaction_no, loss_control
 
         # Validate that case is in Confirmed status
         if assessment_status != "Confirmed":
-            print(f"ERROR: Cannot change LC status for case not in Confirmed assessment status")
+            print(
+                f"ERROR: Cannot change LC status for case not in Confirmed assessment status"
+            )
             return False
 
         # Check if evidence is uploaded for LC status changes
@@ -68,7 +83,7 @@ def handle_loss_control_status_change(case_id, base_transaction_no, loss_control
             return False
 
         # Parse current suffixes
-        suffixes = current_suffixes.split(',') if current_suffixes else []
+        suffixes = current_suffixes.split(",") if current_suffixes else []
 
         # Update based on new LC status
         if loss_control_status == "Recovered":
@@ -95,7 +110,8 @@ def handle_loss_control_status_change(case_id, base_transaction_no, loss_control
             return False
 
         # Update the case
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET
                 lc_status = ?,
                 suffixes = ?,
@@ -103,14 +119,16 @@ def handle_loss_control_status_change(case_id, base_transaction_no, loss_control
                 finalized_date = ?,
                 finalization_reason = ?
             WHERE id = ?
-        """, (
-            new_lc_status,
-            ','.join(suffixes),
-            1 if is_finalized else 0,
-            datetime.now().strftime("%Y-%m-%d") if is_finalized else None,
-            finalization_reason if is_finalized else None,
-            case_id
-        ))
+        """,
+            (
+                new_lc_status,
+                ",".join(suffixes),
+                1 if is_finalized else 0,
+                datetime.now().strftime("%Y-%m-%d") if is_finalized else None,
+                finalization_reason if is_finalized else None,
+                case_id,
+            ),
+        )
 
         conn.commit()
 
@@ -122,9 +140,9 @@ def handle_loss_control_status_change(case_id, base_transaction_no, loss_control
             "action": "lc_status_change",
             "previous_lc_status": current_lc_status,
             "new_lc_status": new_lc_status,
-            "suffixes": ','.join(suffixes),
+            "suffixes": ",".join(suffixes),
             "finalized": is_finalized,
-            "user_id": user_id
+            "user_id": user_id,
         }
 
         save_audit_log("lc_status_change", workflow_data, get_financial_year())
@@ -140,7 +158,9 @@ def handle_loss_control_status_change(case_id, base_transaction_no, loss_control
         conn.close()
 
 
-def handle_case_status_change(case_id, base_transaction_no, new_assessment_status, user_id=None):
+def handle_case_status_change(
+    case_id, base_transaction_no, new_assessment_status, user_id=None
+):
     """
     Handle assessment status changes in the single-case model.
 
@@ -161,29 +181,38 @@ def handle_case_status_change(case_id, base_transaction_no, new_assessment_statu
         bool: Success status
     """
 
-    print(f"DEBUG: handle_case_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, new_assessment_status: {new_assessment_status}")
+    print(
+        f"DEBUG: handle_case_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, new_assessment_status: {new_assessment_status}"
+    )
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     try:
         # Get current case data
-        cursor.execute("SELECT assessment_status, lc_status, suffixes, is_finalized FROM cases WHERE id = ?", (case_id,))
+        cursor.execute(
+            "SELECT assessment_status, lc_status, suffixes, is_finalized FROM cases WHERE id = ?",
+            (case_id,),
+        )
         current_data = cursor.fetchone()
 
         if not current_data:
             print(f"DEBUG: Case {case_id} not found")
             return False
 
-        current_assessment_status, current_lc_status, current_suffixes, is_finalized = current_data
-        print(f"DEBUG: Case {case_id} current assessment_status: {current_assessment_status}, lc_status: {current_lc_status}, suffixes: {current_suffixes}")
+        current_assessment_status, current_lc_status, current_suffixes, is_finalized = (
+            current_data
+        )
+        print(
+            f"DEBUG: Case {case_id} current assessment_status: {current_assessment_status}, lc_status: {current_lc_status}, suffixes: {current_suffixes}"
+        )
 
         # Prevent changes to finalized cases (except for Valid->Confirmed edge case)
         if is_finalized and new_assessment_status != "Confirmed":
             return False
 
         # Parse current suffixes
-        suffixes = current_suffixes.split(',') if current_suffixes else []
+        suffixes = current_suffixes.split(",") if current_suffixes else []
 
         # Handle status transitions
         if new_assessment_status == "Valid":
@@ -194,13 +223,17 @@ def handle_case_status_change(case_id, base_transaction_no, new_assessment_statu
                 try:
                     evidence_dict = json.loads(evidence_data[0])
                     if not evidence_dict or not any(evidence_dict.values()):
-                        print(f"ERROR: Assessment evidence must be uploaded before marking case as Valid")
+                        print(
+                            f"ERROR: Assessment evidence must be uploaded before marking case as Valid"
+                        )
                         return False
                 except json.JSONDecodeError:
                     print(f"ERROR: Invalid evidence data format")
                     return False
             else:
-                print(f"ERROR: Assessment evidence must be uploaded before marking case as Valid")
+                print(
+                    f"ERROR: Assessment evidence must be uploaded before marking case as Valid"
+                )
                 return False
 
             # Case is not F&W, finalize it
@@ -217,13 +250,17 @@ def handle_case_status_change(case_id, base_transaction_no, new_assessment_statu
                 try:
                     evidence_dict = json.loads(evidence_data[0])
                     if not evidence_dict or not any(evidence_dict.values()):
-                        print(f"ERROR: Assessment evidence must be uploaded before marking case as Confirmed")
+                        print(
+                            f"ERROR: Assessment evidence must be uploaded before marking case as Confirmed"
+                        )
                         return False
                 except json.JSONDecodeError:
                     print(f"ERROR: Invalid evidence data format")
                     return False
             else:
-                print(f"ERROR: Assessment evidence must be uploaded before marking case as Confirmed")
+                print(
+                    f"ERROR: Assessment evidence must be uploaded before marking case as Confirmed"
+                )
                 return False
 
             # Case is F&W, add -LS suffix to appear in Lead Schedule
@@ -246,7 +283,8 @@ def handle_case_status_change(case_id, base_transaction_no, new_assessment_statu
             return False
 
         # Update the case
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET
                 assessment_status = ?,
                 lc_status = ?,
@@ -255,15 +293,17 @@ def handle_case_status_change(case_id, base_transaction_no, new_assessment_statu
                 finalized_date = ?,
                 finalization_reason = ?
             WHERE id = ?
-        """, (
-            new_assessment_status,
-            current_lc_status,
-            ','.join(suffixes),
-            1 if is_finalized else 0,
-            datetime.now().strftime("%Y-%m-%d") if is_finalized else None,
-            finalization_reason if is_finalized else None,
-            case_id
-        ))
+        """,
+            (
+                new_assessment_status,
+                current_lc_status,
+                ",".join(suffixes),
+                1 if is_finalized else 0,
+                datetime.now().strftime("%Y-%m-%d") if is_finalized else None,
+                finalization_reason if is_finalized else None,
+                case_id,
+            ),
+        )
 
         conn.commit()
 
@@ -276,14 +316,16 @@ def handle_case_status_change(case_id, base_transaction_no, new_assessment_statu
             "previous_assessment_status": current_assessment_status,
             "new_assessment_status": new_assessment_status,
             "lc_status": current_lc_status,
-            "suffixes": ','.join(suffixes),
+            "suffixes": ",".join(suffixes),
             "finalized": is_finalized,
-            "user_id": user_id
+            "user_id": user_id,
         }
 
         save_audit_log("assessment_status_change", workflow_data, get_financial_year())
 
-        print(f"DEBUG: Assessment status change completed for case {base_transaction_no}")
+        print(
+            f"DEBUG: Assessment status change completed for case {base_transaction_no}"
+        )
         return True
 
     except Exception as e:
@@ -313,11 +355,14 @@ def approve_write_off_submission(write_off_group_id, user_id=None):
 
     try:
         # Get all cases in the group
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, suffixes
             FROM cases
             WHERE write_off_group_id = ? AND lc_status = 'Write Off Recommended'
-        """, (write_off_group_id,))
+        """,
+            (write_off_group_id,),
+        )
 
         cases_to_update = cursor.fetchall()
         if not cases_to_update:
@@ -329,13 +374,14 @@ def approve_write_off_submission(write_off_group_id, user_id=None):
         # Update each case
         for case_id, base_transaction_no, suffixes in cases_to_update:
             # Parse and update suffixes
-            suffix_list = suffixes.split(',') if suffixes else []
+            suffix_list = suffixes.split(",") if suffixes else []
             if "-WO" not in suffix_list:
                 suffix_list.append("-WO")
             # Remove -WOR since it's now approved
             suffix_list = [s for s in suffix_list if s != "-WOR"]
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE cases SET
                     lc_status = 'Written Off',
                     suffixes = ?,
@@ -343,12 +389,14 @@ def approve_write_off_submission(write_off_group_id, user_id=None):
                     finalized_date = ?,
                     finalization_reason = ?
                 WHERE id = ?
-            """, (
-                ','.join(suffix_list),
-                datetime.now().strftime("%Y-%m-%d"),
-                "Case written off by approval",
-                case_id
-            ))
+            """,
+                (
+                    ",".join(suffix_list),
+                    datetime.now().strftime("%Y-%m-%d"),
+                    "Case written off by approval",
+                    case_id,
+                ),
+            )
 
         conn.commit()
 
@@ -358,7 +406,7 @@ def approve_write_off_submission(write_off_group_id, user_id=None):
             "write_off_group_id": write_off_group_id,
             "cases_written_off": len(cases_to_update),
             "case_ids": [case[0] for case in cases_to_update],
-            "user_id": user_id
+            "user_id": user_id,
         }
 
         save_audit_log("write_off_approved", workflow_data, get_financial_year())
@@ -396,7 +444,10 @@ def create_write_off_group(selected_case_ids, user_id=None):
 
     try:
         # Get the base transaction number from the first case
-        cursor.execute("SELECT base_transaction_no FROM cases WHERE id = ?", (selected_case_ids[0],))
+        cursor.execute(
+            "SELECT base_transaction_no FROM cases WHERE id = ?",
+            (selected_case_ids[0],),
+        )
         result = cursor.fetchone()
         if not result:
             return None
@@ -406,9 +457,12 @@ def create_write_off_group(selected_case_ids, user_id=None):
 
         # Update all selected cases with the group ID
         for case_id in selected_case_ids:
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE cases SET write_off_group_id = ? WHERE id = ?
-            """, (group_id, case_id))
+            """,
+                (group_id, case_id),
+            )
 
         conn.commit()
 
@@ -418,7 +472,7 @@ def create_write_off_group(selected_case_ids, user_id=None):
             "write_off_group_id": group_id,
             "cases_grouped": len(selected_case_ids),
             "case_ids": selected_case_ids,
-            "user_id": user_id
+            "user_id": user_id,
         }
 
         save_audit_log("write_off_group_created", workflow_data, get_financial_year())
@@ -433,6 +487,7 @@ def create_write_off_group(selected_case_ids, user_id=None):
     finally:
         conn.close()
 
+
 def get_case_workflow_status(case_id):
     """
     Get comprehensive workflow status for a case in the single-case model
@@ -444,19 +499,30 @@ def get_case_workflow_status(case_id):
     cursor = conn.cursor()
 
     try:
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT base_transaction_no, assessment_status, lc_status, suffixes,
                    is_finalized, finalized_date, write_off_group_id
             FROM cases
             WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         result = cursor.fetchone()
         if result:
-            base_transaction_no, assessment_status, lc_status, suffixes, is_finalized, finalized_date, write_off_group_id = result
+            (
+                base_transaction_no,
+                assessment_status,
+                lc_status,
+                suffixes,
+                is_finalized,
+                finalized_date,
+                write_off_group_id,
+            ) = result
 
             # Parse suffixes
-            suffix_list = suffixes.split(',') if suffixes else []
+            suffix_list = suffixes.split(",") if suffixes else []
 
             # Determine which lists this case appears in
             appears_in = ["Checklist"]  # All cases appear in checklist
@@ -480,9 +546,14 @@ def get_case_workflow_status(case_id):
                 "finalized_date": finalized_date,
                 "write_off_group_id": write_off_group_id,
                 "can_edit": not bool(is_finalized),
-                "can_change_assessment_status": assessment_status in ["Alleged", "Under Assessment"],
-                "can_change_lc_status": assessment_status == "Confirmed" and not is_finalized,
-                "needs_evidence": (assessment_status in ["Valid", "Confirmed"] or lc_status in ["Recovered", "Write Off Recommended"])
+                "can_change_assessment_status": assessment_status
+                in ["Alleged", "Under Assessment"],
+                "can_change_lc_status": assessment_status == "Confirmed"
+                and not is_finalized,
+                "needs_evidence": (
+                    assessment_status in ["Valid", "Confirmed"]
+                    or lc_status in ["Recovered", "Write Off Recommended"]
+                ),
             }
 
         return None
@@ -492,6 +563,7 @@ def get_case_workflow_status(case_id):
         return None
     finally:
         conn.close()
+
 
 def check_workflow_completion():
     """
@@ -503,31 +575,35 @@ def check_workflow_completion():
 
     try:
         # Cases in Lead Schedule (Confirmed + -LS) that need LC determination
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT base_transaction_no, assessment_status, lc_status
             FROM cases
             WHERE assessment_status = 'Confirmed'
             AND (suffixes LIKE '%-LS%' OR lc_status IS NULL)
             AND lc_status = 'Awaiting LC determination'
             AND is_finalized = 0
-        """)
+        """
+        )
 
         needs_lc_determination = cursor.fetchall()
 
         # Cases recommended for write-off that need grouping/submission
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT base_transaction_no, assessment_status, lc_status
             FROM cases
             WHERE lc_status = 'Write Off Recommended'
             AND write_off_group_id IS NULL
             AND is_finalized = 0
-        """)
+        """
+        )
 
         needs_write_off_grouping = cursor.fetchall()
 
         return {
             "needs_lc_determination": needs_lc_determination,
-            "needs_write_off_grouping": needs_write_off_grouping
+            "needs_write_off_grouping": needs_write_off_grouping,
         }
 
     except Exception as e:
@@ -553,10 +629,11 @@ def get_list_filter_query(list_name):
         "Recovered": "suffixes LIKE '%-REC%'",
         "Write-Off Recommended": "suffixes LIKE '%-WOR%'",
         "Written Off": "suffixes LIKE '%-WO%'",
-        "Deleted Cases": "list = 'Deleted Cases'"  # Keep old list field for deleted cases
+        "Deleted Cases": "list = 'Deleted Cases'",  # Keep old list field for deleted cases
     }
 
     return filters.get(list_name, "1=1")
+
 
 def get_display_transaction_no(base_transaction_no, suffixes):
     """
@@ -572,7 +649,7 @@ def get_display_transaction_no(base_transaction_no, suffixes):
     if not suffixes:
         return base_transaction_no
 
-    suffix_list = suffixes.split(',')
+    suffix_list = suffixes.split(",")
     # Return the most relevant suffix for display
     if "-WO" in suffix_list:
         return f"{base_transaction_no}-WO"

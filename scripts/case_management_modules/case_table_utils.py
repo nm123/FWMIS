@@ -2,15 +2,19 @@
 Shared utilities for case table display in View Cases and Edit Cases dialogs.
 Ensures consistent list and status display.
 """
-from PyQt5.QtWidgets import QTableWidgetItem, QTableWidget, QWidget, QVBoxLayout, QPushButton
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem,
+                             QVBoxLayout, QWidget)
 from scripts.Utilities.utils import format_currency_amount
+
 
 def create_table_button(text):
     """Create a simple, visible button for table cells"""
     button = QPushButton(text)
     button.setFixedSize(50, 20)  # Slightly larger for visibility
-    button.setStyleSheet("""
+    button.setStyleSheet(
+        """
         QPushButton {
             background-color: #007bff;
             color: white;
@@ -26,8 +30,10 @@ def create_table_button(text):
         QPushButton:pressed {
             background-color: #004085;
         }
-    """)
+    """
+    )
     return button
+
 
 def setup_case_table_columns(table, include_edit=False):
     """
@@ -37,7 +43,15 @@ def setup_case_table_columns(table, include_edit=False):
         table (QTableWidget): The table to configure.
         include_edit (bool): Whether to include Edit Case column.
     """
-    headers = ["Case No", "Date Reported", "Category", "Amount", "List", "Status", "To-Do"]
+    headers = [
+        "Case No",
+        "Date Reported",
+        "Category",
+        "Amount",
+        "List",
+        "Status",
+        "To-Do",
+    ]
     if include_edit:
         headers.append("Edit Case")
     table.setColumnCount(len(headers))
@@ -49,12 +63,15 @@ def setup_case_table_columns(table, include_edit=False):
     table.setColumnWidth(3, 120)  # Amount
     table.setColumnWidth(4, 120)  # List
     table.setColumnWidth(5, 120)  # Status
-    table.setColumnWidth(6, 80)   # To-Do
+    table.setColumnWidth(6, 80)  # To-Do
     if include_edit:
         table.setColumnWidth(7, 90)  # Edit Case
     table.verticalHeader().setDefaultSectionSize(50)
 
-def populate_case_table(table, cases, list_name, include_edit=False, edit_callback=None):
+
+def populate_case_table(
+    table, cases, list_name, include_edit=False, edit_callback=None
+):
     """
     Populate the table with case data, using consistent display logic.
 
@@ -83,16 +100,18 @@ def populate_case_table(table, cases, list_name, include_edit=False, edit_callba
         # Case No (with suffix stripping for display)
         display_value = transaction_no
         if list_name != "All Cases":
-            for suffix in ['-LS', '-WOR', '-REC', '-WO']:
+            for suffix in ["-LS", "-WOR", "-REC", "-WO"]:
                 if display_value.endswith(suffix):
-                    display_value = display_value.rsplit('-', 1)[0]
+                    display_value = display_value.rsplit("-", 1)[0]
                     break
         case_item = QTableWidgetItem(str(display_value) if display_value else "")
         case_item.setData(Qt.UserRole, transaction_no)
         table.setItem(row, 0, case_item)
 
         # Date Reported
-        table.setItem(row, 1, QTableWidgetItem(str(date_reported) if date_reported else ""))
+        table.setItem(
+            row, 1, QTableWidgetItem(str(date_reported) if date_reported else "")
+        )
 
         # Category
         table.setItem(row, 2, QTableWidgetItem(str(category) if category else ""))
@@ -103,13 +122,13 @@ def populate_case_table(table, cases, list_name, include_edit=False, edit_callba
 
         # List (view-specific)
         if list_name == "All Cases":
-            if '-WO' in suffixes:
+            if "-WO" in suffixes:
                 list_value = "Written Off"
-            elif '-REC' in suffixes:
+            elif "-REC" in suffixes:
                 list_value = "Recovered"
-            elif '-WOR' in suffixes:
+            elif "-WOR" in suffixes:
                 list_value = "Write-Off Recommended"
-            elif '-LS' in suffixes:
+            elif "-LS" in suffixes:
                 list_value = "Lead Schedule"
             else:
                 list_value = "Checklist"
@@ -131,7 +150,6 @@ def populate_case_table(table, cases, list_name, include_edit=False, edit_callba
         else:
             status_value = assessment_status
         table.setItem(row, 5, QTableWidgetItem(status_value))
-
 
         # To-Do
         todo_value = "Yes" if bas_payment_no or bas_journal_no else "No"

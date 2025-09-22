@@ -1,9 +1,11 @@
-import sqlite3
 import os
+import sqlite3
 import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import DB_PATH
 from Utilities.contact_utils import get_effective_contacts
+
 
 def test_contacts():
     try:
@@ -28,6 +30,7 @@ def test_contacts():
         conn.close()
     except Exception as e:
         print(f"Error: {e}")
+
 
 if __name__ == "__main__":
     test_contacts()

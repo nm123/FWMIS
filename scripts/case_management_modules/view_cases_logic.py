@@ -1,10 +1,12 @@
 import sqlite3
 from collections import defaultdict
-from PyQt5.QtWidgets import QMessageBox, QTreeWidgetItem, QTableWidgetItem
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QTreeWidgetItem
+from scripts.case_management_modules.case_table_utils import \
+    populate_case_table
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
-from scripts.case_management_modules.case_table_utils import populate_case_table
 
 
 class ViewCasesLogic:
@@ -14,7 +16,9 @@ class ViewCasesLogic:
         resp_dict = {r["id"]: r for r in dialog.responsibilities}
 
         # Query database to find responsibilities with cases
-        dialog.responsibilities_with_cases = ViewCasesLogic.get_responsibilities_with_cases(dialog)
+        dialog.responsibilities_with_cases = (
+            ViewCasesLogic.get_responsibilities_with_cases(dialog)
+        )
 
         top_level = [r for r in dialog.responsibilities if r["parent_id"] is None]
         for resp in top_level:
@@ -45,7 +49,9 @@ class ViewCasesLogic:
             for resp_id in case_resp_ids:
                 responsibilities_with_cases.add(resp_id)
                 # Find and add parent IDs
-                resp = next((r for r in dialog.responsibilities if r["id"] == resp_id), None)
+                resp = next(
+                    (r for r in dialog.responsibilities if r["id"] == resp_id), None
+                )
                 if resp and resp["parent_id"]:
                     responsibilities_with_cases.add(resp["parent_id"])
 
@@ -105,7 +111,10 @@ class ViewCasesLogic:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (transaction_no,))
+            cursor.execute(
+                "SELECT responsibility_id FROM cases WHERE transaction_no = ?",
+                (transaction_no,),
+            )
             result = cursor.fetchone()
             conn.close()
 
@@ -118,6 +127,7 @@ class ViewCasesLogic:
     @staticmethod
     def highlight_responsibility(dialog, responsibility_id):
         """Find and highlight the responsibility in the tree"""
+
         def find_item_by_id(parent_item, target_id):
             """Recursively search for an item with the given ID"""
             if parent_item is None:
@@ -181,7 +191,9 @@ class ViewCasesLogic:
             pass
         elif selected_list == "Lead Schedule":
             # Lead Schedule shows Confirmed cases with -LS suffix, not finalized
-            base_conditions.append("assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'")
+            base_conditions.append(
+                "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'"
+            )
         elif selected_list == "Recovered":
             # Recovered shows cases with -REC suffix
             base_conditions.append("suffixes LIKE '%-REC%'")
@@ -193,7 +205,9 @@ class ViewCasesLogic:
             base_conditions.append("suffixes LIKE '%-WO%'")
         elif selected_list == "To-Do List":
             # Show both actual To-Do List cases and GJ cases with outstanding actions
-            base_conditions.append("(list = 'To-Do List' OR bas_journal_no IS NOT NULL)")
+            base_conditions.append(
+                "(list = 'To-Do List' OR bas_journal_no IS NOT NULL)"
+            )
         elif selected_list == "Deleted Cases":
             # Deleted Cases shows cases with -DEL suffix
             base_conditions.append("suffixes LIKE '%-DEL%'")
@@ -225,7 +239,9 @@ class ViewCasesLogic:
 
         # Try to find case by transaction_no first, then fallback to case_id if transaction_no is None
         if transaction_no:
-            cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,))
+            cursor.execute(
+                "SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,)
+            )
         else:
             # If transaction_no is None, we need to get the case_id from the table data
             # This shouldn't happen with our fallback, but just in case
@@ -240,22 +256,32 @@ class ViewCasesLogic:
 
         if case_data:
             # Convert to dictionary for easier handling with new schema
-            columns = [desc[0] for desc in cursor.description] if cursor.description else []
+            columns = (
+                [desc[0] for desc in cursor.description] if cursor.description else []
+            )
             case_dict = dict(zip(columns, case_data)) if columns else {}
 
             # Check if case is finalized
-            is_finalized = case_dict.get('is_finalized', False)
+            is_finalized = case_dict.get("is_finalized", False)
 
             if is_finalized:
                 # Show read-only details for finalized cases
-                from scripts.ui.components.view_cases_ui import CaseDetailsDialog
+                from scripts.ui.components.view_cases_ui import \
+                    CaseDetailsDialog
+
                 dialog_details = CaseDetailsDialog(case_data, dialog)
                 dialog_details.exec_()
             else:
                 # Open editable dialog for non-finalized cases
-                from scripts.case_management_modules.edit_case_dialog import EditCaseDialog
-                edit_dialog = EditCaseDialog(case_dict, dialog, selected_list=selected_list)
-                edit_dialog.case_modified.connect(lambda: ViewCasesLogic.refresh_cases(dialog))  # Connect refresh signal
+                from scripts.case_management_modules.edit_case_dialog import \
+                    EditCaseDialog
+
+                edit_dialog = EditCaseDialog(
+                    case_dict, dialog, selected_list=selected_list
+                )
+                edit_dialog.case_modified.connect(
+                    lambda: ViewCasesLogic.refresh_cases(dialog)
+                )  # Connect refresh signal
                 edit_dialog.exec_()
 
     @staticmethod
@@ -280,7 +306,14 @@ class ViewCasesLogic:
                 while current_parent_id:
                     parent_ids_to_include.add(current_parent_id)
                     # Find the parent and get its parent_id
-                    parent_resp = next((r for r in dialog.responsibilities if r["id"] == current_parent_id), None)
+                    parent_resp = next(
+                        (
+                            r
+                            for r in dialog.responsibilities
+                            if r["id"] == current_parent_id
+                        ),
+                        None,
+                    )
                     if parent_resp:
                         current_parent_id = parent_resp["parent_id"]
                     else:
@@ -336,7 +369,9 @@ class ViewCasesLogic:
     @staticmethod
     def create_write_off_submission(dialog):
         """Open dialog to create a write-off submission"""
-        from scripts.case_management_modules.write_off_submission_dialog import WriteOffSubmissionDialog
+        from scripts.case_management_modules.write_off_submission_dialog import \
+            WriteOffSubmissionDialog
+
         submission_dialog = WriteOffSubmissionDialog(dialog)
         submission_dialog.exec_()
         # Refresh the case list after creating submission
@@ -350,28 +385,38 @@ class ViewCasesLogic:
         cursor = conn.cursor()
 
         try:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT DISTINCT write_off_group_id
                 FROM cases
                 WHERE write_off_group_id IS NOT NULL AND lc_status = 'Write Off Recommended'
                 ORDER BY write_off_group_id
-            """)
+            """
+            )
 
             groups = cursor.fetchall()
             conn.close()
 
             if not groups:
-                QMessageBox.information(dialog, "No Submissions", "No write-off submissions available for approval.")
+                QMessageBox.information(
+                    dialog,
+                    "No Submissions",
+                    "No write-off submissions available for approval.",
+                )
                 return
 
             # For now, just approve the first group (in a real app, you'd show a selection dialog)
             group_id = groups[0][0]
 
-            from scripts.case_management_modules.write_off_management_dialog import WriteOffApprovalDialog
+            from scripts.case_management_modules.write_off_management_dialog import \
+                WriteOffApprovalDialog
+
             approval_dialog = WriteOffApprovalDialog(group_id, dialog)
             approval_dialog.exec_()
             # Refresh the case list after approval
             ViewCasesLogic.refresh_cases(dialog)
 
         except Exception as e:
-            QMessageBox.critical(dialog, "Error", f"Failed to load submissions: {str(e)}")
+            QMessageBox.critical(
+                dialog, "Error", f"Failed to load submissions: {str(e)}"
+            )

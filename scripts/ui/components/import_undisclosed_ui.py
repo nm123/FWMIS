@@ -1,16 +1,21 @@
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
-    QPushButton, QDateEdit, QFileDialog, QMessageBox, QWidget,
-    QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
-    QProgressBar, QGroupBox, QTextEdit, QComboBox, QCheckBox, QGridLayout
-)
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtGui import QFont
-from scripts.Utilities.ui_theme import apply_theme, create_professional_button, create_professional_groupbox, setup_professional_table, create_status_label
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDialog,
+                             QFileDialog, QFormLayout, QGridLayout, QGroupBox,
+                             QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+                             QMessageBox, QProgressBar, QPushButton, QSplitter,
+                             QTableWidget, QTableWidgetItem, QTextEdit,
+                             QVBoxLayout, QWidget)
+from scripts.Utilities.ui_theme import (apply_theme,
+                                        create_professional_button,
+                                        create_professional_groupbox,
+                                        create_status_label,
+                                        setup_professional_table)
 
 
 def setup_ui(dialog):
-    dialog.setStyleSheet("""
+    dialog.setStyleSheet(
+        """
         QDialog {
             background-color: #f8f9fa;
         }
@@ -62,7 +67,8 @@ def setup_ui(dialog):
             background-color: #6c757d;
             color: #adb5bd;
         }
-    """)
+    """
+    )
 
     layout = QVBoxLayout(dialog)
     layout.setSpacing(15)
@@ -71,21 +77,24 @@ def setup_ui(dialog):
     # Header section
     header_layout = QHBoxLayout()
     header_label = QLabel("📊 Import Undisclosed Cases")
-    header_label.setStyleSheet("""
+    header_label.setStyleSheet(
+        """
         QLabel {
             font-size: 18px;
             font-weight: bold;
             color: #343a40;
             margin-bottom: 5px;
         }
-    """)
+    """
+    )
     header_layout.addWidget(header_label)
     header_layout.addStretch()
     layout.addLayout(header_layout)
 
     # File selection section
     file_group = QGroupBox("📁 BAS Report File Selection")
-    file_group.setStyleSheet("""
+    file_group.setStyleSheet(
+        """
         QGroupBox {
             font-weight: bold;
             border: 2px solid #007bff;
@@ -100,18 +109,22 @@ def setup_ui(dialog):
             color: #007bff;
             font-size: 14px;
         }
-    """)
+    """
+    )
     file_layout = QHBoxLayout()
     file_layout.setSpacing(10)
 
     dialog.file_path_edit = QLineEdit()
-    dialog.file_path_edit.setPlaceholderText("Click Browse to select BAS report file (.txt)...")
+    dialog.file_path_edit.setPlaceholderText(
+        "Click Browse to select BAS report file (.txt)..."
+    )
     dialog.file_path_edit.setReadOnly(True)
     dialog.file_path_edit.setMinimumHeight(35)
 
     dialog.browse_button = QPushButton("📂 Browse")
     dialog.browse_button.clicked.connect(dialog.browse_file)
-    dialog.browse_button.setStyleSheet("""
+    dialog.browse_button.setStyleSheet(
+        """
         QPushButton {
             background-color: #28a745;
             color: white;
@@ -124,7 +137,8 @@ def setup_ui(dialog):
         QPushButton:hover {
             background-color: #218838;
         }
-    """)
+    """
+    )
 
     file_layout.addWidget(dialog.file_path_edit, 1)
     file_layout.addWidget(dialog.browse_button)
@@ -143,7 +157,8 @@ def setup_ui(dialog):
     dialog.category_button.clicked.connect(dialog.select_category)
     dialog.category_button.setMinimumHeight(35)
     dialog.category_label = QLabel("No category selected")
-    dialog.category_label.setStyleSheet("""
+    dialog.category_label.setStyleSheet(
+        """
         QLabel {
             background-color: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -152,7 +167,8 @@ def setup_ui(dialog):
             color: #856404;
             font-style: italic;
         }
-    """)
+    """
+    )
 
     # Date range selection
     date_label = QLabel("📅 Date Range:")
@@ -186,7 +202,8 @@ def setup_ui(dialog):
     dialog.parse_button.clicked.connect(dialog.parse_file)
     dialog.parse_button.setEnabled(False)
     dialog.parse_button.setMinimumHeight(40)
-    dialog.parse_button.setStyleSheet("""
+    dialog.parse_button.setStyleSheet(
+        """
         QPushButton {
             background-color: #17a2b8;
             color: white;
@@ -203,7 +220,8 @@ def setup_ui(dialog):
             background-color: #6c757d;
             color: #adb5bd;
         }
-    """)
+    """
+    )
 
     # Layout arrangement
     settings_layout.addWidget(category_label, 0, 0)
@@ -220,7 +238,8 @@ def setup_ui(dialog):
 
     # Results section
     results_group = QGroupBox("📋 Transaction Analysis & Processing")
-    results_group.setStyleSheet("""
+    results_group.setStyleSheet(
+        """
         QGroupBox {
             font-weight: bold;
             border: 2px solid #6f42c1;
@@ -235,14 +254,16 @@ def setup_ui(dialog):
             color: #6f42c1;
             font-size: 14px;
         }
-    """)
+    """
+    )
     results_layout = QVBoxLayout()
     results_layout.setSpacing(10)
 
     # Status display
     status_layout = QHBoxLayout()
     dialog.results_label = QLabel("⏳ Ready to parse BAS file...")
-    dialog.results_label.setStyleSheet("""
+    dialog.results_label.setStyleSheet(
+        """
         QLabel {
             background-color: #e9ecef;
             border: 1px solid #ced4da;
@@ -252,7 +273,8 @@ def setup_ui(dialog):
             font-size: 13px;
             font-weight: 500;
         }
-    """)
+    """
+    )
     dialog.results_label.setMinimumHeight(40)
     status_layout.addWidget(dialog.results_label)
     results_layout.addLayout(status_layout)
@@ -261,7 +283,8 @@ def setup_ui(dialog):
     dialog.progress_bar = QProgressBar()
     dialog.progress_bar.setVisible(False)
     dialog.progress_bar.setMinimumHeight(25)
-    dialog.progress_bar.setStyleSheet("""
+    dialog.progress_bar.setStyleSheet(
+        """
         QProgressBar {
             border: 2px solid #ced4da;
             border-radius: 4px;
@@ -272,7 +295,8 @@ def setup_ui(dialog):
             background-color: #007bff;
             border-radius: 2px;
         }
-    """)
+    """
+    )
     results_layout.addWidget(dialog.progress_bar)
 
     # Transactions table
@@ -281,23 +305,35 @@ def setup_ui(dialog):
     table_layout.setContentsMargins(0, 0, 0, 0)
 
     table_header = QLabel("📊 Parsed Transactions:")
-    table_header.setStyleSheet("""
+    table_header.setStyleSheet(
+        """
         QLabel {
             font-size: 14px;
             font-weight: bold;
             color: #495057;
             margin-bottom: 5px;
         }
-    """)
+    """
+    )
     table_layout.addWidget(table_header)
 
     dialog.transactions_table = QTableWidget()
     dialog.transactions_table.setColumnCount(9)
-    dialog.transactions_table.setHorizontalHeaderLabels([
-        "🏢 Responsibility", "🔢 Type", "💰 Amount", "📅 Date", "📝 Description",
-        "✅ Resp Status", "🔍 Dup Status", "🎫 Case Number", "⚡ Actions"
-    ])
-    dialog.transactions_table.setStyleSheet("""
+    dialog.transactions_table.setHorizontalHeaderLabels(
+        [
+            "🏢 Responsibility",
+            "🔢 Type",
+            "💰 Amount",
+            "📅 Date",
+            "📝 Description",
+            "✅ Resp Status",
+            "🔍 Dup Status",
+            "🎫 Case Number",
+            "⚡ Actions",
+        ]
+    )
+    dialog.transactions_table.setStyleSheet(
+        """
         QTableWidget {
             gridline-color: #dee2e6;
             selection-background-color: #007bff;
@@ -321,13 +357,14 @@ def setup_ui(dialog):
             background-color: #007bff;
             color: white;
         }
-    """)
+    """
+    )
 
     header = dialog.transactions_table.horizontalHeader()
     header.setSectionResizeMode(QHeaderView.Interactive)
     header.setStretchLastSection(True)
     dialog.transactions_table.setColumnWidth(0, 200)  # Responsibility
-    dialog.transactions_table.setColumnWidth(1, 70)   # Type
+    dialog.transactions_table.setColumnWidth(1, 70)  # Type
     dialog.transactions_table.setColumnWidth(2, 110)  # Amount
     dialog.transactions_table.setColumnWidth(3, 110)  # Date
     dialog.transactions_table.setColumnWidth(4, 220)  # Description
@@ -350,7 +387,8 @@ def setup_ui(dialog):
 
     # Action buttons section
     actions_group = QGroupBox("🎯 Import Actions")
-    actions_group.setStyleSheet("""
+    actions_group.setStyleSheet(
+        """
         QGroupBox {
             font-weight: bold;
             border: 2px solid #dc3545;
@@ -365,7 +403,8 @@ def setup_ui(dialog):
             color: #dc3545;
             font-size: 14px;
         }
-    """)
+    """
+    )
     actions_layout = QVBoxLayout()
     actions_layout.setSpacing(15)
 
@@ -377,7 +416,8 @@ def setup_ui(dialog):
     dialog.manage_resp_button.clicked.connect(dialog.manage_responsibilities)
     dialog.manage_resp_button.setEnabled(False)
     dialog.manage_resp_button.setMinimumHeight(40)
-    dialog.manage_resp_button.setStyleSheet("""
+    dialog.manage_resp_button.setStyleSheet(
+        """
         QPushButton {
             background-color: #6f42c1;
             color: white;
@@ -390,13 +430,15 @@ def setup_ui(dialog):
         QPushButton:hover:enabled {
             background-color: #5a32a3;
         }
-    """)
+    """
+    )
 
     dialog.check_duplicates_button = QPushButton("🔍 Check Duplicates")
     dialog.check_duplicates_button.clicked.connect(dialog.check_duplicates)
     dialog.check_duplicates_button.setEnabled(False)
     dialog.check_duplicates_button.setMinimumHeight(40)
-    dialog.check_duplicates_button.setStyleSheet("""
+    dialog.check_duplicates_button.setStyleSheet(
+        """
         QPushButton {
             background-color: #fd7e14;
             color: white;
@@ -409,13 +451,15 @@ def setup_ui(dialog):
         QPushButton:hover:enabled {
             background-color: #e8680f;
         }
-    """)
+    """
+    )
 
     dialog.assign_case_numbers_button = QPushButton("🎫 Assign Case Numbers")
     dialog.assign_case_numbers_button.clicked.connect(dialog.assign_case_numbers)
     dialog.assign_case_numbers_button.setEnabled(False)
     dialog.assign_case_numbers_button.setMinimumHeight(45)
-    dialog.assign_case_numbers_button.setStyleSheet("""
+    dialog.assign_case_numbers_button.setStyleSheet(
+        """
         QPushButton {
             background-color: #2196F3;
             color: white;
@@ -432,7 +476,8 @@ def setup_ui(dialog):
             background-color: #90caf9;
             color: #e3f2fd;
         }
-    """)
+    """
+    )
 
     workflow_layout.addWidget(dialog.manage_resp_button)
     workflow_layout.addWidget(dialog.check_duplicates_button)
@@ -449,7 +494,8 @@ def setup_ui(dialog):
     dialog.import_button.clicked.connect(dialog.import_cases)
     dialog.import_button.setEnabled(False)
     dialog.import_button.setMinimumHeight(50)
-    dialog.import_button.setStyleSheet("""
+    dialog.import_button.setStyleSheet(
+        """
         QPushButton {
             background-color: #28a745;
             color: white;
@@ -470,12 +516,14 @@ def setup_ui(dialog):
             background-color: #6c757d;
             color: #adb5bd;
         }
-    """)
+    """
+    )
 
     dialog.cancel_button = QPushButton("❌ Cancel")
     dialog.cancel_button.clicked.connect(dialog.reject)
     dialog.cancel_button.setMinimumHeight(45)
-    dialog.cancel_button.setStyleSheet("""
+    dialog.cancel_button.setStyleSheet(
+        """
         QPushButton {
             background-color: #6c757d;
             color: white;
@@ -488,7 +536,8 @@ def setup_ui(dialog):
         QPushButton:hover {
             background-color: #5a6268;
         }
-    """)
+    """
+    )
 
     final_actions_layout.addWidget(dialog.import_button)
     final_actions_layout.addWidget(dialog.cancel_button)

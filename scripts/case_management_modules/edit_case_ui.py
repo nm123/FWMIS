@@ -1,28 +1,11 @@
-from PyQt5.QtWidgets import (
-    QVBoxLayout,
-    QHBoxLayout,
-    QGridLayout,
-    QFormLayout,
-    QLineEdit,
-    QTextEdit,
-    QComboBox,
-    QPushButton,
-    QDateEdit,
-    QFileDialog,
-    QMessageBox,
-    QWidget,
-    QLabel,
-    QScrollArea,
-    QGroupBox,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QSplitter,
-)
-from PyQt5.QtCore import QDate, Qt, QEvent
+from PyQt5.QtCore import QDate, QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
+from PyQt5.QtWidgets import (QComboBox, QDateEdit, QFileDialog, QFormLayout,
+                             QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+                             QLabel, QLineEdit, QMessageBox, QPushButton,
+                             QScrollArea, QSplitter, QTableWidget,
+                             QTableWidgetItem, QTextEdit, QTreeWidget,
+                             QTreeWidgetItem, QVBoxLayout, QWidget)
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 
 
@@ -53,10 +36,14 @@ def setup_edit_ui(dialog):
     responsibility_layout = QHBoxLayout()
     dialog.responsibility_edit = QLineEdit()
     dialog.responsibility_edit.setReadOnly(True)
-    dialog.responsibility_edit.setPlaceholderText("Click Select to choose responsibility...")
+    dialog.responsibility_edit.setPlaceholderText(
+        "Click Select to choose responsibility..."
+    )
     responsibility_layout.addWidget(dialog.responsibility_edit)
 
-    dialog.select_responsibility_button = create_professional_button("Select", 'secondary')
+    dialog.select_responsibility_button = create_professional_button(
+        "Select", "secondary"
+    )
     responsibility_layout.addWidget(dialog.select_responsibility_button)
 
     form_layout.addRow("Responsibility:", responsibility_layout)
@@ -108,11 +95,17 @@ def setup_edit_ui(dialog):
 
     # List
     dialog.list_combo = NoWheelComboBox()
-    system_lists = [l["name"] for l in dialog.lists if l.get("is_system", False) and l["name"] != "Deleted Cases"]
+    system_lists = [
+        l["name"]
+        for l in dialog.lists
+        if l.get("is_system", False) and l["name"] != "Deleted Cases"
+    ]
     dialog.list_combo.addItems(system_lists)
     # Select default list
     if system_lists:
-        default_list = next((l for l in dialog.lists if l.get("is_default", False)), None)
+        default_list = next(
+            (l for l in dialog.lists if l.get("is_default", False)), None
+        )
         if default_list and default_list["name"] in system_lists:
             dialog.list_combo.setCurrentText(default_list["name"])
     form_layout.addRow("List:", dialog.list_combo)
@@ -133,18 +126,25 @@ def setup_edit_ui(dialog):
     dialog.disciplinary_combo = NoWheelComboBox()
     dialog.disciplinary_combo.addItems(["N/A", "Yes", "No"])
     dialog.disciplinary_combo.setCurrentText("N/A")
-    form_layout.addRow("Disciplinary process in progress or completed:", dialog.disciplinary_combo)
+    form_layout.addRow(
+        "Disciplinary process in progress or completed:", dialog.disciplinary_combo
+    )
 
     # Loss recovery
     dialog.loss_recovery_combo = NoWheelComboBox()
     dialog.loss_recovery_combo.addItems(["N/A", "Yes", "No"])
     dialog.loss_recovery_combo.setCurrentText("N/A")
-    form_layout.addRow("Loss recovery commenced or completed:", dialog.loss_recovery_combo)
+    form_layout.addRow(
+        "Loss recovery commenced or completed:", dialog.loss_recovery_combo
+    )
 
     # Steps to prevent future occurrence
     dialog.prevention_steps_edit = QTextEdit()
     dialog.prevention_steps_edit.setMinimumHeight(40)
-    form_layout.addRow("Steps taken to prevent future occurrence of F&W expenditure:", dialog.prevention_steps_edit)
+    form_layout.addRow(
+        "Steps taken to prevent future occurrence of F&W expenditure:",
+        dialog.prevention_steps_edit,
+    )
 
     # Amount
     dialog.amount_edit = QLineEdit()
@@ -168,7 +168,7 @@ def setup_edit_ui(dialog):
     # File selection fields
     dialog.source_doc_label = QLabel("Source Document:")
     dialog.source_doc_edit = QLineEdit()
-    dialog.source_doc_button = create_professional_button("Browse", 'secondary')
+    dialog.source_doc_button = create_professional_button("Browse", "secondary")
     source_doc_layout = QHBoxLayout()
     source_doc_layout.addWidget(dialog.source_doc_edit)
     source_doc_layout.addWidget(dialog.source_doc_button)
@@ -176,7 +176,7 @@ def setup_edit_ui(dialog):
 
     dialog.minutes_label = QLabel("Loss Control Minutes:")
     dialog.minutes_edit = QLineEdit()
-    dialog.minutes_button = create_professional_button("Browse", 'secondary')
+    dialog.minutes_button = create_professional_button("Browse", "secondary")
     minutes_layout = QHBoxLayout()
     minutes_layout.addWidget(dialog.minutes_edit)
     minutes_layout.addWidget(dialog.minutes_button)
@@ -184,7 +184,7 @@ def setup_edit_ui(dialog):
 
     dialog.evidence_label = QLabel("Assessment Evidence:")
     dialog.evidence_edit = QLineEdit()
-    dialog.evidence_button = create_professional_button("Browse", 'secondary')
+    dialog.evidence_button = create_professional_button("Browse", "secondary")
     evidence_layout = QHBoxLayout()
     evidence_layout.addWidget(dialog.evidence_edit)
     evidence_layout.addWidget(dialog.evidence_button)
@@ -204,9 +204,9 @@ def setup_edit_ui(dialog):
 
     # Buttons
     button_layout = QHBoxLayout()
-    dialog.save_button = create_professional_button("Save Changes", 'primary')
-    dialog.delete_button = create_professional_button("Delete Case", 'danger')
-    dialog.cancel_button = create_professional_button("Cancel", 'secondary')
+    dialog.save_button = create_professional_button("Save Changes", "primary")
+    dialog.delete_button = create_professional_button("Delete Case", "danger")
+    dialog.cancel_button = create_professional_button("Cancel", "secondary")
 
     button_layout.addWidget(dialog.save_button)
     button_layout.addWidget(dialog.delete_button)

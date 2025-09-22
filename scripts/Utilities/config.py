@@ -1,15 +1,15 @@
-import os
 import logging
+import os
 import sqlite3
 
 # Set BASE_DIR to the project root
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-DATA_DIR = os.path.join(BASE_DIR, 'data')
-DB_PATH = os.path.join(DATA_DIR, 'fruitless.db')
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+DB_PATH = os.path.join(DATA_DIR, "fruitless.db")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 # Check for and remove empty FMIS.db if it exists
-fmis_db_path = os.path.join(DATA_DIR, 'fwmis.db')
+fmis_db_path = os.path.join(DATA_DIR, "fwmis.db")
 if os.path.exists(fmis_db_path):
     if os.path.getsize(fmis_db_path) == 0:
         os.remove(fmis_db_path)
@@ -19,10 +19,11 @@ if os.path.exists(fmis_db_path):
 
 # Configure logging
 logging.basicConfig(
-    filename=os.path.join(DATA_DIR, 'app.log'),
+    filename=os.path.join(DATA_DIR, "app.log"),
     level=logging.ERROR,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
+
 
 def initialize_shared_documents_table():
     """Create the shared_documents table if it doesn't exist"""
@@ -30,7 +31,8 @@ def initialize_shared_documents_table():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS shared_documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_path TEXT NOT NULL,
@@ -41,14 +43,17 @@ def initialize_shared_documents_table():
                 uploaded_by TEXT,
                 description TEXT
             )
-        """)
+        """
+        )
 
         # Add shared_document_id column to cases table if it doesn't exist
         cursor.execute("PRAGMA table_info(cases)")
         columns = [column[1] for column in cursor.fetchall()]
 
-        if 'shared_document_id' not in columns:
-            cursor.execute("ALTER TABLE cases ADD COLUMN shared_document_id INTEGER REFERENCES shared_documents(id)")
+        if "shared_document_id" not in columns:
+            cursor.execute(
+                "ALTER TABLE cases ADD COLUMN shared_document_id INTEGER REFERENCES shared_documents(id)"
+            )
 
         conn.commit()
         conn.close()

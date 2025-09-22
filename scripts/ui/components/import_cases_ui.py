@@ -1,27 +1,34 @@
 import os
 import sqlite3
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
-    QPushButton, QDateEdit, QFileDialog, QMessageBox, QWidget,
-    QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
-    QProgressBar, QGroupBox, QTextEdit, QComboBox, QCheckBox, QGridLayout
-)
+
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtGui import QFont
-
-from scripts.models.bas_parser import BASParser
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDialog,
+                             QFileDialog, QFormLayout, QGridLayout, QGroupBox,
+                             QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+                             QMessageBox, QProgressBar, QPushButton, QSplitter,
+                             QTableWidget, QTableWidgetItem, QTextEdit,
+                             QVBoxLayout, QWidget)
+from scripts.category_management import ManageCategoriesDialog
 from scripts.core.import_worker import ImportWorker
-from scripts.ui.dialogs.transaction_details_dialog import TransactionDetailsDialog
+from scripts.models.bas_parser import BASParser
+from scripts.responsibility_management_actions import \
+    edit_responsibility_by_name
+from scripts.responsibility_management_ui import ResponsibilityManagementDialog
+from scripts.ui.dialogs.transaction_details_dialog import \
+    TransactionDetailsDialog
+from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
-from scripts.Utilities.responsibility_utils import load_posting_responsibilities
-from scripts.Utilities.category_utils import load_categories
-from scripts.category_management import ManageCategoriesDialog
-from scripts.responsibility_management_ui import ResponsibilityManagementDialog
-from scripts.responsibility_management_actions import edit_responsibility_by_name
-from scripts.Utilities.utils import format_currency_amount
-from scripts.Utilities.ui_theme import apply_theme, create_professional_button, create_professional_groupbox, setup_professional_table, create_status_label
 from scripts.Utilities.import_cases_utils import validate_responsibility
+from scripts.Utilities.responsibility_utils import \
+    load_posting_responsibilities
+from scripts.Utilities.ui_theme import (apply_theme,
+                                        create_professional_button,
+                                        create_professional_groupbox,
+                                        create_status_label,
+                                        setup_professional_table)
+from scripts.Utilities.utils import format_currency_amount
 
 
 def setup_import_ui(dialog):
@@ -32,14 +39,16 @@ def setup_import_ui(dialog):
     # Header section
     header_layout = QHBoxLayout()
     header_label = QLabel("📊 Import Undisclosed Cases")
-    header_label.setStyleSheet("""
+    header_label.setStyleSheet(
+        """
         QLabel {
             font-size: 18px;
             font-weight: bold;
             color: #343a40;
             margin-bottom: 5px;
         }
-    """)
+    """
+    )
     header_layout.addWidget(header_label)
     header_layout.addStretch()
     layout.addLayout(header_layout)
@@ -50,7 +59,9 @@ def setup_import_ui(dialog):
     file_layout.setSpacing(10)
 
     dialog.file_path_edit = QLineEdit()
-    dialog.file_path_edit.setPlaceholderText("Click Browse to select BAS report file (.txt)...")
+    dialog.file_path_edit.setPlaceholderText(
+        "Click Browse to select BAS report file (.txt)..."
+    )
     dialog.file_path_edit.setReadOnly(True)
     dialog.file_path_edit.setMinimumHeight(35)
 
@@ -74,7 +85,8 @@ def setup_import_ui(dialog):
     dialog.category_button.clicked.connect(lambda: select_category(dialog))
     dialog.category_button.setMinimumHeight(35)
     dialog.category_label = QLabel("No category selected")
-    dialog.category_label.setStyleSheet("""
+    dialog.category_label.setStyleSheet(
+        """
         QLabel {
             background-color: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -83,7 +95,8 @@ def setup_import_ui(dialog):
             color: #856404;
             font-style: italic;
         }
-    """)
+    """
+    )
 
     # Date range selection
     date_label = QLabel("📅 Date Range:")
@@ -132,7 +145,9 @@ def setup_import_ui(dialog):
     layout.addWidget(settings_group)
 
     # Results section
-    results_group = create_professional_groupbox("📋 Transaction Analysis & Processing", "purple")
+    results_group = create_professional_groupbox(
+        "📋 Transaction Analysis & Processing", "purple"
+    )
     results_layout = QVBoxLayout()
     results_layout.setSpacing(10)
 
@@ -155,22 +170,33 @@ def setup_import_ui(dialog):
     table_layout.setContentsMargins(0, 0, 0, 0)
 
     table_header = QLabel("📊 Parsed Transactions:")
-    table_header.setStyleSheet("""
+    table_header.setStyleSheet(
+        """
         QLabel {
             font-size: 14px;
             font-weight: bold;
             color: #495057;
             margin-bottom: 5px;
         }
-    """)
+    """
+    )
     table_layout.addWidget(table_header)
 
     dialog.transactions_table = QTableWidget()
     dialog.transactions_table.setColumnCount(9)
-    dialog.transactions_table.setHorizontalHeaderLabels([
-        "🏢 Responsibility", "🔢 Type", "💰 Amount", "📅 Date", "📝 Description",
-        "✅ Resp Status", "🔍 Dup Status", "🎫 Case Number", "⚡ Actions"
-    ])
+    dialog.transactions_table.setHorizontalHeaderLabels(
+        [
+            "🏢 Responsibility",
+            "🔢 Type",
+            "💰 Amount",
+            "📅 Date",
+            "📝 Description",
+            "✅ Resp Status",
+            "🔍 Dup Status",
+            "🎫 Case Number",
+            "⚡ Actions",
+        ]
+    )
 
     setup_professional_table(dialog.transactions_table)
 
@@ -178,7 +204,7 @@ def setup_import_ui(dialog):
     header.setSectionResizeMode(QHeaderView.Interactive)
     header.setStretchLastSection(True)
     dialog.transactions_table.setColumnWidth(0, 200)  # Responsibility
-    dialog.transactions_table.setColumnWidth(1, 70)   # Type
+    dialog.transactions_table.setColumnWidth(1, 70)  # Type
     dialog.transactions_table.setColumnWidth(2, 110)  # Amount
     dialog.transactions_table.setColumnWidth(3, 110)  # Date
     dialog.transactions_table.setColumnWidth(4, 220)  # Description
@@ -187,7 +213,9 @@ def setup_import_ui(dialog):
     dialog.transactions_table.setColumnWidth(7, 130)  # Case Number
 
     # Connect double-click signal for editing responsibilities
-    dialog.transactions_table.itemDoubleClicked.connect(lambda item: on_table_double_click(dialog, item))
+    dialog.transactions_table.itemDoubleClicked.connect(
+        lambda item: on_table_double_click(dialog, item)
+    )
 
     # Set minimum row height to accommodate buttons
     dialog.transactions_table.verticalHeader().setDefaultSectionSize(60)
@@ -208,18 +236,30 @@ def setup_import_ui(dialog):
     workflow_layout = QHBoxLayout()
     workflow_layout.setSpacing(12)
 
-    dialog.manage_resp_button = create_professional_button("👥 Manage Responsibilities", "purple")
-    dialog.manage_resp_button.clicked.connect(lambda: dialog.logic.manage_responsibilities())
+    dialog.manage_resp_button = create_professional_button(
+        "👥 Manage Responsibilities", "purple"
+    )
+    dialog.manage_resp_button.clicked.connect(
+        lambda: dialog.logic.manage_responsibilities()
+    )
     dialog.manage_resp_button.setEnabled(False)
     dialog.manage_resp_button.setMinimumHeight(40)
 
-    dialog.check_duplicates_button = create_professional_button("🔍 Check Duplicates", "warning")
-    dialog.check_duplicates_button.clicked.connect(lambda: dialog.logic.check_duplicates())
+    dialog.check_duplicates_button = create_professional_button(
+        "🔍 Check Duplicates", "warning"
+    )
+    dialog.check_duplicates_button.clicked.connect(
+        lambda: dialog.logic.check_duplicates()
+    )
     dialog.check_duplicates_button.setEnabled(False)
     dialog.check_duplicates_button.setMinimumHeight(40)
 
-    dialog.assign_case_numbers_button = create_professional_button("🎫 Assign Case Numbers", "info")
-    dialog.assign_case_numbers_button.clicked.connect(lambda: dialog.logic.assign_case_numbers())
+    dialog.assign_case_numbers_button = create_professional_button(
+        "🎫 Assign Case Numbers", "info"
+    )
+    dialog.assign_case_numbers_button.clicked.connect(
+        lambda: dialog.logic.assign_case_numbers()
+    )
     dialog.assign_case_numbers_button.setEnabled(False)
     dialog.assign_case_numbers_button.setMinimumHeight(45)
 
@@ -268,7 +308,8 @@ def select_category(dialog):
         if selected:
             dialog.category = selected
             dialog.category_label.setText(f"✅ {selected['name']}")
-            dialog.category_label.setStyleSheet("""
+            dialog.category_label.setStyleSheet(
+                """
                 QLabel {
                     background-color: #d4edda;
                     border: 2px solid #28a745;
@@ -278,7 +319,8 @@ def select_category(dialog):
                     font-weight: bold;
                     font-size: 13px;
                 }
-            """)
+            """
+            )
             dialog.parse_button.setEnabled(bool(dialog.bas_file_path))
 
 
@@ -294,10 +336,10 @@ def populate_transactions_table(dialog):
         dialog.transactions_table.insertRow(row)
 
         # Check if transaction is marked for removal
-        is_marked_for_removal = transaction.get('marked_for_removal', False)
+        is_marked_for_removal = transaction.get("marked_for_removal", False)
 
         # Responsibility - make it visually distinct as clickable
-        resp_item = QTableWidgetItem(transaction['responsibility'])
+        resp_item = QTableWidgetItem(transaction["responsibility"])
         resp_item.setToolTip("Double-click to edit this responsibility")
         resp_item.setForeground(Qt.blue)  # Make it blue to indicate it's clickable
         font = resp_item.font()
@@ -313,28 +355,32 @@ def populate_transactions_table(dialog):
         dialog.transactions_table.setItem(row, 0, resp_item)
 
         # Type
-        dialog.transactions_table.setItem(row, 1, QTableWidgetItem(transaction['type']))
+        dialog.transactions_table.setItem(row, 1, QTableWidgetItem(transaction["type"]))
 
         # Amount - right aligned with comma formatting
         amount_str = f"R{abs(transaction['amount']):,.2f}"
-        if transaction['is_credit']:
+        if transaction["is_credit"]:
             amount_str = f"({amount_str})"  # Show credits in parentheses
         amount_item = QTableWidgetItem(amount_str)
         amount_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
         dialog.transactions_table.setItem(row, 2, amount_item)
 
         # Date
-        dialog.transactions_table.setItem(row, 3, QTableWidgetItem(transaction['date'].strftime('%Y-%m-%d')))
+        dialog.transactions_table.setItem(
+            row, 3, QTableWidgetItem(transaction["date"].strftime("%Y-%m-%d"))
+        )
 
         # Description
-        dialog.transactions_table.setItem(row, 4, QTableWidgetItem(transaction['description']))
+        dialog.transactions_table.setItem(
+            row, 4, QTableWidgetItem(transaction["description"])
+        )
 
         # Responsibility Status
-        resp_status = validate_responsibility(dialog, transaction['responsibility'])
-        status_item = QTableWidgetItem(resp_status['status'])
-        if resp_status['status'] == "Not Found":
+        resp_status = validate_responsibility(dialog, transaction["responsibility"])
+        status_item = QTableWidgetItem(resp_status["status"])
+        if resp_status["status"] == "Not Found":
             status_item.setBackground(Qt.red)
-        elif resp_status['status'] == "Non-Posting":
+        elif resp_status["status"] == "Non-Posting":
             status_item.setBackground(Qt.yellow)
         else:
             status_item.setBackground(Qt.green)
@@ -343,9 +389,11 @@ def populate_transactions_table(dialog):
         # Duplicate Status
         dup_status = "Not Checked"
         has_duplicates = False
-        if hasattr(dialog, 'duplicate_check_results') and i < len(dialog.duplicate_check_results):
+        if hasattr(dialog, "duplicate_check_results") and i < len(
+            dialog.duplicate_check_results
+        ):
             result = dialog.duplicate_check_results[i]
-            if result['duplicates']:
+            if result["duplicates"]:
                 dup_status = f"Duplicates: {len(result['duplicates'])}"
                 has_duplicates = True
             else:
@@ -382,8 +430,8 @@ def populate_transactions_table(dialog):
 
         # Case Number
         case_number = "Not Assigned"
-        if 'case_number' in transaction and transaction['case_number']:
-            case_number = transaction['case_number']
+        if "case_number" in transaction and transaction["case_number"]:
+            case_number = transaction["case_number"]
         dialog.transactions_table.setItem(row, 7, QTableWidgetItem(case_number))
 
         # Actions
@@ -395,7 +443,9 @@ def populate_transactions_table(dialog):
         view_btn = QPushButton("Details")
         view_btn.setMinimumHeight(35)
         view_btn.setMinimumWidth(70)
-        view_btn.clicked.connect(lambda checked, trans=transaction: view_transaction_details(dialog, trans))
+        view_btn.clicked.connect(
+            lambda checked, trans=transaction: view_transaction_details(dialog, trans)
+        )
         actions_layout.addWidget(view_btn)
 
         # Compare Duplicates button (only if duplicates exist)
@@ -403,8 +453,14 @@ def populate_transactions_table(dialog):
             compare_btn = QPushButton("Compare")
             compare_btn.setMinimumHeight(35)
             compare_btn.setMinimumWidth(70)
-            compare_btn.clicked.connect(lambda checked, trans=transaction, dups=result['duplicates']: compare_duplicates(dialog, trans, dups))
-            compare_btn.setStyleSheet("QPushButton { background-color: #FF9800; color: white; }")
+            compare_btn.clicked.connect(
+                lambda checked, trans=transaction, dups=result[
+                    "duplicates"
+                ]: compare_duplicates(dialog, trans, dups)
+            )
+            compare_btn.setStyleSheet(
+                "QPushButton { background-color: #FF9800; color: white; }"
+            )
             actions_layout.addWidget(compare_btn)
 
         dialog.transactions_table.setCellWidget(row, 8, actions_widget)
@@ -437,21 +493,26 @@ def compare_duplicates(dialog, transaction, duplicates):
     """Open duplicate comparison dialog"""
     # Create a copy of the transaction with category name for display
     transaction_copy = transaction.copy()
-    transaction_copy['category_name'] = dialog.category['name'] if dialog.category else 'N/A'
+    transaction_copy["category_name"] = (
+        dialog.category["name"] if dialog.category else "N/A"
+    )
 
     # Import the duplicate comparison dialog
-    from scripts.case_management_modules.duplicate_comparison_dialog import DuplicateComparisonDialog
+    from scripts.case_management_modules.duplicate_comparison_dialog import \
+        DuplicateComparisonDialog
+
     comp_dialog = DuplicateComparisonDialog(transaction_copy, duplicates, dialog)
     if comp_dialog.exec_():
         resolution = comp_dialog.get_resolution()
-        if resolution == 'remove':
+        if resolution == "remove":
             # Mark transaction for removal
-            transaction['marked_for_removal'] = True
+            transaction["marked_for_removal"] = True
             # Update table display
             populate_transactions_table(dialog)
             QMessageBox.information(
-                dialog, "Transaction Removed",
-                "The transaction has been marked for removal from the import list."
+                dialog,
+                "Transaction Removed",
+                "The transaction has been marked for removal from the import list.",
             )
 
 
@@ -470,10 +531,15 @@ def import_finished(dialog, imported_cases):
     dialog.progress_bar.setVisible(False)
 
     QMessageBox.information(
-        dialog, "Import Complete",
-        f"Successfully imported {len(imported_cases)} cases:\n\n" +
-        "\n".join(imported_cases[:10]) +  # Show first 10
-        (f"\n... and {len(imported_cases) - 10} more" if len(imported_cases) > 10 else "")
+        dialog,
+        "Import Complete",
+        f"Successfully imported {len(imported_cases)} cases:\n\n"
+        + "\n".join(imported_cases[:10])  # Show first 10
+        + (
+            f"\n... and {len(imported_cases) - 10} more"
+            if len(imported_cases) > 10
+            else ""
+        ),
     )
     dialog.accept()
 
@@ -481,7 +547,9 @@ def import_finished(dialog, imported_cases):
 def import_error(dialog, error_msg):
     dialog.progress_bar.setVisible(False)
     dialog.import_button.setEnabled(True)
-    QMessageBox.critical(dialog, "Import Error", f"Failed to import cases:\n{error_msg}")
+    QMessageBox.critical(
+        dialog, "Import Error", f"Failed to import cases:\n{error_msg}"
+    )
 
 
 # All functions are now properly implemented or delegated to logic/utils

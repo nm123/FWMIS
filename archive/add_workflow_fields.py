@@ -1,21 +1,24 @@
+import os
 import sqlite3
 import sys
-import os
 
 # Add scripts directory to Python path
-scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(scripts_dir)
 
 try:
     from Utilities.config import DB_PATH
 except ImportError:
     # Fallback if config.py is missing
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
-    DB_PATH = os.path.join(BASE_DIR, 'fruitless.db')
+    BASE_DIR = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "data")
+    )
+    DB_PATH = os.path.join(BASE_DIR, "fruitless.db")
     print(f"Warning: config.py not found, using fallback paths")
 except Exception as e:
     print(f"Error loading config: {e}")
     sys.exit(1)
+
 
 def add_workflow_fields():
     """Add new fields required for the enhanced case workflow"""
@@ -35,18 +38,21 @@ def add_workflow_fields():
             ("committee_recommendations", "TEXT"),  # JSON field
             ("finalized_date", "TEXT"),
             ("finalization_reason", "TEXT"),
-            ("is_finalized", "INTEGER DEFAULT 0")
+            ("is_finalized", "INTEGER DEFAULT 0"),
         ]
 
         for field_name, field_type in new_fields:
             if field_name not in columns:
                 print(f"Adding field: {field_name}")
-                cursor.execute(f"ALTER TABLE cases ADD COLUMN {field_name} {field_type}")
+                cursor.execute(
+                    f"ALTER TABLE cases ADD COLUMN {field_name} {field_type}"
+                )
             else:
                 print(f"Field {field_name} already exists")
 
         # Create write_off_submissions table if it doesn't exist
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS write_off_submissions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 submission_id TEXT UNIQUE NOT NULL,
@@ -59,10 +65,12 @@ def add_workflow_fields():
                 total_amount REAL DEFAULT 0,
                 notes TEXT
             )
-        """)
+        """
+        )
 
         # Create determination_history table for tracking committee determinations
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS determination_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 case_id INTEGER NOT NULL,
@@ -76,7 +84,8 @@ def add_workflow_fields():
                 notes TEXT,
                 FOREIGN KEY (case_id) REFERENCES cases (id)
             )
-        """)
+        """
+        )
 
         conn.commit()
         print("Database schema updated successfully!")
@@ -93,6 +102,7 @@ def add_workflow_fields():
         conn.rollback()
     finally:
         conn.close()
+
 
 if __name__ == "__main__":
     add_workflow_fields()

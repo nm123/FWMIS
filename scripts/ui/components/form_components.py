@@ -1,9 +1,8 @@
-from PyQt5.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QLineEdit,
-    QTextEdit, QComboBox, QDateEdit, QGroupBox, QCheckBox,
-    QSpinBox, QDoubleSpinBox, QWidget, QFrame
-)
 from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDoubleSpinBox,
+                             QFormLayout, QFrame, QGroupBox, QHBoxLayout,
+                             QLabel, QLineEdit, QSpinBox, QTextEdit,
+                             QVBoxLayout, QWidget)
 from scripts.Utilities.ui_theme import create_professional_button
 
 
@@ -19,33 +18,33 @@ class FormField:
 
     def get_value(self):
         """Get the current value of the field"""
-        if hasattr(self.widget, 'text'):
+        if hasattr(self.widget, "text"):
             return self.widget.text().strip()
-        elif hasattr(self.widget, 'toPlainText'):
+        elif hasattr(self.widget, "toPlainText"):
             return self.widget.toPlainText().strip()
-        elif hasattr(self.widget, 'currentText'):
+        elif hasattr(self.widget, "currentText"):
             return self.widget.currentText()
-        elif hasattr(self.widget, 'date'):
+        elif hasattr(self.widget, "date"):
             return self.widget.date().toString("yyyy-MM-dd")
-        elif hasattr(self.widget, 'isChecked'):
+        elif hasattr(self.widget, "isChecked"):
             return self.widget.isChecked()
-        elif hasattr(self.widget, 'value'):
+        elif hasattr(self.widget, "value"):
             return self.widget.value()
         return ""
 
     def set_value(self, value):
         """Set the value of the field"""
-        if hasattr(self.widget, 'setText'):
+        if hasattr(self.widget, "setText"):
             self.widget.setText(str(value))
-        elif hasattr(self.widget, 'setPlainText'):
+        elif hasattr(self.widget, "setPlainText"):
             self.widget.setPlainText(str(value))
-        elif hasattr(self.widget, 'setCurrentText'):
+        elif hasattr(self.widget, "setCurrentText"):
             self.widget.setCurrentText(str(value))
-        elif hasattr(self.widget, 'setDate') and value:
+        elif hasattr(self.widget, "setDate") and value:
             self.widget.setDate(QDate.fromString(str(value), "yyyy-MM-dd"))
-        elif hasattr(self.widget, 'setChecked'):
+        elif hasattr(self.widget, "setChecked"):
             self.widget.setChecked(bool(value))
-        elif hasattr(self.widget, 'setValue'):
+        elif hasattr(self.widget, "setValue"):
             self.widget.setValue(float(value) if isinstance(value, (int, float)) else 0)
 
     def is_empty(self):
@@ -69,7 +68,9 @@ class FormBuilder:
         self.layout.setSpacing(10)
         self.layout.setContentsMargins(10, 10, 10, 10)
 
-    def add_text_field(self, name, label, placeholder="", required=False, multiline=False):
+    def add_text_field(
+        self, name, label, placeholder="", required=False, multiline=False
+    ):
         """Add a text input field"""
         if multiline:
             widget = QTextEdit()
@@ -96,7 +97,9 @@ class FormBuilder:
 
         return self._add_field(name, label, widget, required)
 
-    def add_numeric_field(self, name, label, min_val=0, max_val=999999, decimals=2, required=False):
+    def add_numeric_field(
+        self, name, label, min_val=0, max_val=999999, decimals=2, required=False
+    ):
         """Add a numeric input field"""
         if decimals > 0:
             widget = QDoubleSpinBox()
@@ -207,6 +210,7 @@ class FormSection:
     def __init__(self, title, theme="default"):
         self.group = QGroupBox(title)
         from scripts.Utilities.ui_theme import get_groupbox_style
+
         self.group.setStyleSheet(get_groupbox_style(theme))
         self.layout = QVBoxLayout(self.group)
         self.layout.setSpacing(10)

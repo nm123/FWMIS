@@ -3,14 +3,15 @@
 Test script to verify the wipe cases fix works correctly.
 """
 
+import os
 import sqlite3
 import sys
-import os
 
 # Add the scripts directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
 
 from scripts.Utilities.config import DB_PATH
+
 
 def test_wipe_functionality():
     """Test that the wipe functionality works without UnboundLocalError"""
@@ -28,18 +29,22 @@ def test_wipe_functionality():
         print(f"Current cases: {case_count}")
 
         # Check orphaned cases
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) FROM cases
             WHERE fy_id NOT IN (SELECT id FROM financial_years) OR fy_id IS NULL
-        """)
+        """
+        )
         orphaned_count = cursor.fetchone()[0]
         print(f"Orphaned cases: {orphaned_count}")
 
         # Check orphaned periods
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) FROM periods
             WHERE fy_id NOT IN (SELECT id FROM financial_years) AND fy_id IS NOT NULL
-        """)
+        """
+        )
         orphaned_periods_count = cursor.fetchone()[0]
         print(f"Orphaned periods: {orphaned_periods_count}")
 
@@ -71,11 +76,15 @@ def test_wipe_functionality():
 
         # Test the calculation that was failing
         total_cleaned = case_count + cleaned_count
-        print(f"Total cleaned calculation: {case_count} + {cleaned_count} = {total_cleaned}")
+        print(
+            f"Total cleaned calculation: {case_count} + {cleaned_count} = {total_cleaned}"
+        )
 
         print("\n=== Test Results ===")
         print("[OK] No UnboundLocalError occurred")
-        print(f"[OK] Variables properly initialized: cleaned_count={cleaned_count}, cleaned_periods_count={cleaned_periods_count}")
+        print(
+            f"[OK] Variables properly initialized: cleaned_count={cleaned_count}, cleaned_periods_count={cleaned_periods_count}"
+        )
         print(f"[OK] Total calculation works: {total_cleaned}")
 
         conn.close()
@@ -83,10 +92,12 @@ def test_wipe_functionality():
     except Exception as e:
         print(f"[ERROR] Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
     return True
+
 
 if __name__ == "__main__":
     success = test_wipe_functionality()

@@ -1,32 +1,19 @@
-import sqlite3
 import datetime
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QMessageBox,
-    QSplitter,
-    QWidget,
-    QLabel,
-    QScrollArea,
-    QFormLayout,
-    QGroupBox,
-    QTextEdit,
-    QPushButton,
-)
+import sqlite3
+from collections import defaultdict
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QDialog, QFormLayout, QGroupBox, QHBoxLayout,
+                             QHeaderView, QLabel, QMessageBox, QPushButton,
+                             QScrollArea, QSplitter, QTableWidget,
+                             QTableWidgetItem, QTextEdit, QTreeWidget,
+                             QTreeWidgetItem, QVBoxLayout, QWidget)
+from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.utils import format_currency_amount
+from scripts.Utilities.financial_utils import get_financial_year
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
-from scripts.Utilities.audit_utils import save_audit_log
-from scripts.Utilities.financial_utils import get_financial_year
-from collections import defaultdict
+from scripts.Utilities.utils import format_currency_amount
 
 
 class ViewDeletedCasesDialog(QDialog):
@@ -48,9 +35,9 @@ class ViewDeletedCasesDialog(QDialog):
 
         self.case_table = QTableWidget()
         self.case_table.setColumnCount(6)
-        self.case_table.setHorizontalHeaderLabels([
-            "Case No", "Date Reported", "Category", "Amount", "List", "Status"
-        ])
+        self.case_table.setHorizontalHeaderLabels(
+            ["Case No", "Date Reported", "Category", "Amount", "List", "Status"]
+        )
 
         # Enable double-click to view case details (same as ViewCasesDialog)
         self.case_table.itemDoubleClicked.connect(self.show_case_details)
@@ -59,7 +46,9 @@ class ViewDeletedCasesDialog(QDialog):
         header = self.case_table.horizontalHeader()
         header.setMinimumSectionSize(80)  # Minimum width for each column
         header.setSectionResizeMode(QHeaderView.Interactive)  # Allow manual resizing
-        header.setStretchLastSection(True)  # Last column stretches to fill remaining space
+        header.setStretchLastSection(
+            True
+        )  # Last column stretches to fill remaining space
 
         # Set default column widths (same as ViewCasesDialog)
         self.case_table.setColumnWidth(0, 120)  # Case No
@@ -99,14 +88,18 @@ class ViewDeletedCasesDialog(QDialog):
             cursor = conn.cursor()
 
             # Get all responsibility IDs that have deleted cases
-            cursor.execute("SELECT DISTINCT responsibility_id FROM cases WHERE list = 'Deleted Cases'")
+            cursor.execute(
+                "SELECT DISTINCT responsibility_id FROM cases WHERE list = 'Deleted Cases'"
+            )
             case_resp_ids = {row[0] for row in cursor.fetchall()}
 
             # Include parent responsibilities
             for resp_id in case_resp_ids:
                 responsibilities_with_cases.add(resp_id)
                 # Find and add parent IDs
-                resp = next((r for r in self.responsibilities if r["id"] == resp_id), None)
+                resp = next(
+                    (r for r in self.responsibilities if r["id"] == resp_id), None
+                )
                 if resp and resp["parent_id"]:
                     responsibilities_with_cases.add(resp["parent_id"])
 
@@ -152,7 +145,9 @@ class ViewDeletedCasesDialog(QDialog):
             query = f"SELECT transaction_no, date_reported, category, amount, original_list, status FROM cases WHERE list = 'Deleted Cases' AND responsibility_id IN ({placeholders})"
             cursor.execute(query, resp_ids)
         else:
-            cursor.execute("SELECT transaction_no, date_reported, category, amount, original_list, status FROM cases WHERE list = 'Deleted Cases'")
+            cursor.execute(
+                "SELECT transaction_no, date_reported, category, amount, original_list, status FROM cases WHERE list = 'Deleted Cases'"
+            )
         for row_data in cursor.fetchall():
             row = self.case_table.rowCount()
             self.case_table.insertRow(row)
@@ -181,7 +176,9 @@ class CaseDetailsDialog(QDialog):
     def __init__(self, case_data, parent=None):
         super().__init__(parent)
         self.case_data = case_data
-        self.setWindowTitle(f"Case Details - {case_data[1]}")  # case_data[1] is transaction_no
+        self.setWindowTitle(
+            f"Case Details - {case_data[1]}"
+        )  # case_data[1] is transaction_no
         self.setFixedSize(1000, 700)
         self.setup_ui()
 
@@ -198,13 +195,33 @@ class CaseDetailsDialog(QDialog):
         case_info_layout = QFormLayout(case_info_group)
 
         case_info_layout.addRow("Case No:", QLabel(self.case_data[1]))
-        case_info_layout.addRow("Date Incurred:", QLabel(self.case_data[2] if self.case_data[2] else "N/A"))
-        case_info_layout.addRow("Date Identified:", QLabel(self.case_data[3] if self.case_data[3] else "N/A"))
-        case_info_layout.addRow("Date Reported:", QLabel(self.case_data[4] if self.case_data[4] else "N/A"))
-        case_info_layout.addRow("Category:", QLabel(self.case_data[9] if self.case_data[9] else "N/A"))
-        case_info_layout.addRow("Amount:", QLabel(format_currency_amount(self.case_data[11]) if self.case_data[11] else "N/A"))
-        case_info_layout.addRow("List:", QLabel(self.case_data[16] if self.case_data[16] else "N/A"))
-        case_info_layout.addRow("Status:", QLabel(self.case_data[17] if self.case_data[17] else "N/A"))
+        case_info_layout.addRow(
+            "Date Incurred:", QLabel(self.case_data[2] if self.case_data[2] else "N/A")
+        )
+        case_info_layout.addRow(
+            "Date Identified:",
+            QLabel(self.case_data[3] if self.case_data[3] else "N/A"),
+        )
+        case_info_layout.addRow(
+            "Date Reported:", QLabel(self.case_data[4] if self.case_data[4] else "N/A")
+        )
+        case_info_layout.addRow(
+            "Category:", QLabel(self.case_data[9] if self.case_data[9] else "N/A")
+        )
+        case_info_layout.addRow(
+            "Amount:",
+            QLabel(
+                format_currency_amount(self.case_data[11])
+                if self.case_data[11]
+                else "N/A"
+            ),
+        )
+        case_info_layout.addRow(
+            "List:", QLabel(self.case_data[16] if self.case_data[16] else "N/A")
+        )
+        case_info_layout.addRow(
+            "Status:", QLabel(self.case_data[17] if self.case_data[17] else "N/A")
+        )
 
         scroll_layout.addRow(case_info_group)
 
@@ -223,19 +240,34 @@ class CaseDetailsDialog(QDialog):
         financial_group = QGroupBox("Financial Information")
         financial_layout = QFormLayout(financial_group)
 
-        financial_layout.addRow("BAS Payment No:", QLabel(self.case_data[6] if self.case_data[6] else "N/A"))
-        financial_layout.addRow("BAS Payment Date:", QLabel(self.case_data[7] if self.case_data[7] else "N/A"))
-        financial_layout.addRow("Persal No:", QLabel(self.case_data[8] if self.case_data[8] else "N/A"))
+        financial_layout.addRow(
+            "BAS Payment No:", QLabel(self.case_data[6] if self.case_data[6] else "N/A")
+        )
+        financial_layout.addRow(
+            "BAS Payment Date:",
+            QLabel(self.case_data[7] if self.case_data[7] else "N/A"),
+        )
+        financial_layout.addRow(
+            "Persal No:", QLabel(self.case_data[8] if self.case_data[8] else "N/A")
+        )
 
         scroll_layout.addRow(financial_group)
 
         # Assessment Information Section
-        if self.case_data[18] or self.case_data[19]:  # assessment_assessed_by or assessment_date
+        if (
+            self.case_data[18] or self.case_data[19]
+        ):  # assessment_assessed_by or assessment_date
             assessment_group = QGroupBox("Assessment Information")
             assessment_layout = QFormLayout(assessment_group)
 
-            assessment_layout.addRow("Assessed By:", QLabel(self.case_data[18] if self.case_data[18] else "N/A"))
-            assessment_layout.addRow("Assessment Date:", QLabel(self.case_data[19] if self.case_data[19] else "N/A"))
+            assessment_layout.addRow(
+                "Assessed By:",
+                QLabel(self.case_data[18] if self.case_data[18] else "N/A"),
+            )
+            assessment_layout.addRow(
+                "Assessment Date:",
+                QLabel(self.case_data[19] if self.case_data[19] else "N/A"),
+            )
 
             scroll_layout.addRow(assessment_group)
 
@@ -243,9 +275,30 @@ class CaseDetailsDialog(QDialog):
         additional_group = QGroupBox("Additional Information")
         additional_layout = QFormLayout(additional_group)
 
-        additional_layout.addRow("Criminal Charges:", QLabel(self.case_data[22] if len(self.case_data) > 22 and self.case_data[22] else "N/A"))
-        additional_layout.addRow("Disciplinary Process:", QLabel(self.case_data[23] if len(self.case_data) > 23 and self.case_data[23] else "N/A"))
-        additional_layout.addRow("Loss Recovery:", QLabel(self.case_data[24] if len(self.case_data) > 24 and self.case_data[24] else "N/A"))
+        additional_layout.addRow(
+            "Criminal Charges:",
+            QLabel(
+                self.case_data[22]
+                if len(self.case_data) > 22 and self.case_data[22]
+                else "N/A"
+            ),
+        )
+        additional_layout.addRow(
+            "Disciplinary Process:",
+            QLabel(
+                self.case_data[23]
+                if len(self.case_data) > 23 and self.case_data[23]
+                else "N/A"
+            ),
+        )
+        additional_layout.addRow(
+            "Loss Recovery:",
+            QLabel(
+                self.case_data[24]
+                if len(self.case_data) > 24 and self.case_data[24]
+                else "N/A"
+            ),
+        )
 
         scroll_layout.addRow(additional_group)
 
@@ -267,7 +320,9 @@ class CaseDetailsDialog(QDialog):
         # Buttons
         button_layout = QHBoxLayout()
         permanent_delete_button = QPushButton("Permanent Delete")
-        permanent_delete_button.setStyleSheet("QPushButton { background-color: #f44336; color: white; }")
+        permanent_delete_button.setStyleSheet(
+            "QPushButton { background-color: #f44336; color: white; }"
+        )
         permanent_delete_button.clicked.connect(self.permanent_delete_case)
         close_button = QPushButton("Close")
         close_button.clicked.connect(self.accept)
@@ -283,10 +338,12 @@ class CaseDetailsDialog(QDialog):
 
         # Confirmation dialog
         reply = QMessageBox.question(
-            self, "Permanent Delete",
+            self,
+            "Permanent Delete",
             f"Are you sure you want to permanently delete case '{case_no}'?\n\n"
             f"This action cannot be undone and will completely remove the case from the system.",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
 
         if reply != QMessageBox.Yes:
@@ -304,7 +361,9 @@ class CaseDetailsDialog(QDialog):
             deleted_count = cursor.rowcount
 
             if deleted_count == 0:
-                QMessageBox.warning(self, "Error", f"Case '{case_no}' not found or already deleted.")
+                QMessageBox.warning(
+                    self, "Error", f"Case '{case_no}' not found or already deleted."
+                )
                 conn.close()
                 return
 
@@ -312,18 +371,24 @@ class CaseDetailsDialog(QDialog):
 
             # Log audit trail
             fy = get_financial_year()
-            save_audit_log("permanent_case_deletion", {
-                "case_no": case_no,
-                "amount": amount,
-                "timestamp": datetime.datetime.now().isoformat()
-            }, fy)
+            save_audit_log(
+                "permanent_case_deletion",
+                {
+                    "case_no": case_no,
+                    "amount": amount,
+                    "timestamp": datetime.datetime.now().isoformat(),
+                },
+                fy,
+            )
 
-            QMessageBox.information(self, "Success", f"Case '{case_no}' has been permanently deleted.")
+            QMessageBox.information(
+                self, "Success", f"Case '{case_no}' has been permanently deleted."
+            )
 
             # Refresh the parent dialog
-            if hasattr(self.parent(), 'refresh_cases'):
+            if hasattr(self.parent(), "refresh_cases"):
                 self.parent().refresh_cases()
-            if hasattr(self.parent(), 'refresh_responsibilities'):
+            if hasattr(self.parent(), "refresh_responsibilities"):
                 self.parent().refresh_responsibilities()
 
             # Close this dialog
@@ -332,5 +397,5 @@ class CaseDetailsDialog(QDialog):
         except sqlite3.Error as e:
             QMessageBox.critical(self, "Database Error", f"Failed to delete case: {e}")
         finally:
-            if 'conn' in locals():
+            if "conn" in locals():
                 conn.close()

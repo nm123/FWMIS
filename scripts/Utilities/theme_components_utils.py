@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QLabel
 from .theme_styles_utils import get_groupbox_style
 
 
-def create_professional_groupbox(title, theme='default'):
+def create_professional_groupbox(title, theme="default"):
     """Create a professional group box with proper styling"""
     groupbox = QGroupBox(title)
     groupbox.setStyleSheet(get_groupbox_style(theme))

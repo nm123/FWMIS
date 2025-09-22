@@ -1,35 +1,30 @@
 import sqlite3
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QMessageBox,
-    QLabel,
-    QLineEdit,
-    QComboBox,
-    QPushButton,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QSplitter,
-    QWidget,
-)
-from PyQt5.QtCore import Qt, QEvent
+from collections import defaultdict
+
+from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
+from PyQt5.QtWidgets import (QComboBox, QDialog, QHBoxLayout, QHeaderView,
+                             QLabel, QLineEdit, QMessageBox, QPushButton,
+                             QSplitter, QTableWidget, QTableWidgetItem,
+                             QTreeWidget, QTreeWidgetItem, QVBoxLayout,
+                             QWidget)
+from scripts.Utilities.audit_utils import save_audit_log
+from scripts.Utilities.case_data_refresh_utils import refresh_cases
+from scripts.Utilities.case_filter_utils import (
+    get_responsibilities_with_cases, search_case_by_number)
 from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.financial_utils import (get_all_financial_years,
+                                               get_current_open_financial_year,
+                                               get_financial_year)
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
-from scripts.Utilities.audit_utils import save_audit_log
-from scripts.Utilities.financial_utils import get_financial_year, get_all_financial_years, get_current_open_financial_year
-from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.ui_theme import create_professional_button
-from scripts.Utilities.case_filter_utils import get_responsibilities_with_cases, search_case_by_number
-from scripts.Utilities.case_data_refresh_utils import refresh_cases
-from collections import defaultdict
+from scripts.Utilities.utils import format_currency_amount
+
 from scripts.ui.dialogs.edit_case import EditCaseDialog
-from .case_table_utils import setup_case_table_columns, populate_case_table, create_table_button
+
+from .case_table_utils import (create_table_button, populate_case_table,
+                               setup_case_table_columns)
 
 
 class NoWheelComboBox(QComboBox):
@@ -77,14 +72,17 @@ class EditCasesDialog(QDialog):
         print("DEBUG: EditCasesDialog.setup_ui() starting")
         try:
             # Set dialog attributes for better stability
-            self.setAttribute(Qt.WA_DeleteOnClose, False)  # Don't auto-delete to prevent crashes
-            self.setAttribute(Qt.WA_QuitOnClose, False)    # Don't quit app on close
+            self.setAttribute(
+                Qt.WA_DeleteOnClose, False
+            )  # Don't auto-delete to prevent crashes
+            self.setAttribute(Qt.WA_QuitOnClose, False)  # Don't quit app on close
 
             layout = QVBoxLayout(self)
             print("DEBUG: Main layout created")
         except Exception as e:
             print(f"DEBUG: Error creating main layout: {e}")
             import traceback
+
             traceback.print_exc()
             return
 
@@ -139,10 +137,24 @@ class EditCasesDialog(QDialog):
         list_label = QLabel("List:")
         list_label.setFixedWidth(30)
         self.list_filter_combo = NoWheelComboBox()
-        self.list_filter_combo.addItems(["All Cases", "Checklist", "Lead Schedule", "Recovered", "Write-Off Recommended", "Written Off"])
+        self.list_filter_combo.addItems(
+            [
+                "All Cases",
+                "Checklist",
+                "Lead Schedule",
+                "Recovered",
+                "Write-Off Recommended",
+                "Written Off",
+            ]
+        )
         self.list_filter_combo.setCurrentText("Checklist")
         self.list_filter_combo.setFixedWidth(150)
-        self.list_filter_combo.currentTextChanged.connect(lambda: (print("DEBUG: list_filter_combo triggered refresh_cases"), refresh_cases(self)))
+        self.list_filter_combo.currentTextChanged.connect(
+            lambda: (
+                print("DEBUG: list_filter_combo triggered refresh_cases"),
+                refresh_cases(self),
+            )
+        )
 
         search_layout.addWidget(list_label)
         search_layout.addWidget(self.list_filter_combo)
@@ -158,7 +170,12 @@ class EditCasesDialog(QDialog):
         try:
             self.resp_tree = QTreeWidget()
             self.resp_tree.setHeaderLabel("Responsibilities")
-            self.resp_tree.itemSelectionChanged.connect(lambda: (print("DEBUG: resp_tree selection changed"), self.on_resp_select()))
+            self.resp_tree.itemSelectionChanged.connect(
+                lambda: (
+                    print("DEBUG: resp_tree selection changed"),
+                    self.on_resp_select(),
+                )
+            )
             # Set tree widget attributes for stability
             self.resp_tree.setAttribute(Qt.WA_DeleteOnClose, False)
             splitter.addWidget(self.resp_tree)
@@ -166,6 +183,7 @@ class EditCasesDialog(QDialog):
         except Exception as e:
             print(f"DEBUG: Error creating resp_tree: {e}")
             import traceback
+
             traceback.print_exc()
             return
 
@@ -179,11 +197,17 @@ class EditCasesDialog(QDialog):
         except Exception as e:
             print(f"DEBUG: Error creating case_table: {e}")
             import traceback
+
             traceback.print_exc()
             return
 
         # Enable selection change to highlight responsibility
-        self.case_table.itemSelectionChanged.connect(lambda: (print("DEBUG: case_table selection changed"), self.on_case_select()))
+        self.case_table.itemSelectionChanged.connect(
+            lambda: (
+                print("DEBUG: case_table selection changed"),
+                self.on_case_select(),
+            )
+        )
         print("DEBUG: case_table selection signal connected")
 
         # Enable double-click to view case details
@@ -222,12 +246,13 @@ class EditCasesDialog(QDialog):
         resp_dict = {r["id"]: r for r in self.responsibilities}
 
         # Query database to find responsibilities with cases
-        self.responsibilities_with_cases = get_responsibilities_with_cases(self.fy_filter_combo)
+        self.responsibilities_with_cases = get_responsibilities_with_cases(
+            self.fy_filter_combo
+        )
 
         top_level = [r for r in self.responsibilities if r["parent_id"] is None]
         for resp in top_level:
             self.add_resp_item(resp, None, resp_dict)
-
 
     def add_resp_item(self, resp, parent_item, resp_dict):
         item = QTreeWidgetItem([resp["name"]])
@@ -256,7 +281,6 @@ class EditCasesDialog(QDialog):
         else:
             refresh_cases(self)
 
-
     def show_case_details(self, item):
         """Show editable case details when double-clicking a case"""
         row = item.row()
@@ -268,13 +292,19 @@ class EditCasesDialog(QDialog):
         cursor = conn.cursor()
 
         # Try to find case by base_transaction_no (display might be stripped)
-        cursor.execute("SELECT * FROM cases WHERE base_transaction_no = ? OR transaction_no = ?", (display_case_no, display_case_no))
+        cursor.execute(
+            "SELECT * FROM cases WHERE base_transaction_no = ? OR transaction_no = ?",
+            (display_case_no, display_case_no),
+        )
         case_data = cursor.fetchone()
 
         # If not found and display_case_no has no suffix, try with common suffixes
-        if not case_data and '-' not in display_case_no:
-            for suffix in ['-LS', '-WOR', '-REC', '-WO']:
-                cursor.execute("SELECT * FROM cases WHERE transaction_no = ?", (f"{display_case_no}{suffix}",))
+        if not case_data and "-" not in display_case_no:
+            for suffix in ["-LS", "-WOR", "-REC", "-WO"]:
+                cursor.execute(
+                    "SELECT * FROM cases WHERE transaction_no = ?",
+                    (f"{display_case_no}{suffix}",),
+                )
                 case_data = cursor.fetchone()
                 if case_data:
                     break
@@ -296,8 +326,16 @@ class EditCasesDialog(QDialog):
             refresh_cases(self)
             return
 
-        rows = search_case_by_number(case_no, self.fy_filter_combo, self.list_filter_combo)
-        populate_case_table(self.case_table, rows, self.list_filter_combo.currentText(), include_edit=True, edit_callback=self.edit_case_by_row)
+        rows = search_case_by_number(
+            case_no, self.fy_filter_combo, self.list_filter_combo
+        )
+        populate_case_table(
+            self.case_table,
+            rows,
+            self.list_filter_combo.currentText(),
+            include_edit=True,
+            edit_callback=self.edit_case_by_row,
+        )
 
     def on_case_select(self):
         """Highlight the responsibility in the tree when a case is selected"""
@@ -321,14 +359,20 @@ class EditCasesDialog(QDialog):
 
             responsibility_id = None
             # Try to find case by base_transaction_no (display might be stripped)
-            cursor.execute("SELECT responsibility_id FROM cases WHERE base_transaction_no = ? OR transaction_no = ?", (display_case_no, display_case_no))
+            cursor.execute(
+                "SELECT responsibility_id FROM cases WHERE base_transaction_no = ? OR transaction_no = ?",
+                (display_case_no, display_case_no),
+            )
             result = cursor.fetchone()
             if result:
                 responsibility_id = result[0]
             # If not found and display_case_no has no suffix, try with common suffixes
-            elif '-' not in display_case_no:
-                for suffix in ['-LS', '-WOR', '-REC', '-WO']:
-                    cursor.execute("SELECT responsibility_id FROM cases WHERE transaction_no = ?", (f"{display_case_no}{suffix}",))
+            elif "-" not in display_case_no:
+                for suffix in ["-LS", "-WOR", "-REC", "-WO"]:
+                    cursor.execute(
+                        "SELECT responsibility_id FROM cases WHERE transaction_no = ?",
+                        (f"{display_case_no}{suffix}",),
+                    )
                     result = cursor.fetchone()
                     if result:
                         responsibility_id = result[0]
@@ -343,6 +387,7 @@ class EditCasesDialog(QDialog):
 
     def highlight_responsibility(self, responsibility_id):
         """Find and highlight the responsibility in the tree"""
+
         def find_item_by_id(parent_item, target_id):
             """Recursively search for an item with the given ID"""
             if parent_item is None:
@@ -404,7 +449,14 @@ class EditCasesDialog(QDialog):
                 while current_parent_id:
                     parent_ids_to_include.add(current_parent_id)
                     # Find the parent and get its parent_id
-                    parent_resp = next((r for r in self.responsibilities if r["id"] == current_parent_id), None)
+                    parent_resp = next(
+                        (
+                            r
+                            for r in self.responsibilities
+                            if r["id"] == current_parent_id
+                        ),
+                        None,
+                    )
                     if parent_resp:
                         current_parent_id = parent_resp["parent_id"]
                     else:
@@ -462,8 +514,13 @@ class EditCasesDialog(QDialog):
             print("DEBUG: Database connection established in edit_case_by_row")
 
             # Try to find case by base_transaction_no (display might be stripped)
-            print(f"DEBUG: Executing query: SELECT id, base_transaction_no, date_incurred, date_identified, date_reported, description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, persal_no, category, responsibility_id, amount, source_document, supporting_evidence_path, minutes, recovery_evidence_path, evidence_paths, evidence_path, assessment_status, lc_status, criminal_charges, disciplinary_process, loss_recovery, prevention_steps, is_finalized, finalized_date, finalization_reason, write_off_group_id, fy_id, period_id, suffixes FROM cases WHERE base_transaction_no = ? OR transaction_no = ? with params ({display_case_no}, {display_case_no})")
-            cursor.execute("SELECT id, base_transaction_no, date_incurred, date_identified, date_reported, description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, persal_no, category, responsibility_id, amount, source_document, supporting_evidence_path, minutes, recovery_evidence_path, evidence_paths, evidence_path, assessment_status, lc_status, criminal_charges, disciplinary_process, loss_recovery, prevention_steps, is_finalized, finalized_date, finalization_reason, write_off_group_id, fy_id, period_id, suffixes FROM cases WHERE base_transaction_no = ? OR transaction_no = ?", (display_case_no, display_case_no))
+            print(
+                f"DEBUG: Executing query: SELECT id, base_transaction_no, date_incurred, date_identified, date_reported, description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, persal_no, category, responsibility_id, amount, source_document, supporting_evidence_path, minutes, recovery_evidence_path, evidence_paths, evidence_path, assessment_status, lc_status, criminal_charges, disciplinary_process, loss_recovery, prevention_steps, is_finalized, finalized_date, finalization_reason, write_off_group_id, fy_id, period_id, suffixes FROM cases WHERE base_transaction_no = ? OR transaction_no = ? with params ({display_case_no}, {display_case_no})"
+            )
+            cursor.execute(
+                "SELECT id, base_transaction_no, date_incurred, date_identified, date_reported, description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, persal_no, category, responsibility_id, amount, source_document, supporting_evidence_path, minutes, recovery_evidence_path, evidence_paths, evidence_path, assessment_status, lc_status, criminal_charges, disciplinary_process, loss_recovery, prevention_steps, is_finalized, finalized_date, finalization_reason, write_off_group_id, fy_id, period_id, suffixes FROM cases WHERE base_transaction_no = ? OR transaction_no = ?",
+                (display_case_no, display_case_no),
+            )
             case_data = cursor.fetchone()
             print(f"DEBUG: Query result: {case_data is not None}")
             if case_data:
@@ -471,11 +528,14 @@ class EditCasesDialog(QDialog):
                 print(f"DEBUG: First few columns: {case_data[:5]}")
 
             # If not found and display_case_no has no suffix, try with common suffixes
-            if not case_data and '-' not in display_case_no:
+            if not case_data and "-" not in display_case_no:
                 print("DEBUG: Case not found, trying with suffixes")
-                for suffix in ['-LS', '-WOR', '-REC', '-WO']:
+                for suffix in ["-LS", "-WOR", "-REC", "-WO"]:
                     print(f"DEBUG: Trying suffix {suffix}")
-                    cursor.execute("SELECT id, base_transaction_no, date_incurred, date_identified, date_reported, description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, persal_no, category, responsibility_id, amount, source_document, supporting_evidence_path, minutes, recovery_evidence_path, evidence_paths, evidence_path, assessment_status, lc_status, criminal_charges, disciplinary_process, loss_recovery, prevention_steps, is_finalized, finalized_date, finalization_reason, write_off_group_id, fy_id, period_id, suffixes FROM cases WHERE transaction_no = ?", (f"{display_case_no}{suffix}",))
+                    cursor.execute(
+                        "SELECT id, base_transaction_no, date_incurred, date_identified, date_reported, description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date, persal_no, category, responsibility_id, amount, source_document, supporting_evidence_path, minutes, recovery_evidence_path, evidence_paths, evidence_path, assessment_status, lc_status, criminal_charges, disciplinary_process, loss_recovery, prevention_steps, is_finalized, finalized_date, finalization_reason, write_off_group_id, fy_id, period_id, suffixes FROM cases WHERE transaction_no = ?",
+                        (f"{display_case_no}{suffix}",),
+                    )
                     case_data = cursor.fetchone()
                     if case_data:
                         print(f"DEBUG: Found case with suffix {suffix}")
@@ -487,6 +547,7 @@ class EditCasesDialog(QDialog):
         except Exception as e:
             print(f"DEBUG: Exception in edit_case_by_row database operations: {e}")
             import traceback
+
             traceback.print_exc()
             return
 
@@ -506,7 +567,12 @@ class EditCasesDialog(QDialog):
             except Exception as e:
                 print(f"DEBUG: Exception creating or executing EditCaseDialog: {e}")
                 import traceback
+
                 traceback.print_exc()
         else:
             print(f"DEBUG: No case data found for display_case_no '{display_case_no}'")
-            QMessageBox.warning(self, "Case Not Found", f"Could not find case data for case number '{display_case_no}'")
+            QMessageBox.warning(
+                self,
+                "Case Not Found",
+                f"Could not find case data for case number '{display_case_no}'",
+            )

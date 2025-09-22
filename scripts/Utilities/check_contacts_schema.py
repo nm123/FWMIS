@@ -1,8 +1,10 @@
-import sqlite3
 import os
+import sqlite3
 import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import DB_PATH
+
 
 def check_contacts_schema():
     try:
@@ -14,7 +16,9 @@ def check_contacts_schema():
         columns = cursor.fetchall()
         print("Contacts table schema:")
         for col in columns:
-            print(f"  {col[1]}: {col[2]} {'PRIMARY KEY' if col[5] else ''} {'NOT NULL' if col[3] else ''}")
+            print(
+                f"  {col[1]}: {col[2]} {'PRIMARY KEY' if col[5] else ''} {'NOT NULL' if col[3] else ''}"
+            )
 
         # Check if table has data
         cursor.execute("SELECT COUNT(*) FROM contacts")
@@ -24,6 +28,7 @@ def check_contacts_schema():
         conn.close()
     except Exception as e:
         print(f"Error: {e}")
+
 
 if __name__ == "__main__":
     check_contacts_schema()

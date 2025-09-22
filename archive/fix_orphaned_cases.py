@@ -4,8 +4,10 @@ Script to fix orphaned cases with invalid fy_id values
 """
 
 import sqlite3
+
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_current_open_financial_year
+
 
 def main():
     print("Fixing orphaned cases with invalid fy_id values...")
@@ -24,7 +26,8 @@ def main():
 
     try:
         # Find all fy_id values that don't exist in financial_years table
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT DISTINCT c.fy_id, COUNT(*) as case_count
             FROM cases c
             LEFT JOIN financial_years fy ON c.fy_id = fy.id
@@ -32,7 +35,8 @@ def main():
               AND fy.id IS NULL
               AND c.fy_id IS NOT NULL
             GROUP BY c.fy_id
-        """)
+        """
+        )
 
         orphaned_fy_ids = cursor.fetchall()
         print(f"Found {len(orphaned_fy_ids)} orphaned fy_id values:")
@@ -44,7 +48,7 @@ def main():
             # Update cases with this orphaned fy_id
             cursor.execute(
                 "UPDATE cases SET fy_id = ? WHERE fy_id = ? AND list != 'Deleted Cases'",
-                (fy_id, orphaned_fy_id)
+                (fy_id, orphaned_fy_id),
             )
             updated = cursor.rowcount
             total_fixed += updated
@@ -54,11 +58,13 @@ def main():
         print(f"\nTotal cases fixed: {total_fixed}")
 
         # Verify the fix
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) FROM cases c
             LEFT JOIN financial_years fy ON c.fy_id = fy.id
             WHERE c.list != 'Deleted Cases' AND fy.id IS NULL
-        """)
+        """
+        )
         remaining_orphaned = cursor.fetchone()[0]
         print(f"Remaining orphaned cases: {remaining_orphaned}")
 
@@ -72,6 +78,7 @@ def main():
         conn.rollback()
     finally:
         conn.close()
+
 
 if __name__ == "__main__":
     main()

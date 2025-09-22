@@ -1,9 +1,13 @@
 """
 Utilities for refreshing case data in EditCasesDialog.
 """
-from scripts.Utilities.config import DB_PATH
-from scripts.case_management_modules.case_table_utils import populate_case_table
+
 import sqlite3
+
+from scripts.case_management_modules.case_table_utils import \
+    populate_case_table
+from scripts.Utilities.config import DB_PATH
+
 
 def refresh_cases(dialog_instance, resp_ids=None) -> None:
     """Refresh the cases table with filters."""
@@ -22,6 +26,7 @@ def refresh_cases(dialog_instance, resp_ids=None) -> None:
     except Exception as e:
         print(f"DEBUG: Error in refresh_cases setup: {e}")
         import traceback
+
         traceback.print_exc()
         dialog_instance.refresh_in_progress = False
         return
@@ -45,7 +50,9 @@ def refresh_cases(dialog_instance, resp_ids=None) -> None:
         pass
     elif selected_list == "Lead Schedule":
         # Lead Schedule shows Confirmed cases with -LS suffix, not finalized
-        base_conditions.append("assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'")
+        base_conditions.append(
+            "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'"
+        )
     elif selected_list == "Write-Off Recommended":
         # Write-Off Recommended shows cases with -WOR suffix
         base_conditions.append("suffixes LIKE '%-WOR%'")
@@ -72,10 +79,17 @@ def refresh_cases(dialog_instance, resp_ids=None) -> None:
         print("DEBUG: Query executed successfully")
         rows = cursor.fetchall()
         print(f"DEBUG: Retrieved {len(rows)} rows from database")
-        populate_case_table(dialog_instance.case_table, rows, selected_list, include_edit=True, edit_callback=dialog_instance.edit_case_by_row)
+        populate_case_table(
+            dialog_instance.case_table,
+            rows,
+            selected_list,
+            include_edit=True,
+            edit_callback=dialog_instance.edit_case_by_row,
+        )
     except Exception as e:
         print(f"DEBUG: Error in database query or row processing: {e}")
         import traceback
+
         traceback.print_exc()
         dialog_instance.refresh_in_progress = False
         return

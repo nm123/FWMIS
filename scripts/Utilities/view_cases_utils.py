@@ -1,7 +1,8 @@
 import os
 from datetime import datetime
-from PyQt5.QtWidgets import QMessageBox
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox
 from scripts.Utilities.financial_utils import get_financial_year
 
 
@@ -20,6 +21,7 @@ class ViewCasesUtils:
 
             # Create year folder if it doesn't exist - ensures export directory structure
             from scripts.Utilities.financial_utils import create_year_folder
+
             year_folder = create_year_folder(get_financial_year())
             export_dir = os.path.join(year_folder, "Exports")
             os.makedirs(export_dir, exist_ok=True)
@@ -48,13 +50,15 @@ class ViewCasesUtils:
                         # Handle special case for Case No (extract transaction number from Qt.UserRole)
                         if col == 0:  # Case No column
                             transaction_no = item.data(Qt.UserRole)
-                            row_data[headers[col]] = transaction_no if transaction_no else item.text()
+                            row_data[headers[col]] = (
+                                transaction_no if transaction_no else item.text()
+                            )
                         else:
                             row_data[headers[col]] = item.text()
                     else:
                         # Check for widget (like buttons) - extract text if available
                         widget = dialog.case_table.cellWidget(row, col)
-                        if widget and hasattr(widget, 'text'):
+                        if widget and hasattr(widget, "text"):
                             row_data[headers[col]] = widget.text()
                         else:
                             row_data[headers[col]] = ""
@@ -68,63 +72,77 @@ class ViewCasesUtils:
 
             # Calculate totals for Amount column if it exists - parse currency strings and sum
             total_amount = 0.0
-            if 'Amount' in df.columns:
-                for amount_str in df['Amount']:
+            if "Amount" in df.columns:
+                for amount_str in df["Amount"]:
                     try:
                         # Remove currency formatting (R prefix, commas) for numeric conversion
-                        clean_amount = amount_str.replace('R ', '').replace(',', '').strip()
+                        clean_amount = (
+                            amount_str.replace("R ", "").replace(",", "").strip()
+                        )
                         total_amount += float(clean_amount)
                     except (ValueError, AttributeError):
                         pass
 
             # Create Excel writer with openpyxl engine for advanced formatting capabilities
-            with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
+            with pd.ExcelWriter(filepath, engine="openpyxl") as writer:
                 # Write DataFrame to Excel with specified sheet name, excluding DataFrame index
-                df.to_excel(writer, sheet_name=f'{current_list} Cases', index=False)
+                df.to_excel(writer, sheet_name=f"{current_list} Cases", index=False)
 
                 # Get workbook and worksheet references for post-processing formatting
                 workbook = writer.book
-                worksheet = writer.sheets[f'{current_list} Cases']
+                worksheet = writer.sheets[f"{current_list} Cases"]
 
                 # Format amount column as South African currency if it exists (R with commas and 2 decimals)
                 amount_col = None
                 for col_num, column_title in enumerate(df.columns, 1):
-                    if column_title == 'Amount':
+                    if column_title == "Amount":
                         amount_col = col_num
                         break
 
                 if amount_col:
                     from openpyxl.styles import NamedStyle
-                    currency_style = NamedStyle(name='currency', number_format='R #,##0.00')
+
+                    currency_style = NamedStyle(
+                        name="currency", number_format="R #,##0.00"
+                    )
                     workbook.add_named_style(currency_style)
 
                     # Apply currency formatting to data rows (skip header row)
-                    for row_num in range(2, len(df) + 2):  # Start from row 2 (after header)
+                    for row_num in range(
+                        2, len(df) + 2
+                    ):  # Start from row 2 (after header)
                         cell = worksheet.cell(row=row_num, column=amount_col)
-                        cell.style = 'currency'
+                        cell.style = "currency"
 
                 # Add summary information at the top of the worksheet
                 worksheet.insert_rows(1)
-                worksheet['A1'] = f'{current_list} Cases Export'
-                worksheet['A2'] = f'Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
-                worksheet['A3'] = f'Total Cases: {len(df)}'
+                worksheet["A1"] = f"{current_list} Cases Export"
+                worksheet["A2"] = (
+                    f'Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+                )
+                worksheet["A3"] = f"Total Cases: {len(df)}"
 
                 if total_amount > 0:
-                    worksheet['A4'] = f'Total Amount: R {total_amount:,.2f}'
+                    worksheet["A4"] = f"Total Amount: R {total_amount:,.2f}"
 
                 # Merge cells for title row spanning all columns
                 from openpyxl.utils import get_column_letter
+
                 last_col = get_column_letter(len(df.columns))
-                worksheet.merge_cells(f'A1:{last_col}1')
+                worksheet.merge_cells(f"A1:{last_col}1")
 
                 # Auto-adjust column widths based on content length for better readability
                 for column in worksheet.columns:
                     max_length = 0
-                    column_letter = column[0].column_letter if hasattr(column[0], 'column_letter') else None
+                    column_letter = (
+                        column[0].column_letter
+                        if hasattr(column[0], "column_letter")
+                        else None
+                    )
                     if column_letter is None:
                         # Handle merged cells by getting column letter from coordinate
                         for cell in column:
-                            if hasattr(cell, 'column_letter'):
+                            if hasattr(cell, "column_letter"):
                                 column_letter = cell.column_letter
                                 break
                         if column_letter is None:
@@ -136,28 +154,34 @@ class ViewCasesUtils:
                                 max_length = len(str(cell.value))
                         except:
                             pass
-                    adjusted_width = min(max_length + 2, 50)  # Cap at 50 characters for readability
+                    adjusted_width = min(
+                        max_length + 2, 50
+                    )  # Cap at 50 characters for readability
                     worksheet.column_dimensions[column_letter].width = adjusted_width
 
             # Show success message with file details
             QMessageBox.information(
-                dialog, "Export Successful",
+                dialog,
+                "Export Successful",
                 f"Case list exported successfully!\n\n"
                 f"File: {filename}\n"
                 f"Location: {export_dir}\n"
-                f"Cases exported: {len(df)}"
+                f"Cases exported: {len(df)}",
             )
 
         except ImportError:
             # Handle missing pandas/openpyxl dependencies with user-friendly error
             QMessageBox.critical(
-                dialog, "Missing Dependencies",
+                dialog,
+                "Missing Dependencies",
                 "Excel export requires pandas and openpyxl.\n\n"
-                "Please install with: pip install pandas openpyxl"
+                "Please install with: pip install pandas openpyxl",
             )
         except Exception as e:
             # Catch any other export errors and show to user
-            QMessageBox.critical(dialog, "Export Error", f"Failed to export to Excel: {str(e)}")
+            QMessageBox.critical(
+                dialog, "Export Error", f"Failed to export to Excel: {str(e)}"
+            )
 
     @staticmethod
     def validate_view_data(data):
@@ -166,7 +190,7 @@ class ViewCasesUtils:
             return False, "No data provided"
         if not isinstance(data, dict):
             return False, "Data must be a dictionary"
-        required_keys = ['responsibilities', 'fy_filter', 'list_filter']
+        required_keys = ["responsibilities", "fy_filter", "list_filter"]
         for key in required_keys:
             if key not in data:
                 return False, f"Missing required key: {key}"
@@ -176,13 +200,19 @@ class ViewCasesUtils:
     def format_case_display(case_data):
         """Format case data for display in the table"""
         formatted = {}
-        formatted['case_no'] = case_data.get('base_transaction_no', case_data.get('transaction_no', 'N/A'))
-        formatted['date_reported'] = case_data.get('date_reported', 'N/A')
-        formatted['category'] = case_data.get('category', 'N/A')
-        formatted['amount'] = case_data.get('amount', 0.0)
-        formatted['list'] = case_data.get('list', 'N/A')
-        formatted['status'] = case_data.get('assessment_status', 'N/A')
-        formatted['todo'] = 'Yes' if case_data.get('bas_payment_no') or case_data.get('bas_journal_no') else 'No'
+        formatted["case_no"] = case_data.get(
+            "base_transaction_no", case_data.get("transaction_no", "N/A")
+        )
+        formatted["date_reported"] = case_data.get("date_reported", "N/A")
+        formatted["category"] = case_data.get("category", "N/A")
+        formatted["amount"] = case_data.get("amount", 0.0)
+        formatted["list"] = case_data.get("list", "N/A")
+        formatted["status"] = case_data.get("assessment_status", "N/A")
+        formatted["todo"] = (
+            "Yes"
+            if case_data.get("bas_payment_no") or case_data.get("bas_journal_no")
+            else "No"
+        )
         return formatted
 
     @staticmethod
@@ -195,7 +225,7 @@ class ViewCasesUtils:
             "Write-Off Recommended": "suffixes LIKE '%-WOR%'",
             "Written Off": "suffixes LIKE '%-WO%'",
             "To-Do List": "(list = 'To-Do List' OR bas_journal_no IS NOT NULL)",
-            "Deleted Cases": "suffixes LIKE '%-DEL%'"
+            "Deleted Cases": "suffixes LIKE '%-DEL%'",
         }
         return conditions.get(selected_list, "")
 
@@ -208,20 +238,20 @@ class ViewCasesUtils:
         statuses = {}
 
         for case in cases:
-            amount = case.get('amount', 0.0)
+            amount = case.get("amount", 0.0)
             total_amount += amount
 
-            category = case.get('category', 'Unknown')
+            category = case.get("category", "Unknown")
             categories[category] = categories.get(category, 0) + 1
 
-            status = case.get('assessment_status', 'Unknown')
+            status = case.get("assessment_status", "Unknown")
             statuses[status] = statuses.get(status, 0) + 1
 
         return {
-            'total_amount': total_amount,
-            'total_cases': total_cases,
-            'categories': categories,
-            'statuses': statuses
+            "total_amount": total_amount,
+            "total_cases": total_cases,
+            "categories": categories,
+            "statuses": statuses,
         }
 
     @staticmethod
@@ -234,14 +264,14 @@ class ViewCasesUtils:
         report += f"Total Cases: {totals['total_cases']}\n"
         report += f"Total Amount: R {totals['total_amount']:,.2f}\n\n"
 
-        if totals['categories']:
+        if totals["categories"]:
             report += "Categories:\n"
-            for cat, count in totals['categories'].items():
+            for cat, count in totals["categories"].items():
                 report += f"  {cat}: {count}\n"
 
-        if totals['statuses']:
+        if totals["statuses"]:
             report += "\nStatuses:\n"
-            for stat, count in totals['statuses'].items():
+            for stat, count in totals["statuses"].items():
                 report += f"  {stat}: {count}\n"
 
         return report
@@ -251,15 +281,16 @@ class ViewCasesUtils:
         """Filter cases by responsibility IDs"""
         if not resp_ids:
             return cases
-        return [case for case in cases if case.get('responsibility_id') in resp_ids]
+        return [case for case in cases if case.get("responsibility_id") in resp_ids]
 
     @staticmethod
-    def sort_cases(cases, sort_by='date_reported', ascending=True):
+    def sort_cases(cases, sort_by="date_reported", ascending=True):
         """Sort cases by specified field"""
+
         def sort_key(case):
             value = case.get(sort_by)
             if value is None:
-                return '' if ascending else 'z'
+                return "" if ascending else "z"
             return value
 
         return sorted(cases, key=sort_key, reverse=not ascending)
@@ -273,8 +304,8 @@ class ViewCasesUtils:
         search_term = search_term.lower()
         filtered = []
         for case in cases:
-            transaction_no = str(case.get('transaction_no', '')).lower()
-            category = str(case.get('category', '')).lower()
+            transaction_no = str(case.get("transaction_no", "")).lower()
+            category = str(case.get("category", "")).lower()
             if search_term in transaction_no or search_term in category:
                 filtered.append(case)
         return filtered
@@ -328,7 +359,9 @@ class ViewCasesUtils:
         # Auto-adjust column widths
         for column in worksheet.columns:
             max_length = 0
-            column_letter = column[0].column_letter if hasattr(column[0], 'column_letter') else None
+            column_letter = (
+                column[0].column_letter if hasattr(column[0], "column_letter") else None
+            )
             if column_letter is None:
                 continue
 
@@ -351,7 +384,7 @@ class ViewCasesUtils:
 
         valid_items = []
         for item in selected_items:
-            if hasattr(item, 'data') and callable(item.data):
+            if hasattr(item, "data") and callable(item.data):
                 valid_items.append(item)
             else:
                 return False, "Invalid case item selected"
@@ -367,10 +400,7 @@ class ViewCasesUtils:
         transaction_no = selected_item.data(Qt.UserRole)
         row = selected_item.row()
 
-        return {
-            'transaction_no': transaction_no,
-            'row': row
-        }
+        return {"transaction_no": transaction_no, "row": row}
 
     @staticmethod
     def build_case_query(base_conditions, params, fy_id=None, resp_ids=None):
@@ -398,16 +428,16 @@ class ViewCasesUtils:
             return None
 
         case_dict = {
-            'id': row_data[0],
-            'transaction_no': row_data[1],
-            'base_transaction_no': row_data[2],
-            'date_reported': row_data[3],
-            'category': row_data[4],
-            'amount': row_data[5],
-            'assessment_status': row_data[6],
-            'lc_status': row_data[7],
-            'suffixes': row_data[8],
-            'responsibility_id': row_data[9]
+            "id": row_data[0],
+            "transaction_no": row_data[1],
+            "base_transaction_no": row_data[2],
+            "date_reported": row_data[3],
+            "category": row_data[4],
+            "amount": row_data[5],
+            "assessment_status": row_data[6],
+            "lc_status": row_data[7],
+            "suffixes": row_data[8],
+            "responsibility_id": row_data[9],
         }
 
         return case_dict
@@ -416,10 +446,10 @@ class ViewCasesUtils:
     def determine_display_values(case_dict, selected_list):
         """Determine display values based on list filter"""
         display_list = selected_list
-        display_status = case_dict.get('assessment_status', 'Unknown')
+        display_status = case_dict.get("assessment_status", "Unknown")
 
         if selected_list == "Lead Schedule":
-            display_status = case_dict.get('lc_status', 'Awaiting LC determination')
+            display_status = case_dict.get("lc_status", "Awaiting LC determination")
         elif selected_list in ["Recovered", "Write-Off Recommended", "Written Off"]:
             display_status = selected_list.replace("Write-Off", "Write Off")
 
@@ -475,13 +505,14 @@ class ViewCasesUtils:
             return ""
         if len(text) <= max_length:
             return text
-        return text[:max_length - 3] + "..."
+        return text[: max_length - 3] + "..."
 
     @staticmethod
     def sanitize_filename(filename):
         """Sanitize filename for safe file system use"""
         import re
-        return re.sub(r'[<>:"/\\|?*]', '_', filename)
+
+        return re.sub(r'[<>:"/\\|?*]', "_", filename)
 
     @staticmethod
     def get_file_size_mb(filepath):

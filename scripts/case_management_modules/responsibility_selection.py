@@ -1,17 +1,10 @@
 import sqlite3
 from collections import defaultdict
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLineEdit,
-    QPushButton,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QMessageBox,
-    QLabel,
-)
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
+                             QMessageBox, QPushButton, QTreeWidget,
+                             QTreeWidgetItem, QVBoxLayout)
 from scripts.Utilities.config import DB_PATH
 
 
@@ -60,12 +53,24 @@ class ResponsibilitySelectionDialog(QDialog):
             cursor = conn.cursor()
 
             # Load all responsibilities to build the complete tree
-            cursor.execute("SELECT id, name, parent_id, is_posting_level FROM responsibilities ORDER BY name")
-            self.responsibilities = [{"id": row[0], "name": row[1], "parent_id": row[2], "is_posting_level": row[3]} for row in cursor.fetchall()]
+            cursor.execute(
+                "SELECT id, name, parent_id, is_posting_level FROM responsibilities ORDER BY name"
+            )
+            self.responsibilities = [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "parent_id": row[2],
+                    "is_posting_level": row[3],
+                }
+                for row in cursor.fetchall()
+            ]
 
             conn.close()
         except sqlite3.Error as e:
-            QMessageBox.critical(self, "Database Error", f"Failed to load responsibilities: {e}")
+            QMessageBox.critical(
+                self, "Database Error", f"Failed to load responsibilities: {e}"
+            )
             return
 
         # Debug prints removed for production
@@ -78,14 +83,18 @@ class ResponsibilitySelectionDialog(QDialog):
             for resp in sorted(parent_map[parent_id], key=lambda x: x["name"]):
                 item = QTreeWidgetItem([resp["name"]])
                 item.setData(0, Qt.UserRole, resp["id"])
-                item.setData(1, Qt.UserRole, resp["is_posting_level"])  # Store posting level status
+                item.setData(
+                    1, Qt.UserRole, resp["is_posting_level"]
+                )  # Store posting level status
 
                 # Visual styling for non-posting items
                 if resp["is_posting_level"] == 0:
                     font = item.font(0)
                     font.setItalic(True)
                     item.setFont(0, font)
-                    item.setToolTip(0, "Non-posting level responsibility - cannot be selected")
+                    item.setToolTip(
+                        0, "Non-posting level responsibility - cannot be selected"
+                    )
                 else:
                     item.setToolTip(0, "Posting level responsibility - can be selected")
 
@@ -118,7 +127,14 @@ class ResponsibilitySelectionDialog(QDialog):
                 while current_parent_id:
                     parent_ids_to_include.add(current_parent_id)
                     # Find the parent and get its parent_id
-                    parent_resp = next((r for r in self.responsibilities if r["id"] == current_parent_id), None)
+                    parent_resp = next(
+                        (
+                            r
+                            for r in self.responsibilities
+                            if r["id"] == current_parent_id
+                        ),
+                        None,
+                    )
                     if parent_resp:
                         current_parent_id = parent_resp["parent_id"]
                     else:
@@ -153,7 +169,9 @@ class ResponsibilitySelectionDialog(QDialog):
                     font = item.font(0)
                     font.setItalic(True)
                     item.setFont(0, font)
-                    item.setToolTip(0, "Non-posting level responsibility - cannot be selected")
+                    item.setToolTip(
+                        0, "Non-posting level responsibility - cannot be selected"
+                    )
                 else:
                     item.setToolTip(0, "Posting level responsibility - can be selected")
 
@@ -174,7 +192,11 @@ class ResponsibilitySelectionDialog(QDialog):
         try:
             selected_item = self.tree.currentItem()
             if not selected_item:
-                QMessageBox.warning(self, "No Selection", "Please select a responsibility from the tree first.")
+                QMessageBox.warning(
+                    self,
+                    "No Selection",
+                    "Please select a responsibility from the tree first.",
+                )
                 return
 
             is_posting = selected_item.data(1, Qt.UserRole)  # Get posting level status
@@ -184,17 +206,26 @@ class ResponsibilitySelectionDialog(QDialog):
                 resp_name = selected_item.text(0)
 
                 if resp_id is None:
-                    QMessageBox.critical(self, "Error", "Selected responsibility has no ID.")
+                    QMessageBox.critical(
+                        self, "Error", "Selected responsibility has no ID."
+                    )
                     return
 
                 self.selected_responsibility = {"id": resp_id, "name": resp_name}
                 self.accept()
             else:
-                QMessageBox.warning(self, "Invalid Selection",
-                                  "You can only select posting level responsibilities.\n\n"
-                                  "Non-posting level responsibilities are shown in italics and cannot be selected.")
+                QMessageBox.warning(
+                    self,
+                    "Invalid Selection",
+                    "You can only select posting level responsibilities.\n\n"
+                    "Non-posting level responsibilities are shown in italics and cannot be selected.",
+                )
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred while selecting the responsibility:\n\n{str(e)}")
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"An error occurred while selecting the responsibility:\n\n{str(e)}",
+            )
 
     def get_selected_responsibility(self):
         return self.selected_responsibility

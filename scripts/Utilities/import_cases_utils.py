@@ -5,6 +5,7 @@ from scripts.Utilities.config import DB_PATH
 # Optional import for psutil
 try:
     import psutil  # type: ignore
+
     HAS_PSUTIL = True
 except ImportError:
     psutil = None  # type: ignore
@@ -16,22 +17,25 @@ def validate_responsibility(dialog, responsibility_name):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT id, is_posting_level FROM responsibilities WHERE name = ?", (responsibility_name,))
+        cursor.execute(
+            "SELECT id, is_posting_level FROM responsibilities WHERE name = ?",
+            (responsibility_name,),
+        )
         result = cursor.fetchone()
         conn.close()
 
         if result:
             resp_id, is_posting = result
             if is_posting:
-                return {'status': 'Valid', 'id': resp_id}
+                return {"status": "Valid", "id": resp_id}
             else:
-                return {'status': 'Non-Posting', 'id': resp_id}
+                return {"status": "Non-Posting", "id": resp_id}
         else:
-            return {'status': 'Not Found', 'id': None}
+            return {"status": "Not Found", "id": None}
 
     except sqlite3.Error as e:
         print(f"Error validating responsibility: {e}")
-        return {'status': 'Error', 'id': None}
+        return {"status": "Error", "id": None}
 
 
 # Additional utility functions can be added here as needed
@@ -49,8 +53,8 @@ def get_transaction_summary(transactions):
         return "No transactions parsed"
 
     total_count = len(transactions)
-    total_amount = sum(abs(t['amount']) for t in transactions)
-    credit_count = sum(1 for t in transactions if t['is_credit'])
+    total_amount = sum(abs(t["amount"]) for t in transactions)
+    credit_count = sum(1 for t in transactions if t["is_credit"])
     debit_count = total_count - credit_count
 
     return f"📊 Parsed {total_count} transactions: {debit_count} debits, {credit_count} credits | Total: R{total_amount:,.2f}"
@@ -60,7 +64,7 @@ def filter_transactions_by_date_range(transactions, date_from, date_to):
     """Filter transactions within the specified date range"""
     filtered = []
     for t in transactions:
-        if date_from <= t['date'] <= date_to:
+        if date_from <= t["date"] <= date_to:
             filtered.append(t)
     return filtered
 
@@ -68,14 +72,14 @@ def filter_transactions_by_date_range(transactions, date_from, date_to):
 def mark_transaction_for_removal(transactions, index):
     """Mark a transaction for removal by index"""
     if 0 <= index < len(transactions):
-        transactions[index]['marked_for_removal'] = True
+        transactions[index]["marked_for_removal"] = True
         return True
     return False
 
 
 def get_unmarked_transactions(transactions):
     """Get transactions that are not marked for removal"""
-    return [t for t in transactions if not t.get('marked_for_removal', False)]
+    return [t for t in transactions if not t.get("marked_for_removal", False)]
 
 
 def calculate_duplicate_percentage(transactions, duplicate_results):
@@ -83,7 +87,7 @@ def calculate_duplicate_percentage(transactions, duplicate_results):
     if not transactions:
         return 0.0
 
-    with_duplicates = sum(1 for result in duplicate_results if result['duplicates'])
+    with_duplicates = sum(1 for result in duplicate_results if result["duplicates"])
     return (with_duplicates / len(transactions)) * 100
 
 
@@ -116,9 +120,13 @@ def validate_import_data(transactions, category, date_from, date_to):
     if not unmarked_transactions:
         errors.append("All transactions are marked for removal")
 
-    transactions_without_case_numbers = [t for t in unmarked_transactions if not t.get('case_number')]
+    transactions_without_case_numbers = [
+        t for t in unmarked_transactions if not t.get("case_number")
+    ]
     if transactions_without_case_numbers:
-        errors.append(f"{len(transactions_without_case_numbers)} transactions do not have case numbers assigned")
+        errors.append(
+            f"{len(transactions_without_case_numbers)} transactions do not have case numbers assigned"
+        )
 
     return errors
 
@@ -129,7 +137,7 @@ def prepare_transactions_for_import(transactions):
     valid_transactions = []
 
     for t in unmarked:
-        if t.get('case_number') and t.get('responsibility'):
+        if t.get("case_number") and t.get("responsibility"):
             valid_transactions.append(t)
 
     return valid_transactions
@@ -147,10 +155,12 @@ def cleanup_test_data():
         cursor = conn.cursor()
 
         # Delete cases that appear to be test data
-        cursor.execute("""
+        cursor.execute(
+            """
             DELETE FROM cases
             WHERE LOWER(description) LIKE '%test%' OR LOWER(transaction_no) LIKE '%test%'
-        """)
+        """
+        )
         deleted_count = cursor.rowcount
         conn.commit()
         conn.close()
@@ -169,10 +179,13 @@ def get_financial_year_case_count(fy_id):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) FROM cases
             WHERE fy_id = ? AND list != 'Deleted Cases'
-        """, (fy_id,))
+        """,
+            (fy_id,),
+        )
         count = cursor.fetchone()[0]
         conn.close()
         return count
@@ -186,7 +199,9 @@ def validate_responsibility_exists(responsibility_name):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM responsibilities WHERE name = ?", (responsibility_name,))
+        cursor.execute(
+            "SELECT id FROM responsibilities WHERE name = ?", (responsibility_name,)
+        )
         result = cursor.fetchone()
         conn.close()
         return result is not None
@@ -200,7 +215,9 @@ def get_responsibility_id(responsibility_name):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM responsibilities WHERE name = ?", (responsibility_name,))
+        cursor.execute(
+            "SELECT id FROM responsibilities WHERE name = ?", (responsibility_name,)
+        )
         result = cursor.fetchone()
         conn.close()
         return result[0] if result else None
@@ -226,14 +243,14 @@ def format_import_summary(imported_count, total_count, errors=None):
 
 def reset_duplicate_check_results(dialog):
     """Reset duplicate check results"""
-    if hasattr(dialog, 'duplicate_check_results'):
+    if hasattr(dialog, "duplicate_check_results"):
         dialog.duplicate_check_results = []
 
 
 def update_transaction_status(transactions, index, status):
     """Update the status of a specific transaction"""
     if 0 <= index < len(transactions):
-        transactions[index]['status'] = status
+        transactions[index]["status"] = status
         return True
     return False
 
@@ -247,24 +264,26 @@ def get_transaction_by_index(transactions, index):
 
 def count_transactions_by_type(transactions):
     """Count transactions by type (debit/credit)"""
-    debits = sum(1 for t in transactions if not t.get('is_credit', False))
-    credits = sum(1 for t in transactions if t.get('is_credit', False))
-    return {'debits': debits, 'credits': credits}
+    debits = sum(1 for t in transactions if not t.get("is_credit", False))
+    credits = sum(1 for t in transactions if t.get("is_credit", False))
+    return {"debits": debits, "credits": credits}
 
 
 def calculate_total_amount(transactions):
     """Calculate the total amount of all transactions"""
-    return sum(abs(t['amount']) for t in transactions)
+    return sum(abs(t["amount"]) for t in transactions)
 
 
 def find_transaction_duplicates(transaction, all_transactions):
     """Find duplicates of a transaction within the current batch"""
     duplicates = []
     for i, t in enumerate(all_transactions):
-        if (t['responsibility'] == transaction['responsibility'] and
-            t['category'] == transaction['category'] and
-            abs(t['amount'] - transaction['amount']) < 0.01 and
-            t['date'] == transaction['date']):
+        if (
+            t["responsibility"] == transaction["responsibility"]
+            and t["category"] == transaction["category"]
+            and abs(t["amount"] - transaction["amount"]) < 0.01
+            and t["date"] == transaction["date"]
+        ):
             duplicates.append((i, t))
     return duplicates
 
@@ -285,19 +304,23 @@ def get_import_progress_percentage(current, total):
 
 def log_transaction_details(transaction, operation):
     """Log details of a transaction for debugging"""
-    log_import_operation(operation, f"Transaction: {transaction.get('description', 'N/A')} | Amount: {transaction.get('amount', 0)} | Responsibility: {transaction.get('responsibility', 'N/A')}")
+    log_import_operation(
+        operation,
+        f"Transaction: {transaction.get('description', 'N/A')} | Amount: {transaction.get('amount', 0)} | Responsibility: {transaction.get('responsibility', 'N/A')}",
+    )
 
 
 def validate_file_path(file_path):
     """Validate that the file path exists and is readable"""
     import os
+
     if not file_path:
         return False, "No file path provided"
     if not os.path.exists(file_path):
         return False, "File does not exist"
     if not os.path.isfile(file_path):
         return False, "Path is not a file"
-    if not file_path.lower().endswith('.txt'):
+    if not file_path.lower().endswith(".txt"):
         return False, "File must be a .txt file"
     return True, "Valid file"
 
@@ -305,6 +328,7 @@ def validate_file_path(file_path):
 def get_file_size_mb(file_path):
     """Get the size of the file in MB"""
     import os
+
     try:
         size_bytes = os.path.getsize(file_path)
         return size_bytes / (1024 * 1024)
@@ -358,6 +382,7 @@ def validate_database_connection():
 def get_database_size_mb():
     """Get the size of the database file in MB"""
     import os
+
     try:
         size_bytes = os.path.getsize(DB_PATH)
         return size_bytes / (1024 * 1024)
@@ -369,6 +394,7 @@ def check_disk_space():
     """Check if there's enough disk space for the import operation"""
     try:
         import shutil
+
         free_space = shutil.disk_usage(DB_PATH).free / (1024 * 1024 * 1024)  # GB
         return free_space > 1.0  # At least 1GB free
     except (ImportError, OSError):
@@ -393,10 +419,12 @@ def optimize_database_after_import():
 def generate_import_report(transactions, imported_cases):
     """Generate a detailed report of the import operation"""
     report = {
-        'total_transactions': len(transactions),
-        'imported_cases': len(imported_cases),
-        'failed_imports': len(transactions) - len(imported_cases),
-        'success_rate': (len(imported_cases) / len(transactions)) * 100 if transactions else 0
+        "total_transactions": len(transactions),
+        "imported_cases": len(imported_cases),
+        "failed_imports": len(transactions) - len(imported_cases),
+        "success_rate": (
+            (len(imported_cases) / len(transactions)) * 100 if transactions else 0
+        ),
     }
     return report
 
@@ -404,7 +432,7 @@ def generate_import_report(transactions, imported_cases):
 def export_import_log_to_file(log_data, file_path):
     """Export import log to a file"""
     try:
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             for entry in log_data:
                 f.write(f"{entry}\n")
         return True
@@ -427,34 +455,41 @@ def validate_user_permissions():
 def get_system_info():
     """Get system information for debugging"""
     import platform
+
     return {
-        'platform': platform.system(),
-        'version': platform.version(),
-        'python_version': platform.python_version()
+        "platform": platform.system(),
+        "version": platform.version(),
+        "python_version": platform.python_version(),
     }
 
 
 def measure_execution_time(func):
     """Decorator to measure execution time of functions"""
     import time
+
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        log_import_operation("Performance", f"{func.__name__} executed in {execution_time:.2f} seconds")
+        log_import_operation(
+            "Performance", f"{func.__name__} executed in {execution_time:.2f} seconds"
+        )
         return result
+
     return wrapper
 
 
 def handle_exceptions_gracefully(func):
     """Decorator to handle exceptions gracefully"""
+
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
             log_import_operation("Exception", f"{func.__name__}: {str(e)}")
             return None
+
     return wrapper
 
 
@@ -473,7 +508,9 @@ def clear_cache():
 def monitor_memory_usage():
     """Monitor memory usage during import operations"""
     if not HAS_PSUTIL:
-        log_import_operation("Memory", "psutil not available, memory monitoring disabled")
+        log_import_operation(
+            "Memory", "psutil not available, memory monitoring disabled"
+        )
         return 0.0
 
     try:
@@ -504,7 +541,7 @@ def split_large_import_into_batches(transactions, batch_size=100):
     """Split large imports into smaller batches"""
     batches = []
     for i in range(0, len(transactions), batch_size):
-        batches.append(transactions[i:i + batch_size])
+        batches.append(transactions[i : i + batch_size])
     return batches
 
 
@@ -536,7 +573,10 @@ def handle_partial_import_failures():
 
 def retry_failed_batches(failed_batches, max_retries=3):
     """Retry failed import batches"""
-    log_import_operation("Retry", f"Retrying {len(failed_batches)} failed batches (max {max_retries} retries)")
+    log_import_operation(
+        "Retry",
+        f"Retrying {len(failed_batches)} failed batches (max {max_retries} retries)",
+    )
     return True
 
 
@@ -561,10 +601,10 @@ def archive_completed_imports():
 def generate_performance_report():
     """Generate a performance report for the import operation"""
     report = {
-        'total_time': 0.0,
-        'average_time_per_transaction': 0.0,
-        'memory_peak': 0.0,
-        'cpu_usage': 0.0
+        "total_time": 0.0,
+        "average_time_per_transaction": 0.0,
+        "memory_peak": 0.0,
+        "cpu_usage": 0.0,
     }
     return report
 
@@ -583,7 +623,7 @@ def validate_system_requirements():
     checks = [
         validate_database_connection(),
         check_disk_space(),
-        validate_user_permissions()
+        validate_user_permissions(),
     ]
     all_passed = all(result[0] for result in checks)
     return all_passed, checks
@@ -608,7 +648,9 @@ def log_system_health():
     """Log system health metrics"""
     memory = monitor_memory_usage()
     disk_space = get_database_size_mb()
-    log_import_operation("Health", f"Memory: {memory:.2f} MB, DB Size: {disk_space:.2f} MB")
+    log_import_operation(
+        "Health", f"Memory: {memory:.2f} MB, DB Size: {disk_space:.2f} MB"
+    )
     return True
 
 

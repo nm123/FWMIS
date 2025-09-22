@@ -1,31 +1,23 @@
-import sqlite3
 import csv
 import os
+import sqlite3
 from datetime import datetime
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QPushButton,
-    QMessageBox,
-    QLabel,
-    QGroupBox,
-    QTextEdit,
-    QCheckBox,
-    QFileDialog,
-    QWidget,
-)
+
 from PyQt5.QtCore import Qt
-from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.utils import format_currency_amount
+from PyQt5.QtWidgets import (QCheckBox, QDialog, QFileDialog, QGroupBox,
+                             QHBoxLayout, QHeaderView, QLabel, QMessageBox,
+                             QPushButton, QTableWidget, QTableWidgetItem,
+                             QTextEdit, QVBoxLayout, QWidget)
 from scripts.Utilities.audit_utils import save_audit_log
+from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
-from scripts.Utilities.workflow_utils import create_write_off_group, approve_write_off_submission
-from scripts.Utilities.write_off_creation_utils import generate_annexure, get_evidence_status
-from scripts.Utilities.write_off_management_utils import load_group_details, approve_write_off
+from scripts.Utilities.utils import format_currency_amount
+from scripts.Utilities.workflow_utils import (approve_write_off_submission,
+                                              create_write_off_group)
+from scripts.Utilities.write_off_creation_utils import (generate_annexure,
+                                                        get_evidence_status)
+from scripts.Utilities.write_off_management_utils import (approve_write_off,
+                                                          load_group_details)
 
 
 class WriteOffSubmissionDialog(QDialog):
@@ -49,7 +41,9 @@ class WriteOffSubmissionDialog(QDialog):
             "All selected cases will be assigned the same submission ID and can be approved together."
         )
         instructions.setWordWrap(True)
-        instructions.setStyleSheet("color: #666; font-style: italic; margin-bottom: 10px;")
+        instructions.setStyleSheet(
+            "color: #666; font-style: italic; margin-bottom: 10px;"
+        )
         layout.addWidget(instructions)
 
         # Cases Table
@@ -58,14 +52,14 @@ class WriteOffSubmissionDialog(QDialog):
 
         self.cases_table = QTableWidget()
         self.cases_table.setColumnCount(6)
-        self.cases_table.setHorizontalHeaderLabels([
-            "Select", "Case No", "Date Reported", "Category", "Amount", "Evidence"
-        ])
+        self.cases_table.setHorizontalHeaderLabels(
+            ["Select", "Case No", "Date Reported", "Category", "Amount", "Evidence"]
+        )
 
         # Set column widths
         header = self.cases_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
-        self.cases_table.setColumnWidth(0, 60)   # Select
+        self.cases_table.setColumnWidth(0, 60)  # Select
         self.cases_table.setColumnWidth(1, 120)  # Case No
         self.cases_table.setColumnWidth(2, 140)  # Date Reported
         self.cases_table.setColumnWidth(3, 150)  # Category
@@ -95,7 +89,9 @@ class WriteOffSubmissionDialog(QDialog):
 
         self.generate_submission_btn = QPushButton("Generate Write-Off Submission")
         self.generate_submission_btn.clicked.connect(self.generate_submission)
-        self.generate_submission_btn.setStyleSheet("QPushButton { background-color: #007bff; color: white; font-weight: bold; }")
+        self.generate_submission_btn.setStyleSheet(
+            "QPushButton { background-color: #007bff; color: white; font-weight: bold; }"
+        )
         button_layout.addWidget(self.generate_submission_btn)
 
         self.cancel_btn = QPushButton("Cancel")
@@ -111,18 +107,27 @@ class WriteOffSubmissionDialog(QDialog):
 
         try:
             # Get cases with -WOR suffix (Write-Off Recommended)
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT id, base_transaction_no, date_reported, category, amount, evidence_paths
                 FROM cases
                 WHERE suffixes LIKE '%-WOR%' AND is_finalized = 0
                 ORDER BY base_transaction_no
-            """)
+            """
+            )
 
             cases = cursor.fetchall()
             self.cases_table.setRowCount(len(cases))
 
             for row, case_data in enumerate(cases):
-                case_id, base_transaction_no, date_reported, category, amount, evidence_paths = case_data
+                (
+                    case_id,
+                    base_transaction_no,
+                    date_reported,
+                    category,
+                    amount,
+                    evidence_paths,
+                ) = case_data
 
                 # Checkbox for selection
                 checkbox = QCheckBox()
@@ -133,10 +138,16 @@ class WriteOffSubmissionDialog(QDialog):
                 self.cases_table.setItem(row, 1, QTableWidgetItem(base_transaction_no))
 
                 # Date Reported
-                self.cases_table.setItem(row, 2, QTableWidgetItem(str(date_reported) if date_reported else ""))
+                self.cases_table.setItem(
+                    row,
+                    2,
+                    QTableWidgetItem(str(date_reported) if date_reported else ""),
+                )
 
                 # Category
-                self.cases_table.setItem(row, 3, QTableWidgetItem(str(category) if category else ""))
+                self.cases_table.setItem(
+                    row, 3, QTableWidgetItem(str(category) if category else "")
+                )
 
                 # Amount
                 amount_item = format_currency_amount(amount, right_align=True)
@@ -153,7 +164,6 @@ class WriteOffSubmissionDialog(QDialog):
             QMessageBox.critical(self, "Error", f"Failed to load cases: {str(e)}")
         finally:
             conn.close()
-
 
     def select_all_cases(self):
         """Select all cases in the table"""
@@ -178,7 +188,12 @@ class WriteOffSubmissionDialog(QDialog):
             checkbox = self.cases_table.cellWidget(row, 0)
             if isinstance(checkbox, QCheckBox) and checkbox.isChecked():
                 case_id = self.cases_table.item(row, 1).data(Qt.UserRole)
-                amount_text = self.cases_table.item(row, 4).text().replace("R ", "").replace(",", "")
+                amount_text = (
+                    self.cases_table.item(row, 4)
+                    .text()
+                    .replace("R ", "")
+                    .replace(",", "")
+                )
                 try:
                     amount = float(amount_text)
                     total_amount += amount
@@ -188,7 +203,9 @@ class WriteOffSubmissionDialog(QDialog):
 
         self.selected_case_ids = selected_cases
         formatted_amount = format_currency_amount(total_amount)
-        self.summary_label.setText(f"Selected: {len(selected_cases)} cases, Total: {formatted_amount}")
+        self.summary_label.setText(
+            f"Selected: {len(selected_cases)} cases, Total: {formatted_amount}"
+        )
 
         # Enable/disable generate button
         self.generate_submission_btn.setEnabled(len(selected_cases) > 0)
@@ -196,15 +213,18 @@ class WriteOffSubmissionDialog(QDialog):
     def generate_submission(self):
         """Generate a write-off submission for selected cases"""
         if not self.selected_case_ids:
-            QMessageBox.warning(self, "No Selection", "Please select at least one case.")
+            QMessageBox.warning(
+                self, "No Selection", "Please select at least one case."
+            )
             return
 
         # Confirm with user
         reply = QMessageBox.question(
-            self, "Generate Write-Off Submission",
+            self,
+            "Generate Write-Off Submission",
             f"Are you sure you want to create a write-off submission for {len(self.selected_case_ids)} cases?\n\n"
             "This will assign a group ID to all selected cases and allow them to be approved together.",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
         )
 
         if reply != QMessageBox.Yes:
@@ -219,22 +239,24 @@ class WriteOffSubmissionDialog(QDialog):
                 generate_annexure(group_id, self.fy)
 
                 QMessageBox.information(
-                    self, "Success",
+                    self,
+                    "Success",
                     f"Write-off submission created successfully!\n\n"
                     f"Group ID: {group_id}\n"
                     f"Cases grouped: {len(self.selected_case_ids)}\n\n"
-                    f"An annexure has been generated and saved."
+                    f"An annexure has been generated and saved.",
                 )
 
                 self.accept()
             else:
-                QMessageBox.critical(self, "Error", "Failed to create write-off submission.")
+                QMessageBox.critical(
+                    self, "Error", "Failed to create write-off submission."
+                )
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to generate submission: {str(e)}")
-
-
-
+            QMessageBox.critical(
+                self, "Error", f"Failed to generate submission: {str(e)}"
+            )
 
 
 class WriteOffApprovalDialog(QDialog):
@@ -267,9 +289,9 @@ class WriteOffApprovalDialog(QDialog):
 
         self.cases_table = QTableWidget()
         self.cases_table.setColumnCount(5)
-        self.cases_table.setHorizontalHeaderLabels([
-            "Case No", "Category", "Amount", "Assessment Status", "Evidence"
-        ])
+        self.cases_table.setHorizontalHeaderLabels(
+            ["Case No", "Category", "Amount", "Assessment Status", "Evidence"]
+        )
 
         header = self.cases_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
@@ -298,7 +320,9 @@ class WriteOffApprovalDialog(QDialog):
 
         self.approve_btn = QPushButton("Approve Write-Off")
         self.approve_btn.clicked.connect(self.approve_submission)
-        self.approve_btn.setStyleSheet("QPushButton { background-color: #28a745; color: white; font-weight: bold; }")
+        self.approve_btn.setStyleSheet(
+            "QPushButton { background-color: #28a745; color: white; font-weight: bold; }"
+        )
         button_layout.addWidget(self.approve_btn)
 
         button_layout.addStretch()
@@ -316,24 +340,28 @@ class WriteOffApprovalDialog(QDialog):
             self.info_label.setText(summary_text)
             self.cases_table.setRowCount(len(case_list))
             for row, case in enumerate(case_list):
-                self.cases_table.setItem(row, 0, QTableWidgetItem(case['case_no']))
-                self.cases_table.setItem(row, 1, QTableWidgetItem(case['category']))
-                self.cases_table.setItem(row, 2, QTableWidgetItem(case['amount']))
-                self.cases_table.setItem(row, 3, QTableWidgetItem(case['assessment_status']))
-                self.cases_table.setItem(row, 4, QTableWidgetItem(case['evidence']))
+                self.cases_table.setItem(row, 0, QTableWidgetItem(case["case_no"]))
+                self.cases_table.setItem(row, 1, QTableWidgetItem(case["category"]))
+                self.cases_table.setItem(row, 2, QTableWidgetItem(case["amount"]))
+                self.cases_table.setItem(
+                    row, 3, QTableWidgetItem(case["assessment_status"])
+                )
+                self.cases_table.setItem(row, 4, QTableWidgetItem(case["evidence"]))
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to load group details: {str(e)}")
-
+            QMessageBox.critical(
+                self, "Error", f"Failed to load group details: {str(e)}"
+            )
 
     def approve_submission(self):
         """Approve the write-off submission"""
         notes = self.notes_edit.toPlainText().strip()
 
         reply = QMessageBox.question(
-            self, "Approve Write-Off",
+            self,
+            "Approve Write-Off",
             f"Are you sure you want to approve write-off submission {self.group_id}?\n\n"
             "This will finalize all cases in the submission and they will appear in the Written Off list.",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
@@ -342,13 +370,18 @@ class WriteOffApprovalDialog(QDialog):
 
                 if success:
                     QMessageBox.information(
-                        self, "Success",
+                        self,
+                        "Success",
                         f"Write-off submission {self.group_id} has been approved!\n\n"
-                        "All cases have been finalized and moved to Written Off."
+                        "All cases have been finalized and moved to Written Off.",
                     )
                     self.accept()
                 else:
-                    QMessageBox.critical(self, "Error", "Failed to approve write-off submission.")
+                    QMessageBox.critical(
+                        self, "Error", "Failed to approve write-off submission."
+                    )
 
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to approve submission: {str(e)}")
+                QMessageBox.critical(
+                    self, "Error", f"Failed to approve submission: {str(e)}"
+                )

@@ -1,10 +1,10 @@
 import sqlite3
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel,
-    QPushButton, QTableWidget, QTableWidgetItem, QHeaderView,
-    QMessageBox, QGroupBox, QTextEdit
-)
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QDialog, QFormLayout, QGroupBox, QHBoxLayout,
+                             QHeaderView, QLabel, QMessageBox, QPushButton,
+                             QTableWidget, QTableWidgetItem, QTextEdit,
+                             QVBoxLayout)
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.utils import format_currency_amount
 
@@ -48,9 +48,18 @@ class DuplicateComparisonDialog(QDialog):
 
         self.existing_table = QTableWidget()
         self.existing_table.setColumnCount(8)
-        self.existing_table.setHorizontalHeaderLabels([
-            "Case No", "Date", "Responsibility", "Category", "Amount", "Status", "List", "Actions"
-        ])
+        self.existing_table.setHorizontalHeaderLabels(
+            [
+                "Case No",
+                "Date",
+                "Responsibility",
+                "Category",
+                "Amount",
+                "Status",
+                "List",
+                "Actions",
+            ]
+        )
 
         header = self.existing_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
@@ -72,11 +81,15 @@ class DuplicateComparisonDialog(QDialog):
 
         self.not_duplicate_button = QPushButton("Not a Duplicate - Keep Both")
         self.not_duplicate_button.clicked.connect(self.mark_not_duplicate)
-        self.not_duplicate_button.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; }")
+        self.not_duplicate_button.setStyleSheet(
+            "QPushButton { background-color: #4CAF50; color: white; }"
+        )
 
         self.is_duplicate_button = QPushButton("Is Duplicate - Remove New Case")
         self.is_duplicate_button.clicked.connect(self.mark_is_duplicate)
-        self.is_duplicate_button.setStyleSheet("QPushButton { background-color: #f44336; color: white; }")
+        self.is_duplicate_button.setStyleSheet(
+            "QPushButton { background-color: #f44336; color: white; }"
+        )
 
         decision_layout.addWidget(self.not_duplicate_button)
         decision_layout.addWidget(self.is_duplicate_button)
@@ -110,33 +123,41 @@ Category: {self.new_transaction.get('category_name', 'N/A')}
             self.existing_table.insertRow(row)
 
             # Case No
-            self.existing_table.setItem(row, 0, QTableWidgetItem(case.get('transaction_no', '')))
+            self.existing_table.setItem(
+                row, 0, QTableWidgetItem(case.get("transaction_no", ""))
+            )
 
             # Date (use date_reported)
-            date_str = case.get('date_reported', '')
+            date_str = case.get("date_reported", "")
             self.existing_table.setItem(row, 1, QTableWidgetItem(date_str))
 
             # Responsibility (need to look up name)
-            resp_name = self.get_responsibility_name(case.get('responsibility_id'))
+            resp_name = self.get_responsibility_name(case.get("responsibility_id"))
             self.existing_table.setItem(row, 2, QTableWidgetItem(resp_name))
 
             # Category
-            self.existing_table.setItem(row, 3, QTableWidgetItem(case.get('category', '')))
+            self.existing_table.setItem(
+                row, 3, QTableWidgetItem(case.get("category", ""))
+            )
 
             # Amount
-            amount = case.get('amount', 0)
+            amount = case.get("amount", 0)
             amount_item = format_currency_amount(amount, right_align=True)
             self.existing_table.setItem(row, 4, amount_item)
 
             # Status
-            self.existing_table.setItem(row, 5, QTableWidgetItem(case.get('status', '')))
+            self.existing_table.setItem(
+                row, 5, QTableWidgetItem(case.get("status", ""))
+            )
 
             # List
-            self.existing_table.setItem(row, 6, QTableWidgetItem(case.get('list', '')))
+            self.existing_table.setItem(row, 6, QTableWidgetItem(case.get("list", "")))
 
             # Actions (View Details button)
             view_button = QPushButton("View Details")
-            view_button.clicked.connect(lambda checked, case=case: self.view_case_details(case))
+            view_button.clicked.connect(
+                lambda checked, case=case: self.view_case_details(case)
+            )
             self.existing_table.setCellWidget(row, 7, view_button)
 
     def get_responsibility_name(self, resp_id):
@@ -161,20 +182,21 @@ Category: {self.new_transaction.get('category_name', 'N/A')}
 
     def mark_not_duplicate(self):
         """Mark that this is not a duplicate - keep both cases"""
-        self.resolution = 'keep'
+        self.resolution = "keep"
         self.accept()
 
     def mark_is_duplicate(self):
         """Mark that this is a duplicate - remove the new case"""
         reply = QMessageBox.question(
-            self, "Confirm Duplicate",
+            self,
+            "Confirm Duplicate",
             "Are you sure this new transaction is a duplicate of an existing case?\n\n"
             "The new transaction will be removed from the import list.",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
-            self.resolution = 'remove'
+            self.resolution = "remove"
             self.accept()
 
     def get_resolution(self):
@@ -187,7 +209,9 @@ class CaseDetailsDialog(QDialog):
 
     def __init__(self, case_data, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Case Details - {case_data.get('transaction_no', 'Unknown')}")
+        self.setWindowTitle(
+            f"Case Details - {case_data.get('transaction_no', 'Unknown')}"
+        )
         self.setFixedSize(800, 600)
 
         self.case_data = case_data
@@ -199,30 +223,50 @@ class CaseDetailsDialog(QDialog):
         # Case details in a form layout
         form_layout = QFormLayout()
 
-        form_layout.addRow("Case Number:", QLabel(self.case_data.get('transaction_no', 'N/A')))
-        form_layout.addRow("Date Incurred:", QLabel(self.case_data.get('date_incurred', 'N/A')))
-        form_layout.addRow("Date Identified:", QLabel(self.case_data.get('date_identified', 'N/A')))
-        form_layout.addRow("Date Reported:", QLabel(self.case_data.get('date_reported', 'N/A')))
-        form_layout.addRow("Category:", QLabel(self.case_data.get('category', 'N/A')))
+        form_layout.addRow(
+            "Case Number:", QLabel(self.case_data.get("transaction_no", "N/A"))
+        )
+        form_layout.addRow(
+            "Date Incurred:", QLabel(self.case_data.get("date_incurred", "N/A"))
+        )
+        form_layout.addRow(
+            "Date Identified:", QLabel(self.case_data.get("date_identified", "N/A"))
+        )
+        form_layout.addRow(
+            "Date Reported:", QLabel(self.case_data.get("date_reported", "N/A"))
+        )
+        form_layout.addRow("Category:", QLabel(self.case_data.get("category", "N/A")))
 
         # Get responsibility name
-        resp_name = self.get_responsibility_name(self.case_data.get('responsibility_id'))
+        resp_name = self.get_responsibility_name(
+            self.case_data.get("responsibility_id")
+        )
         form_layout.addRow("Responsibility:", QLabel(resp_name))
 
-        amount = self.case_data.get('amount', 0)
-        form_layout.addRow("Amount:", QLabel(format_currency_amount(amount) if amount else "N/A"))
+        amount = self.case_data.get("amount", 0)
+        form_layout.addRow(
+            "Amount:", QLabel(format_currency_amount(amount) if amount else "N/A")
+        )
 
-        form_layout.addRow("Status:", QLabel(self.case_data.get('status', 'N/A')))
-        form_layout.addRow("List:", QLabel(self.case_data.get('list', 'N/A')))
+        form_layout.addRow("Status:", QLabel(self.case_data.get("status", "N/A")))
+        form_layout.addRow("List:", QLabel(self.case_data.get("list", "N/A")))
 
-        if self.case_data.get('bas_payment_no'):
-            form_layout.addRow("BAS Payment No:", QLabel(self.case_data.get('bas_payment_no')))
-        if self.case_data.get('bas_payment_date'):
-            form_layout.addRow("BAS Payment Date:", QLabel(self.case_data.get('bas_payment_date')))
-        if self.case_data.get('bas_journal_no'):
-            form_layout.addRow("BAS Journal No:", QLabel(self.case_data.get('bas_journal_no')))
-        if self.case_data.get('bas_journal_date'):
-            form_layout.addRow("BAS Journal Date:", QLabel(self.case_data.get('bas_journal_date')))
+        if self.case_data.get("bas_payment_no"):
+            form_layout.addRow(
+                "BAS Payment No:", QLabel(self.case_data.get("bas_payment_no"))
+            )
+        if self.case_data.get("bas_payment_date"):
+            form_layout.addRow(
+                "BAS Payment Date:", QLabel(self.case_data.get("bas_payment_date"))
+            )
+        if self.case_data.get("bas_journal_no"):
+            form_layout.addRow(
+                "BAS Journal No:", QLabel(self.case_data.get("bas_journal_no"))
+            )
+        if self.case_data.get("bas_journal_date"):
+            form_layout.addRow(
+                "BAS Journal Date:", QLabel(self.case_data.get("bas_journal_date"))
+            )
 
         layout.addLayout(form_layout)
 
@@ -230,7 +274,7 @@ class CaseDetailsDialog(QDialog):
         desc_group = QGroupBox("Description")
         desc_layout = QVBoxLayout()
         desc_edit = QTextEdit()
-        desc_edit.setPlainText(self.case_data.get('description', ''))
+        desc_edit.setPlainText(self.case_data.get("description", ""))
         desc_edit.setReadOnly(True)
         desc_edit.setMaximumHeight(100)
         desc_layout.addWidget(desc_edit)

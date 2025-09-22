@@ -1,26 +1,14 @@
 import os
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QGridLayout,
-    QFormLayout,
-    QLineEdit,
-    QTextEdit,
-    QComboBox,
-    QPushButton,
-    QDateEdit,
-    QFileDialog,
-    QMessageBox,
-    QWidget,
-    QLabel,
-    QScrollArea,
-    QGroupBox,
-)
-from PyQt5.QtCore import QDate, Qt, QEvent
+
+from PyQt5.QtCore import QDate, QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
+from PyQt5.QtWidgets import (QComboBox, QDateEdit, QDialog, QFileDialog,
+                             QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
+                             QLabel, QLineEdit, QMessageBox, QPushButton,
+                             QScrollArea, QTextEdit, QVBoxLayout, QWidget)
+from scripts.case_management_modules.responsibility_selection import \
+    ResponsibilitySelectionDialog
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
-from scripts.case_management_modules.responsibility_selection import ResponsibilitySelectionDialog
 
 
 class NoWheelComboBox(QComboBox):
@@ -42,10 +30,12 @@ def setup_add_ui(dialog):
 
     # Initialize data with error handling
     try:
-        from scripts.Utilities.responsibility_utils import load_posting_responsibilities
         from scripts.Utilities.category_utils import load_categories
-        from scripts.Utilities.list_utils import load_lists
         from scripts.Utilities.financial_utils import get_financial_year
+        from scripts.Utilities.list_utils import load_lists
+        from scripts.Utilities.responsibility_utils import \
+            load_posting_responsibilities
+
         dialog.responsibilities = load_posting_responsibilities()
         dialog.categories = load_categories()
         dialog.lists = load_lists()
@@ -78,10 +68,14 @@ def setup_add_ui(dialog):
     resp_layout = QHBoxLayout()
     dialog.responsibility_edit = QLineEdit()
     dialog.responsibility_edit.setReadOnly(True)
-    dialog.responsibility_edit.setPlaceholderText("Click Select to choose responsibility...")
+    dialog.responsibility_edit.setPlaceholderText(
+        "Click Select to choose responsibility..."
+    )
     resp_layout.addWidget(dialog.responsibility_edit)
 
-    dialog.select_responsibility_button = create_professional_button("Select", 'secondary')
+    dialog.select_responsibility_button = create_professional_button(
+        "Select", "secondary"
+    )
     dialog.select_responsibility_button.clicked.connect(dialog.select_responsibility)
     resp_layout.addWidget(dialog.select_responsibility_button)
 
@@ -115,7 +109,11 @@ def setup_add_ui(dialog):
 
     # List
     dialog.list_combo = NoWheelComboBox()
-    system_lists = [l["name"] for l in dialog.lists if l.get("is_system", False) and l["name"] != "Deleted Cases"]
+    system_lists = [
+        l["name"]
+        for l in dialog.lists
+        if l.get("is_system", False) and l["name"] != "Deleted Cases"
+    ]
     dialog.list_combo.addItems(system_lists)
     # Always set to Checklist and disable selection
     if "Checklist" in system_lists:
@@ -137,7 +135,7 @@ def setup_add_ui(dialog):
     file_layout = QHBoxLayout()
     dialog.file_path_edit = QLineEdit()
     dialog.file_path_edit.setPlaceholderText("Select file...")
-    browse_button = create_professional_button("Browse...", 'secondary')
+    browse_button = create_professional_button("Browse...", "secondary")
     browse_button.clicked.connect(dialog.browse_file)
     file_layout.addWidget(dialog.file_path_edit)
     file_layout.addWidget(browse_button)
@@ -147,7 +145,7 @@ def setup_add_ui(dialog):
     supporting_layout = QHBoxLayout()
     dialog.supporting_evidence_edit = QLineEdit()
     dialog.supporting_evidence_edit.setPlaceholderText("Select file (optional)...")
-    supporting_browse_button = create_professional_button("Browse...", 'secondary')
+    supporting_browse_button = create_professional_button("Browse...", "secondary")
     supporting_browse_button.clicked.connect(dialog.browse_supporting_evidence)
     supporting_layout.addWidget(dialog.supporting_evidence_edit)
     supporting_layout.addWidget(supporting_browse_button)
@@ -189,12 +187,15 @@ def setup_add_ui(dialog):
     # Prevention steps
     dialog.prevention_steps_edit = QTextEdit()
     dialog.prevention_steps_edit.setMinimumHeight(40)
-    form_layout.addRow("Steps taken to prevent future occurrence of F&W expenditure:", dialog.prevention_steps_edit)
+    form_layout.addRow(
+        "Steps taken to prevent future occurrence of F&W expenditure:",
+        dialog.prevention_steps_edit,
+    )
 
     # Assessment fields - add them but hide initially
     dialog.source_doc_label = QLabel("Source Document:")
     dialog.source_doc_edit = QLineEdit()
-    dialog.source_doc_button = create_professional_button("Browse", 'secondary')
+    dialog.source_doc_button = create_professional_button("Browse", "secondary")
     dialog.source_doc_button.clicked.connect(dialog.browse_source_doc)
     source_doc_layout = QHBoxLayout()
     source_doc_layout.addWidget(dialog.source_doc_edit)
@@ -206,7 +207,7 @@ def setup_add_ui(dialog):
 
     dialog.minutes_label = QLabel("Loss Control Minutes:")
     dialog.minutes_edit = QLineEdit()
-    dialog.minutes_button = create_professional_button("Browse", 'secondary')
+    dialog.minutes_button = create_professional_button("Browse", "secondary")
     dialog.minutes_button.clicked.connect(dialog.browse_minutes)
     minutes_layout = QHBoxLayout()
     minutes_layout.addWidget(dialog.minutes_edit)
@@ -218,7 +219,7 @@ def setup_add_ui(dialog):
 
     dialog.evidence_label = QLabel("Assessment Evidence:")
     dialog.evidence_edit = QLineEdit()
-    dialog.evidence_button = create_professional_button("Browse", 'secondary')
+    dialog.evidence_button = create_professional_button("Browse", "secondary")
     dialog.evidence_button.clicked.connect(dialog.browse_evidence)
     evidence_layout = QHBoxLayout()
     evidence_layout.addWidget(dialog.evidence_edit)
@@ -257,10 +258,10 @@ def setup_add_ui(dialog):
 
     # Buttons
     button_layout = QHBoxLayout()
-    dialog.save_button = create_professional_button("Save & Continue", 'primary')
+    dialog.save_button = create_professional_button("Save & Continue", "primary")
     dialog.save_button.clicked.connect(dialog.save_case)
 
-    dialog.cancel_button = create_professional_button("Cancel", 'secondary')
+    dialog.cancel_button = create_professional_button("Cancel", "secondary")
     dialog.cancel_button.clicked.connect(dialog.reject)
 
     button_layout.addWidget(dialog.save_button)
@@ -298,9 +299,9 @@ class AssessmentDialog(QDialog):
         layout.addRow("Result:", self.result_combo)
 
         button_layout = QHBoxLayout()
-        save_button = create_professional_button("Save", 'primary')
+        save_button = create_professional_button("Save", "primary")
         save_button.clicked.connect(self.accept)
-        cancel_button = create_professional_button("Cancel", 'secondary')
+        cancel_button = create_professional_button("Cancel", "secondary")
         cancel_button.clicked.connect(self.reject)
         button_layout.addWidget(save_button)
         button_layout.addWidget(cancel_button)
@@ -310,5 +311,5 @@ class AssessmentDialog(QDialog):
         return {
             "assessed_by": self.assessed_by_edit.text(),
             "assessment_date": self.assessment_date_edit.date().toString("yyyy-MM-dd"),
-            "result": self.result_combo.currentText()
+            "result": self.result_combo.currentText(),
         }

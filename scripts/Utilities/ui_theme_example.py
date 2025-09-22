@@ -7,16 +7,16 @@ Follow this pattern for consistent styling across all dialogs.
 EXAMPLE USAGE:
 """
 
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox,
-    QLabel, QLineEdit, QPushButton, QTableWidget, QMessageBox
-)
 from PyQt5.QtCore import Qt
-from scripts.Utilities.ui_theme import (
-    apply_theme, create_professional_button, create_professional_groupbox,
-    setup_professional_table, create_status_label, get_button_style,
-    get_groupbox_style, COLORS
-)
+from PyQt5.QtWidgets import (QDialog, QGridLayout, QGroupBox, QHBoxLayout,
+                             QLabel, QLineEdit, QMessageBox, QPushButton,
+                             QTableWidget, QVBoxLayout)
+from scripts.Utilities.ui_theme import (COLORS, apply_theme,
+                                        create_professional_button,
+                                        create_professional_groupbox,
+                                        create_status_label, get_button_style,
+                                        get_groupbox_style,
+                                        setup_professional_table)
 
 
 class ExampleDialog(QDialog):
@@ -41,14 +41,16 @@ class ExampleDialog(QDialog):
         # Header section
         header_layout = QHBoxLayout()
         header_label = QLabel("📊 Professional Dialog Example")
-        header_label.setStyleSheet(f"""
+        header_label.setStyleSheet(
+            f"""
             QLabel {{
                 font-size: 18px;
                 font-weight: bold;
                 color: {COLORS['dark']};
                 margin-bottom: 5px;
             }}
-        """)
+        """
+        )
         header_layout.addWidget(header_label)
         header_layout.addStretch()
         layout.addLayout(header_layout)
@@ -85,14 +87,16 @@ class ExampleDialog(QDialog):
         table_layout = QVBoxLayout()
 
         table_header = QLabel("📊 Sample Data:")
-        table_header.setStyleSheet(f"""
+        table_header.setStyleSheet(
+            f"""
             QLabel {{
                 font-size: 14px;
                 font-weight: bold;
                 color: {COLORS['dark']};
                 margin-bottom: 5px;
             }}
-        """)
+        """
+        )
         table_layout.addWidget(table_header)
 
         # Create professional table
@@ -100,7 +104,7 @@ class ExampleDialog(QDialog):
         setup_professional_table(
             self.data_table,
             headers=["🏷️ ID", "📝 Name", "💰 Amount", "📅 Date"],
-            emojis=["🏷️", "📝", "💰", "📅"]
+            emojis=["🏷️", "📝", "💰", "📅"],
         )
         self.data_table.setColumnWidth(0, 80)
         self.data_table.setColumnWidth(1, 150)
@@ -128,7 +132,9 @@ class ExampleDialog(QDialog):
         self.save_button = create_professional_button("💾 Save", "success", "normal")
         self.save_button.clicked.connect(self.save_data)
 
-        self.cancel_button = create_professional_button("❌ Cancel", "secondary", "normal")
+        self.cancel_button = create_professional_button(
+            "❌ Cancel", "secondary", "normal"
+        )
         self.cancel_button.clicked.connect(self.reject)
 
         self.help_button = create_professional_button("❓ Help", "info", "small")
@@ -146,7 +152,9 @@ class ExampleDialog(QDialog):
     def save_data(self):
         """Handle save action"""
         # Update status
-        self.status_label = create_status_label("✅ Data saved successfully!", "success")
+        self.status_label = create_status_label(
+            "✅ Data saved successfully!", "success"
+        )
         # In a real implementation, you'd update the existing label
 
         QMessageBox.information(self, "Success", "Data saved successfully!")
@@ -154,13 +162,14 @@ class ExampleDialog(QDialog):
     def show_help(self):
         """Show help information"""
         QMessageBox.information(
-            self, "Help",
+            self,
+            "Help",
             "This is an example of the professional UI theme.\n\n"
             "• Use apply_theme() to apply the base theme\n"
             "• Use create_professional_button() for consistent buttons\n"
             "• Use create_professional_groupbox() for sections\n"
             "• Use setup_professional_table() for tables\n"
-            "• Use create_status_label() for status messages"
+            "• Use create_status_label() for status messages",
         )
 
 

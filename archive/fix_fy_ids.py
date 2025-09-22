@@ -1,18 +1,21 @@
-import sqlite3
 import os
+import sqlite3
 import sys
 
 # Add scripts directory to Python path
-scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(scripts_dir)
 
 try:
     from config import DB_PATH
 except ImportError:
     # Fallback if config.py is missing
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
-    DB_PATH = os.path.join(BASE_DIR, 'fruitless.db')
+    BASE_DIR = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "data")
+    )
+    DB_PATH = os.path.join(BASE_DIR, "fruitless.db")
     print(f"Warning: config.py not found, using fallback paths")
+
 
 def analyze_current_fy_ids():
     """Analyze current financial year IDs and their chronological order"""
@@ -23,11 +26,13 @@ def analyze_current_fy_ids():
         print("CURRENT FINANCIAL YEAR IDs:")
         print("=" * 50)
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, start_year, end_year, status, active_period
             FROM financial_years
             ORDER BY start_year ASC
-        """)
+        """
+        )
 
         fys = cursor.fetchall()
         print(f"Found {len(fys)} financial years:")
@@ -60,6 +65,7 @@ def analyze_current_fy_ids():
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         return []
+
 
 def fix_fy_ids():
     """Fix financial year IDs to be chronological"""
@@ -94,7 +100,8 @@ def fix_fy_ids():
         cursor.execute("DROP TABLE IF EXISTS financial_years_temp")
 
         # Create temporary table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE financial_years_temp (
                 id INTEGER PRIMARY KEY,
                 start_year INTEGER NOT NULL,
@@ -102,15 +109,19 @@ def fix_fy_ids():
                 status TEXT NOT NULL,
                 active_period INTEGER
             )
-        """)
+        """
+        )
 
         # Insert data with new IDs
         for i, fy in enumerate(fys, 1):
             old_id, start_year, end_year, status, active_period = fy
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO financial_years_temp (id, start_year, end_year, status, active_period)
                 VALUES (?, ?, ?, ?, ?)
-            """, (i, start_year, end_year, status, active_period))
+            """,
+                (i, start_year, end_year, status, active_period),
+            )
 
         # Update all foreign key references first
         print("2. Updating foreign key references...")
@@ -120,44 +131,59 @@ def fix_fy_ids():
         existing_tables = [row[0] for row in cursor.fetchall()]
 
         # Update periods table
-        if 'periods' in existing_tables:
+        if "periods" in existing_tables:
             print("  - Updating periods table...")
             for old_id, new_id in id_mapping.items():
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE periods SET fy_id = ? WHERE fy_id = ?
-                """, (new_id, old_id))
+                """,
+                    (new_id, old_id),
+                )
 
         # Update cases table
-        if 'cases' in existing_tables:
+        if "cases" in existing_tables:
             print("  - Updating cases table...")
             for old_id, new_id in id_mapping.items():
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE cases SET fy_id = ? WHERE fy_id = ?
-                """, (new_id, old_id))
+                """,
+                    (new_id, old_id),
+                )
 
         # Update fy_case_counters table
-        if 'fy_case_counters' in existing_tables:
+        if "fy_case_counters" in existing_tables:
             print("  - Updating fy_case_counters table...")
             for old_id, new_id in id_mapping.items():
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE fy_case_counters SET fy_id = ? WHERE fy_id = ?
-                """, (new_id, old_id))
+                """,
+                    (new_id, old_id),
+                )
 
         # Update shared_documents table
-        if 'shared_documents' in existing_tables:
+        if "shared_documents" in existing_tables:
             print("  - Updating shared_documents table...")
             for old_id, new_id in id_mapping.items():
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE shared_documents SET fy_id = ? WHERE fy_id = ?
-                """, (new_id, old_id))
+                """,
+                    (new_id, old_id),
+                )
 
         # Update write_off_submissions table
-        if 'write_off_submissions' in existing_tables:
+        if "write_off_submissions" in existing_tables:
             print("  - Updating write_off_submissions table...")
             for old_id, new_id in id_mapping.items():
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE write_off_submissions SET fy_id = ? WHERE fy_id = ?
-                """, (new_id, old_id))
+                """,
+                    (new_id, old_id),
+                )
 
         # Drop old table and rename temp table
         print("3. Replacing financial_years table...")
@@ -176,9 +202,10 @@ def fix_fy_ids():
 
     except sqlite3.Error as e:
         print(f"Database error during update: {e}")
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.rollback()
             conn.close()
+
 
 def verify_changes():
     """Verify that the ID changes were applied correctly"""
@@ -189,11 +216,13 @@ def verify_changes():
         print("\nVERIFICATION - NEW FINANCIAL YEAR IDs:")
         print("=" * 40)
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, start_year, end_year, status
             FROM financial_years
             ORDER BY id ASC
-        """)
+        """
+        )
 
         fys = cursor.fetchall()
         for fy in fys:
@@ -207,42 +236,65 @@ def verify_changes():
         if actual_ids == expected_ids:
             print("\n[SUCCESS] IDs are now sequential and chronological!")
         else:
-            print(f"\n[ERROR] IDs are not sequential. Expected: {expected_ids}, Got: {actual_ids}")
+            print(
+                f"\n[ERROR] IDs are not sequential. Expected: {expected_ids}, Got: {actual_ids}"
+            )
 
         # Check foreign key references
         print("\nCHECKING FOREIGN KEY REFERENCES:")
 
         # Check periods
-        cursor.execute("SELECT COUNT(*) FROM periods WHERE fy_id NOT IN (SELECT id FROM financial_years)")
+        cursor.execute(
+            "SELECT COUNT(*) FROM periods WHERE fy_id NOT IN (SELECT id FROM financial_years)"
+        )
         orphaned_periods = cursor.fetchone()[0]
         print(f"Orphaned periods: {orphaned_periods}")
 
         # Check cases
-        cursor.execute("SELECT COUNT(*) FROM cases WHERE fy_id NOT IN (SELECT id FROM financial_years)")
+        cursor.execute(
+            "SELECT COUNT(*) FROM cases WHERE fy_id NOT IN (SELECT id FROM financial_years)"
+        )
         orphaned_cases = cursor.fetchone()[0]
         print(f"Orphaned cases: {orphaned_cases}")
 
         # Check fy_case_counters
-        cursor.execute("SELECT COUNT(*) FROM fy_case_counters WHERE fy_id NOT IN (SELECT id FROM financial_years)")
+        cursor.execute(
+            "SELECT COUNT(*) FROM fy_case_counters WHERE fy_id NOT IN (SELECT id FROM financial_years)"
+        )
         orphaned_counters = cursor.fetchone()[0]
         print(f"Orphaned fy_case_counters: {orphaned_counters}")
 
         # Check shared_documents
-        cursor.execute("SELECT COUNT(*) FROM shared_documents WHERE fy_id NOT IN (SELECT id FROM financial_years)")
+        cursor.execute(
+            "SELECT COUNT(*) FROM shared_documents WHERE fy_id NOT IN (SELECT id FROM financial_years)"
+        )
         orphaned_docs = cursor.fetchone()[0]
         print(f"Orphaned shared_documents: {orphaned_docs}")
 
         # Check write_off_submissions (only if table exists)
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='write_off_submissions'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='write_off_submissions'"
+        )
         if cursor.fetchone():
-            cursor.execute("SELECT COUNT(*) FROM write_off_submissions WHERE fy_id NOT IN (SELECT id FROM financial_years)")
+            cursor.execute(
+                "SELECT COUNT(*) FROM write_off_submissions WHERE fy_id NOT IN (SELECT id FROM financial_years)"
+            )
             orphaned_submissions = cursor.fetchone()[0]
             print(f"Orphaned write_off_submissions: {orphaned_submissions}")
         else:
             orphaned_submissions = 0
             print("write_off_submissions table does not exist - skipping check")
 
-        if all(count == 0 for count in [orphaned_periods, orphaned_cases, orphaned_counters, orphaned_docs, orphaned_submissions]):
+        if all(
+            count == 0
+            for count in [
+                orphaned_periods,
+                orphaned_cases,
+                orphaned_counters,
+                orphaned_docs,
+                orphaned_submissions,
+            ]
+        ):
             print("\n[SUCCESS] All foreign key references are valid!")
         else:
             print("\n[ERROR] Some foreign key references are broken!")
@@ -251,6 +303,7 @@ def verify_changes():
 
     except sqlite3.Error as e:
         print(f"Database error during verification: {e}")
+
 
 if __name__ == "__main__":
     print("FINANCIAL YEAR ID CORRECTION TOOL")

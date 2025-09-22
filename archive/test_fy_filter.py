@@ -4,8 +4,11 @@ Test script to verify financial year filtering functionality
 """
 
 import sqlite3
+
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import get_all_financial_years, get_current_open_financial_year
+from scripts.Utilities.financial_utils import (get_all_financial_years,
+                                               get_current_open_financial_year)
+
 
 def test_fy_filter():
     """Test financial year filtering functionality"""
@@ -41,12 +44,15 @@ def test_fy_filter():
         print(f"\nCases in current financial year ({fy_string}): {current_fy_count}")
 
         # Show sample cases
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT transaction_no, list, status
             FROM cases
             WHERE fy_id = ?
             LIMIT 5
-        """, (fy_id,))
+        """,
+            (fy_id,),
+        )
 
         sample_cases = cursor.fetchall()
         if sample_cases:
@@ -62,6 +68,7 @@ def test_fy_filter():
     conn.close()
 
     print("\n=== TEST COMPLETE ===")
+
 
 if __name__ == "__main__":
     test_fy_filter()

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(__file__))
 
-from scripts.models.bas_parser import BASParser
 from datetime import date
+
+from scripts.models.bas_parser import BASParser
+
 
 def test_parser():
     # Test with a small sample from the file
@@ -15,7 +18,7 @@ def test_parser():
   TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   229.89                    0.00"""
 
     # Write test content to a temporary file
-    with open('test_bas.txt', 'w') as f:
+    with open("test_bas.txt", "w") as f:
         f.write(test_content)
 
     try:
@@ -25,7 +28,7 @@ def test_parser():
         current_responsibility = None
         current_item = None
 
-        lines = test_content.split('\n')
+        lines = test_content.split("\n")
         print(f"Processing {len(lines)} lines:")
 
         for i, line in enumerate(lines):
@@ -34,23 +37,31 @@ def test_parser():
 
             # Check for responsibility line
             import re
-            resp_match = re.match(r'\s*R\s+(\d+)\s+(.+)', line)
+
+            resp_match = re.match(r"\s*R\s+(\d+)\s+(.+)", line)
             if resp_match:
                 current_responsibility = resp_match.group(2).strip()
                 print(f"  -> Found responsibility: {current_responsibility}")
                 continue
 
             # Check for item line - exclude amounts at the end
-            item_match = re.match(r'\s*I\s+(\d+)\s+(.+?)\s+\d+\.\d{2}\s+\d+\.\d{2}\s*$', line)
+            item_match = re.match(
+                r"\s*I\s+(\d+)\s+(.+?)\s+\d+\.\d{2}\s+\d+\.\d{2}\s*$", line
+            )
             if item_match:
                 current_item = item_match.group(2).strip()
                 print(f"  -> Found item: {current_item}")
                 continue
 
             # Check for transaction lines
-            trans_match = re.match(r'\s*(AP|GJ|CL)\s+(\d+)\s+(.+?)\s+(\d+)\s+(.+?)\s+(\d{2}/\d{2}/\d{4})\s+([\d,]+\.\d{2})\s+([\d,]+\.\d{2})', line)
+            trans_match = re.match(
+                r"\s*(AP|GJ|CL)\s+(\d+)\s+(.+?)\s+(\d+)\s+(.+?)\s+(\d{2}/\d{2}/\d{4})\s+([\d,]+\.\d{2})\s+([\d,]+\.\d{2})",
+                line,
+            )
             print(f"  -> Transaction regex match: {trans_match is not None}")
-            print(f"  -> Current context: resp='{current_responsibility}', item='{current_item}'")
+            print(
+                f"  -> Current context: resp='{current_responsibility}', item='{current_item}'"
+            )
 
             if trans_match and current_responsibility and current_item:
                 print(f"  -> Found transaction: {trans_match.group(1)}")
@@ -60,8 +71,8 @@ def test_parser():
                 user_id = trans_match.group(4)
                 user_name = trans_match.group(5).strip()
                 user_date = trans_match.group(6)
-                debit = trans_match.group(7).replace(',', '')
-                credit = trans_match.group(8).replace(',', '')
+                debit = trans_match.group(7).replace(",", "")
+                credit = trans_match.group(8).replace(",", "")
 
                 print(f"     Type: {trans_type}, Number: {trans_number}")
                 print(f"     Description: '{description}'")
@@ -70,8 +81,9 @@ def test_parser():
 
                 # Parse date
                 from datetime import datetime
+
                 try:
-                    date_obj = datetime.strptime(user_date, '%d/%m/%Y').date()
+                    date_obj = datetime.strptime(user_date, "%d/%m/%Y").date()
                     print(f"     Date parsed: {date_obj}")
                 except ValueError as e:
                     print(f"     Date parse error: {e}")
@@ -94,32 +106,36 @@ def test_parser():
 
                 # Create transaction record
                 transaction = {
-                    'responsibility': current_responsibility,
-                    'item': current_item,
-                    'type': trans_type,
-                    'number': trans_number,
-                    'description': description,
-                    'date': date_obj,
-                    'user_id': user_id,
-                    'amount': amount,
-                    'is_credit': amount < 0
+                    "responsibility": current_responsibility,
+                    "item": current_item,
+                    "type": trans_type,
+                    "number": trans_number,
+                    "description": description,
+                    "date": date_obj,
+                    "user_id": user_id,
+                    "amount": amount,
+                    "is_credit": amount < 0,
                 }
 
                 transactions.append(transaction)
                 print(f"  -> Transaction added!")
             elif trans_match:
-                print(f"  -> Transaction found but missing context: resp={current_responsibility}, item={current_item}")
+                print(
+                    f"  -> Transaction found but missing context: resp={current_responsibility}, item={current_item}"
+                )
 
         print(f"\nFinal result: Found {len(transactions)} transactions")
 
     except Exception as e:
         print(f"Error: {e}")
         import traceback
+
         traceback.print_exc()
 
     # Clean up
-    if os.path.exists('test_bas.txt'):
-        os.remove('test_bas.txt')
+    if os.path.exists("test_bas.txt"):
+        os.remove("test_bas.txt")
+
 
 if __name__ == "__main__":
     test_parser()

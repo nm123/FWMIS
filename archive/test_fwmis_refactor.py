@@ -8,19 +8,18 @@ to ensure the single-case model refactor is working correctly.
 Run this script after the refactor to verify all functionality.
 """
 
-import sqlite3
-import os
-import sys
 import json
+import os
+import sqlite3
+import sys
 from datetime import datetime
+
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.workflow_utils import (
-    handle_case_status_change,
-    handle_loss_control_status_change,
-    approve_write_off_submission,
-    create_write_off_group,
-    get_case_workflow_status
-)
+    approve_write_off_submission, create_write_off_group,
+    get_case_workflow_status, handle_case_status_change,
+    handle_loss_control_status_change)
+
 
 def test_database_connection():
     """Test basic database connectivity"""
@@ -37,6 +36,7 @@ def test_database_connection():
         print(f"[FAIL] Database connection failed: {e}")
         return False
 
+
 def test_schema_migration():
     """Test that new schema columns exist"""
     print("\n=== Testing Schema Migration ===")
@@ -49,8 +49,12 @@ def test_schema_migration():
         columns = {row[1]: row[2] for row in cursor.fetchall()}
 
         required_columns = [
-            'base_transaction_no', 'assessment_status', 'lc_status',
-            'suffixes', 'write_off_group_id', 'evidence_paths'
+            "base_transaction_no",
+            "assessment_status",
+            "lc_status",
+            "suffixes",
+            "write_off_group_id",
+            "evidence_paths",
         ]
 
         missing_columns = []
@@ -71,6 +75,7 @@ def test_schema_migration():
         print(f"[FAIL] Schema check failed: {e}")
         return False
 
+
 def test_workflow_transitions():
     """Test assessment status transitions"""
     print("\n=== Testing Workflow Transitions ===")
@@ -79,12 +84,14 @@ def test_workflow_transitions():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT id, base_transaction_no, assessment_status, lc_status, suffixes, is_finalized
         FROM cases
         WHERE is_finalized = 0 AND assessment_status = 'Alleged'
         LIMIT 1
-    """)
+    """
+    )
 
     test_case = cursor.fetchone()
     conn.close()
@@ -104,12 +111,15 @@ def test_workflow_transitions():
     # Test 2: Under Assessment -> Valid (should fail without evidence)
     print("Test 2: Under Assessment -> Valid (should fail without evidence)")
     result = handle_case_status_change(case_id, base_no, "Valid")
-    print(f"  Result: {'PASS (correctly failed)' if not result else 'FAIL (should have failed)'}")
+    print(
+        f"  Result: {'PASS (correctly failed)' if not result else 'FAIL (should have failed)'}"
+    )
 
     # Reset to Under Assessment for next test
     handle_case_status_change(case_id, base_no, "Under Assessment")
 
     return True
+
 
 def test_list_filtering():
     """Test that list filtering works with new schema"""
@@ -124,7 +134,7 @@ def test_list_filtering():
         "Lead Schedule": "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'",
         "Write-Off Recommended": "suffixes LIKE '%-WOR%'",
         "Recovered": "suffixes LIKE '%-REC%'",
-        "Written Off": "suffixes LIKE '%-WO%'"
+        "Written Off": "suffixes LIKE '%-WO%'",
     }
 
     results = {}
@@ -145,6 +155,7 @@ def test_list_filtering():
 
     return True
 
+
 def test_evidence_validation():
     """Test that evidence validation is enforced"""
     print("\n=== Testing Evidence Validation ===")
@@ -159,12 +170,15 @@ def test_evidence_validation():
             print(f"  Status: {workflow_status.get('assessment_status', 'N/A')}")
             print(f"  Appears in: {workflow_status.get('appears_in_lists', [])}")
         else:
-            print("[WARN] No workflow status returned (may be normal if no case with ID 1)")
+            print(
+                "[WARN] No workflow status returned (may be normal if no case with ID 1)"
+            )
 
         return True
     except Exception as e:
         print(f"[FAIL] Evidence validation test failed: {e}")
         return False
+
 
 def test_write_off_workflow():
     """Test write-off submission workflow"""
@@ -174,7 +188,9 @@ def test_write_off_workflow():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) FROM cases WHERE lc_status = 'Write Off Recommended' AND write_off_group_id IS NULL")
+    cursor.execute(
+        "SELECT COUNT(*) FROM cases WHERE lc_status = 'Write Off Recommended' AND write_off_group_id IS NULL"
+    )
     count = cursor.fetchone()[0]
     conn.close()
 
@@ -187,6 +203,7 @@ def test_write_off_workflow():
 
     return True
 
+
 def test_finalized_case_editing():
     """Test that finalized cases cannot be edited"""
     print("\n=== Testing Finalized Case Editing Prevention ===")
@@ -195,7 +212,9 @@ def test_finalized_case_editing():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, base_transaction_no FROM cases WHERE is_finalized = 1 LIMIT 1")
+    cursor.execute(
+        "SELECT id, base_transaction_no FROM cases WHERE is_finalized = 1 LIMIT 1"
+    )
     finalized_case = cursor.fetchone()
     conn.close()
 
@@ -215,6 +234,7 @@ def test_finalized_case_editing():
         print("[FAIL] Incorrectly allowed status change on finalized case")
         return False
 
+
 def test_evidence_validation_blocks():
     """Test that missing evidence blocks status changes"""
     print("\n=== Testing Evidence Validation Blocks ===")
@@ -223,13 +243,15 @@ def test_evidence_validation_blocks():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT id, base_transaction_no, assessment_status
         FROM cases
         WHERE is_finalized = 0 AND assessment_status = 'Under Assessment'
         AND (evidence_paths IS NULL OR evidence_paths = '')
         LIMIT 1
-    """)
+    """
+    )
 
     test_case = cursor.fetchone()
     conn.close()
@@ -258,6 +280,7 @@ def test_evidence_validation_blocks():
         print("[FAIL] Incorrectly allowed Confirmed status change without evidence")
         return False
 
+
 def test_complete_write_off_workflow():
     """Test complete write-off workflow from Confirmed to Written Off"""
     print("\n=== Testing Complete Write-Off Workflow ===")
@@ -266,12 +289,14 @@ def test_complete_write_off_workflow():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT id, base_transaction_no FROM cases
         WHERE assessment_status = 'Confirmed' AND is_finalized = 0
         AND (lc_status IS NULL OR lc_status = 'Awaiting LC determination')
         LIMIT 1
-    """)
+    """
+    )
 
     test_case = cursor.fetchone()
 
@@ -285,7 +310,9 @@ def test_complete_write_off_workflow():
 
     # Step 1: Change to Write Off Recommended
     print("Step 1: Changing to Write Off Recommended")
-    result = handle_loss_control_status_change(case_id, base_no, "Write Off Recommended")
+    result = handle_loss_control_status_change(
+        case_id, base_no, "Write Off Recommended"
+    )
     if not result:
         print("[FAIL] Failed to change to Write Off Recommended")
         conn.close()
@@ -320,18 +347,25 @@ def test_complete_write_off_workflow():
         return False
 
     # Verify case is now Written Off and finalized
-    cursor.execute("SELECT lc_status, suffixes, is_finalized FROM cases WHERE id = ?", (case_id,))
+    cursor.execute(
+        "SELECT lc_status, suffixes, is_finalized FROM cases WHERE id = ?", (case_id,)
+    )
     final_check = cursor.fetchone()
     conn.close()
 
-    if (final_check[0] == "Written Off" and
-        "-WO" in final_check[1] and
-        final_check[2] == 1):
+    if (
+        final_check[0] == "Written Off"
+        and "-WO" in final_check[1]
+        and final_check[2] == 1
+    ):
         print("[PASS] Case successfully written off and finalized")
         return True
     else:
-        print(f"[FAIL] Case not properly finalized. Status: {final_check[0]}, Suffixes: {final_check[1]}, Finalized: {final_check[2]}")
+        print(
+            f"[FAIL] Case not properly finalized. Status: {final_check[0]}, Suffixes: {final_check[1]}, Finalized: {final_check[2]}"
+        )
         return False
+
 
 def test_file_path_handling():
     """Test that evidence files are stored in correct paths"""
@@ -346,16 +380,35 @@ def test_file_path_handling():
         return True
 
     # Check for case-specific folders
-    case_folders = [f for f in os.listdir(expected_base_path) if f.startswith("Case ") and os.path.isdir(os.path.join(expected_base_path, f))]
+    case_folders = [
+        f
+        for f in os.listdir(expected_base_path)
+        if f.startswith("Case ") and os.path.isdir(os.path.join(expected_base_path, f))
+    ]
 
     if case_folders:
         print(f"[PASS] Found {len(case_folders)} case folders in correct location")
         # Check one folder for proper file naming
         sample_folder = os.path.join(expected_base_path, case_folders[0])
         files = os.listdir(sample_folder)
-        expected_files = [f for f in files if any(keyword in f for keyword in ["Assessment Evidence", "Loss Control Minutes", "Recovery Evidence", "Supporting Evidence", "Source Document"])]
+        expected_files = [
+            f
+            for f in files
+            if any(
+                keyword in f
+                for keyword in [
+                    "Assessment Evidence",
+                    "Loss Control Minutes",
+                    "Recovery Evidence",
+                    "Supporting Evidence",
+                    "Source Document",
+                ]
+            )
+        ]
         if expected_files:
-            print(f"[PASS] Sample case folder has {len(expected_files)} properly named evidence files")
+            print(
+                f"[PASS] Sample case folder has {len(expected_files)} properly named evidence files"
+            )
         else:
             print("[WARN] Sample case folder has no properly named evidence files")
     else:
@@ -363,13 +416,15 @@ def test_file_path_handling():
 
     return True
 
+
 def test_excel_export_functionality():
     """Test Excel export functionality for write-off annexures and list exports"""
     print("\n=== Testing Excel Export Functionality ===")
 
     try:
-        import pandas as pd
         import openpyxl
+        import pandas as pd
+
         print("[PASS] pandas and openpyxl are available for Excel export")
     except ImportError as e:
         print(f"[FAIL] Required packages not available: {e}")
@@ -378,43 +433,49 @@ def test_excel_export_functionality():
 
     # Test basic Excel file creation capability
     try:
-        import tempfile
         import os
+        import tempfile
 
         # Create a temporary Excel file to test functionality
-        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as temp_file:
             temp_path = temp_file.name
 
         # Create test data
         test_data = {
-            'Case Number': ['202600001', '202600002'],
-            'Amount': [1000.50, 2500.75],
-            'Status': ['Confirmed', 'Valid']
+            "Case Number": ["202600001", "202600002"],
+            "Amount": [1000.50, 2500.75],
+            "Status": ["Confirmed", "Valid"],
         }
 
         df = pd.DataFrame(test_data)
 
         # Test Excel writing
-        with pd.ExcelWriter(temp_path, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name='Test', index=False)
+        with pd.ExcelWriter(temp_path, engine="openpyxl") as writer:
+            df.to_excel(writer, sheet_name="Test", index=False)
 
         # Verify file was created and has content
         if os.path.exists(temp_path) and os.path.getsize(temp_path) > 0:
             print("[PASS] Excel file creation and writing successful")
 
             # Try to read it back
-            df_read = pd.read_excel(temp_path, engine='openpyxl')
+            df_read = pd.read_excel(temp_path, engine="openpyxl")
             if len(df_read) == 2:
                 # Check if the first case number is in the data (handle potential Excel number formatting)
-                case_numbers = df_read['Case Number'].tolist()
-                if any('202600001' in str(val) for val in case_numbers):
-                    print("[PASS] Excel file reading and content verification successful")
+                case_numbers = df_read["Case Number"].tolist()
+                if any("202600001" in str(val) for val in case_numbers):
+                    print(
+                        "[PASS] Excel file reading and content verification successful"
+                    )
                     return True
                 else:
-                    print(f"[FAIL] Excel file content verification failed. Expected '202600001' in {case_numbers}")
+                    print(
+                        f"[FAIL] Excel file content verification failed. Expected '202600001' in {case_numbers}"
+                    )
                     return False
             else:
-                print(f"[FAIL] Excel file has wrong number of rows. Expected 2, got {len(df_read)}")
+                print(
+                    f"[FAIL] Excel file has wrong number of rows. Expected 2, got {len(df_read)}"
+                )
                 return False
         else:
             print("[FAIL] Excel file was not created or is empty")
@@ -432,6 +493,7 @@ def test_excel_export_functionality():
         print(f"[FAIL] Excel export functionality test failed: {e}")
         return False
 
+
 def test_default_status_new_case():
     """Test that new cases default to 'Alleged' status in Assessment group and List Status table"""
     print("\n=== Testing Default Status for New Cases ===")
@@ -441,12 +503,14 @@ def test_default_status_new_case():
         cursor = conn.cursor()
 
         # Find cases with 'Alleged' status (new cases)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status
             FROM cases
             WHERE assessment_status = 'Alleged' AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
         conn.close()
@@ -454,17 +518,22 @@ def test_default_status_new_case():
         if test_case:
             case_id, base_no, status = test_case
             print(f"Found case {base_no} with assessment_status='{status}'")
-            print("LOG: Created case 202600025, verified default status 'Alleged' in Assessment group and List Status table.")
+            print(
+                "LOG: Created case 202600025, verified default status 'Alleged' in Assessment group and List Status table."
+            )
             print("[PASS] Default status test passed")
             return True
         else:
             print("[WARN] No cases with 'Alleged' status found")
-            print("LOG: No 'Alleged' cases found, but this may be normal if no new cases exist.")
+            print(
+                "LOG: No 'Alleged' cases found, but this may be normal if no new cases exist."
+            )
             return True
 
     except Exception as e:
         print(f"[FAIL] Default status test failed: {e}")
         return False
+
 
 def test_assessment_evidence_upload_visibility():
     """Test Assessment Evidence upload visibility and validation"""
@@ -475,12 +544,14 @@ def test_assessment_evidence_upload_visibility():
         cursor = conn.cursor()
 
         # Find an 'Alleged' case
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status, evidence_paths
             FROM cases
             WHERE assessment_status = 'Alleged' AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
 
@@ -501,23 +572,32 @@ def test_assessment_evidence_upload_visibility():
                 pass
 
         # Check if assessment evidence is present
-        has_assessment_evidence = 'assessment' in evidence_paths and evidence_paths['assessment']
+        has_assessment_evidence = (
+            "assessment" in evidence_paths and evidence_paths["assessment"]
+        )
 
         if has_assessment_evidence:
-            print(f"[PASS] Case has assessment evidence: {evidence_paths['assessment']}")
+            print(
+                f"[PASS] Case has assessment evidence: {evidence_paths['assessment']}"
+            )
         else:
-            print("[INFO] Case does not have assessment evidence (expected for 'Alleged' cases)")
+            print(
+                "[INFO] Case does not have assessment evidence (expected for 'Alleged' cases)"
+            )
 
         # Test that LC status changes don't interfere with assessment
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT lc_status FROM cases WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         lc_status = cursor.fetchone()[0]
         print(f"LC status: {lc_status}")
 
         # Verify no interference - assessment status should remain 'Alleged'
-        if status == 'Alleged':
+        if status == "Alleged":
             print("[PASS] Assessment status unchanged by LC operations")
         else:
             print(f"[FAIL] Assessment status changed to '{status}' unexpectedly")
@@ -526,13 +606,16 @@ def test_assessment_evidence_upload_visibility():
 
         conn.close()
 
-        print("LOG: Verified Assessment upload visible for Alleged case; blocked Valid without evidence; uploaded to correct 'assessment' path; no LC interference.")
+        print(
+            "LOG: Verified Assessment upload visible for Alleged case; blocked Valid without evidence; uploaded to correct 'assessment' path; no LC interference."
+        )
         print("[PASS] Assessment evidence upload visibility test passed")
         return True
 
     except Exception as e:
         print(f"[FAIL] Assessment evidence upload test failed: {e}")
         return False
+
 
 def test_status_change_validation_on_save():
     """Test that status change validation occurs on save, not on combo box selection"""
@@ -543,13 +626,15 @@ def test_status_change_validation_on_save():
         cursor = conn.cursor()
 
         # Find an 'Alleged' case without evidence
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status, evidence_paths
             FROM cases
             WHERE assessment_status = 'Alleged' AND is_finalized = 0
             AND (evidence_paths IS NULL OR evidence_paths NOT LIKE '%assessment%')
             LIMIT 1
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
 
@@ -569,7 +654,9 @@ def test_status_change_validation_on_save():
             except:
                 pass
 
-        has_assessment_evidence = 'assessment' in evidence_paths and evidence_paths['assessment']
+        has_assessment_evidence = (
+            "assessment" in evidence_paths and evidence_paths["assessment"]
+        )
 
         if has_assessment_evidence:
             print("[INFO] Case already has assessment evidence, skipping test")
@@ -580,42 +667,59 @@ def test_status_change_validation_on_save():
 
         # Simulate status change to Valid (this would happen in UI)
         # In a real test, we'd instantiate the dialog, but for now we'll test the logic
-        print(f"LOG: Changed case {base_no} to Confirmed in combo box, no immediate error")
+        print(
+            f"LOG: Changed case {base_no} to Confirmed in combo box, no immediate error"
+        )
 
         # Test that we can change status in database (simulating combo box change)
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET assessment_status = 'Confirmed' WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         # Verify status changed
         cursor.execute("SELECT assessment_status FROM cases WHERE id = ?", (case_id,))
         new_status = cursor.fetchone()[0]
 
-        if new_status == 'Confirmed':
-            print(f"[PASS] Status successfully changed to '{new_status}' without evidence validation")
+        if new_status == "Confirmed":
+            print(
+                f"[PASS] Status successfully changed to '{new_status}' without evidence validation"
+            )
         else:
-            print(f"[FAIL] Status change failed: expected 'Confirmed', got '{new_status}'")
+            print(
+                f"[FAIL] Status change failed: expected 'Confirmed', got '{new_status}'"
+            )
             conn.close()
             return False
 
         # Test save validation would block (we can't test actual save without UI, but we can verify the logic)
-        print(f"LOG: Blocked save for case {base_no} due to missing assessment evidence")
+        print(
+            f"LOG: Blocked save for case {base_no} due to missing assessment evidence"
+        )
 
         # Reset status for next test
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET assessment_status = 'Alleged' WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         conn.commit()
         conn.close()
 
-        print("LOG: Changed case 202600025 to Confirmed in combo box, no immediate error; blocked save without evidence; saved successfully after upload.")
+        print(
+            "LOG: Changed case 202600025 to Confirmed in combo box, no immediate error; blocked save without evidence; saved successfully after upload."
+        )
         print("[PASS] Status change validation on save test passed")
         return True
 
     except Exception as e:
         print(f"[FAIL] Status change validation test failed: {e}")
         return False
+
 
 def test_lc_status_field_visibility():
     """Test that lc_status_combo appears in Loss Control Committee group and is properly hidden/shown"""
@@ -626,50 +730,63 @@ def test_lc_status_field_visibility():
         cursor = conn.cursor()
 
         # Find an 'Alleged' case (should not show lc_status_combo)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status, suffixes
             FROM cases
             WHERE assessment_status = 'Alleged' AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         alleged_case = cursor.fetchone()
 
         if alleged_case:
             case_id, base_no, status, suffixes = alleged_case
-            print(f"Testing 'Alleged' case {base_no} with status '{status}' and suffixes '{suffixes}'")
+            print(
+                f"Testing 'Alleged' case {base_no} with status '{status}' and suffixes '{suffixes}'"
+            )
             print(f"LOG: Hid lc_status_combo for case {base_no} in Alleged status")
             print("[PASS] lc_status_combo should be hidden for Alleged cases")
         else:
             print("[INFO] No 'Alleged' case found")
 
         # Find a 'Confirmed' case with -LS suffix (should show lc_status_combo)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status, suffixes
             FROM cases
             WHERE assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         confirmed_case = cursor.fetchone()
 
         if confirmed_case:
             case_id, base_no, status, suffixes = confirmed_case
-            print(f"Testing 'Confirmed' case {base_no} with status '{status}' and suffixes '{suffixes}'")
+            print(
+                f"Testing 'Confirmed' case {base_no} with status '{status}' and suffixes '{suffixes}'"
+            )
             print(f"LOG: Showed lc_status_combo for Confirmed case with -LS suffix")
-            print("[PASS] lc_status_combo should be visible for Confirmed cases with -LS suffix")
+            print(
+                "[PASS] lc_status_combo should be visible for Confirmed cases with -LS suffix"
+            )
         else:
             print("[INFO] No suitable 'Confirmed' case with -LS suffix found")
 
         conn.close()
 
-        print("LOG: Verified lc_status_combo hidden for Alleged case 202600025; visible in LCC group for Confirmed case with -LS suffix.")
+        print(
+            "LOG: Verified lc_status_combo hidden for Alleged case 202600025; visible in LCC group for Confirmed case with -LS suffix."
+        )
         print("[PASS] LC status field visibility test passed")
         return True
 
     except Exception as e:
         print(f"[FAIL] LC status field visibility test failed: {e}")
         return False
+
 
 def test_save_case_without_responsibility_id_error():
     """Test that saving a case works without selected_responsibility_id error"""
@@ -680,12 +797,14 @@ def test_save_case_without_responsibility_id_error():
         cursor = conn.cursor()
 
         # Find an 'Alleged' case
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status, responsibility_id
             FROM cases
             WHERE assessment_status = 'Alleged' AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
 
@@ -695,32 +814,47 @@ def test_save_case_without_responsibility_id_error():
             return True
 
         case_id, base_no, status, responsibility_id = test_case
-        print(f"Testing case {base_no} with status '{status}' and responsibility_id '{responsibility_id}'")
+        print(
+            f"Testing case {base_no} with status '{status}' and responsibility_id '{responsibility_id}'"
+        )
 
         # Change status to Confirmed (simulating UI action)
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET assessment_status = 'Confirmed' WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         # Simulate adding assessment evidence
-        evidence_paths = {"assessment": f"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\data\\2025-2026\\Supporting Evidence\\Case {base_no}\\Assessment Evidence test.pdf"}
+        evidence_paths = {
+            "assessment": f"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\data\\2025-2026\\Supporting Evidence\\Case {base_no}\\Assessment Evidence test.pdf"
+        }
         evidence_paths_json = json.dumps(evidence_paths)
 
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET evidence_paths = ? WHERE id = ?
-        """, (evidence_paths_json, case_id))
+        """,
+            (evidence_paths_json, case_id),
+        )
 
         conn.commit()
 
         # Verify the updates
-        cursor.execute("SELECT assessment_status, evidence_paths FROM cases WHERE id = ?", (case_id,))
+        cursor.execute(
+            "SELECT assessment_status, evidence_paths FROM cases WHERE id = ?",
+            (case_id,),
+        )
         updated_case = cursor.fetchone()
         new_status, new_evidence_paths = updated_case
 
-        if new_status == 'Confirmed':
+        if new_status == "Confirmed":
             print(f"[PASS] Status successfully changed to '{new_status}'")
         else:
-            print(f"[FAIL] Status change failed: expected 'Confirmed', got '{new_status}'")
+            print(
+                f"[FAIL] Status change failed: expected 'Confirmed', got '{new_status}'"
+            )
             conn.close()
             return False
 
@@ -728,8 +862,10 @@ def test_save_case_without_responsibility_id_error():
         if new_evidence_paths:
             try:
                 parsed_paths = json.loads(new_evidence_paths)
-                if 'assessment' in parsed_paths:
-                    print(f"[PASS] Assessment evidence path set: {parsed_paths['assessment']}")
+                if "assessment" in parsed_paths:
+                    print(
+                        f"[PASS] Assessment evidence path set: {parsed_paths['assessment']}"
+                    )
                 else:
                     print("[FAIL] Assessment evidence path not found in evidence_paths")
                     conn.close()
@@ -744,21 +880,29 @@ def test_save_case_without_responsibility_id_error():
             return False
 
         # Reset for next test
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET assessment_status = 'Alleged', evidence_paths = NULL WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         conn.commit()
         conn.close()
 
-        print(f"LOG: Saved case {base_no} with Confirmed status, evidence_paths updated")
-        print("LOG: Saved case 202600025 as Confirmed with evidence, no selected_responsibility_id error.")
+        print(
+            f"LOG: Saved case {base_no} with Confirmed status, evidence_paths updated"
+        )
+        print(
+            "LOG: Saved case 202600025 as Confirmed with evidence, no selected_responsibility_id error."
+        )
         print("[PASS] Save case without responsibility ID error test passed")
         return True
 
     except Exception as e:
         print(f"[FAIL] Save case test failed: {e}")
         return False
+
 
 def test_save_with_assessment_evidence():
     """Test that saving with uploaded assessment evidence works correctly"""
@@ -769,12 +913,14 @@ def test_save_with_assessment_evidence():
         cursor = conn.cursor()
 
         # Find an 'Alleged' case
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status
             FROM cases
             WHERE assessment_status = 'Alleged' AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
 
@@ -787,9 +933,12 @@ def test_save_with_assessment_evidence():
         print(f"Testing case {base_no} with status '{status}'")
 
         # Change status to Confirmed (simulating UI action)
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET assessment_status = 'Confirmed' WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         # Simulate uploaded assessment evidence (this would be set by browse_evidence)
         evidence_path = f"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\data\\2025-2026\\Supporting Evidence\\Case {base_no}\\Assessment Evidence test.pdf"
@@ -798,21 +947,29 @@ def test_save_with_assessment_evidence():
         evidence_paths = {"assessment": evidence_path}
         evidence_paths_json = json.dumps(evidence_paths)
 
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET evidence_paths = ? WHERE id = ?
-        """, (evidence_paths_json, case_id))
+        """,
+            (evidence_paths_json, case_id),
+        )
 
         conn.commit()
 
         # Verify the updates
-        cursor.execute("SELECT assessment_status, evidence_paths FROM cases WHERE id = ?", (case_id,))
+        cursor.execute(
+            "SELECT assessment_status, evidence_paths FROM cases WHERE id = ?",
+            (case_id,),
+        )
         updated_case = cursor.fetchone()
         new_status, new_evidence_paths = updated_case
 
-        if new_status == 'Confirmed':
+        if new_status == "Confirmed":
             print(f"[PASS] Status successfully changed to '{new_status}'")
         else:
-            print(f"[FAIL] Status change failed: expected 'Confirmed', got '{new_status}'")
+            print(
+                f"[FAIL] Status change failed: expected 'Confirmed', got '{new_status}'"
+            )
             conn.close()
             return False
 
@@ -820,10 +977,17 @@ def test_save_with_assessment_evidence():
         if new_evidence_paths:
             try:
                 parsed_paths = json.loads(new_evidence_paths)
-                if 'assessment' in parsed_paths and parsed_paths['assessment'] == evidence_path:
-                    print(f"[PASS] Assessment evidence correctly saved: {parsed_paths['assessment']}")
+                if (
+                    "assessment" in parsed_paths
+                    and parsed_paths["assessment"] == evidence_path
+                ):
+                    print(
+                        f"[PASS] Assessment evidence correctly saved: {parsed_paths['assessment']}"
+                    )
                 else:
-                    print(f"[FAIL] Assessment evidence path mismatch. Expected: {evidence_path}, Got: {parsed_paths.get('assessment', 'None')}")
+                    print(
+                        f"[FAIL] Assessment evidence path mismatch. Expected: {evidence_path}, Got: {parsed_paths.get('assessment', 'None')}"
+                    )
                     conn.close()
                     return False
             except json.JSONDecodeError:
@@ -836,14 +1000,19 @@ def test_save_with_assessment_evidence():
             return False
 
         # Reset for next test
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET assessment_status = 'Alleged', evidence_paths = NULL WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         conn.commit()
         conn.close()
 
-        print(f"LOG: Uploaded evidence for case {base_no}, saved with Confirmed status, evidence_paths['assessment'] updated correctly.")
+        print(
+            f"LOG: Uploaded evidence for case {base_no}, saved with Confirmed status, evidence_paths['assessment'] updated correctly."
+        )
         print("[PASS] Save with assessment evidence test passed")
         return True
 
@@ -851,13 +1020,14 @@ def test_save_with_assessment_evidence():
         print(f"[FAIL] Save with assessment evidence test failed: {e}")
         return False
 
+
 def test_database_path_consistency():
     """Test that all database operations use Fruitless.db"""
     print("\n=== Testing Database Path Consistency ===")
 
     try:
         # Check if fwmis.db exists
-        fwmis_path = os.path.join(os.path.dirname(DB_PATH), 'fwmis.db')
+        fwmis_path = os.path.join(os.path.dirname(DB_PATH), "fwmis.db")
         if os.path.exists(fwmis_path):
             print("[FAIL] fwmis.db still exists")
             return False
@@ -865,7 +1035,7 @@ def test_database_path_consistency():
             print("[PASS] No fwmis.db found")
 
         # Check that DB_PATH points to fruitless.db
-        if 'fruitless.db' in DB_PATH:
+        if "fruitless.db" in DB_PATH:
             print("[PASS] DB_PATH uses fruitless.db")
         else:
             print(f"[FAIL] DB_PATH does not use fruitless.db: {DB_PATH}")
@@ -878,6 +1048,7 @@ def test_database_path_consistency():
         print(f"[FAIL] Database path test failed: {e}")
         return False
 
+
 def test_view_cases_display():
     """Test ViewCasesDialog display logic"""
     print("\n=== Testing View Cases Display ===")
@@ -887,12 +1058,14 @@ def test_view_cases_display():
         cursor = conn.cursor()
 
         # Find a case with Confirmed status and -LS suffix
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT base_transaction_no, assessment_status, lc_status, suffixes
             FROM cases
             WHERE assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
 
@@ -902,7 +1075,9 @@ def test_view_cases_display():
             return True
 
         base_no, assessment_status, lc_status, suffixes = test_case
-        print(f"Testing case {base_no} with status '{assessment_status}', lc_status '{lc_status}', suffixes '{suffixes}'")
+        print(
+            f"Testing case {base_no} with status '{assessment_status}', lc_status '{lc_status}', suffixes '{suffixes}'"
+        )
 
         # Simulate display logic
         # For Checklist view
@@ -913,28 +1088,41 @@ def test_view_cases_display():
         display_list_lead = "Lead Schedule"
         display_status_lead = lc_status or "Awaiting LC determination"
 
-        if display_list_checklist == "Checklist" and display_status_checklist == "Confirmed":
+        if (
+            display_list_checklist == "Checklist"
+            and display_status_checklist == "Confirmed"
+        ):
             print("[PASS] Checklist view display correct")
         else:
-            print(f"[FAIL] Checklist view incorrect: List={display_list_checklist}, Status={display_status_checklist}")
+            print(
+                f"[FAIL] Checklist view incorrect: List={display_list_checklist}, Status={display_status_checklist}"
+            )
             conn.close()
             return False
 
-        if display_list_lead == "Lead Schedule" and display_status_lead == "Awaiting LC determination":
+        if (
+            display_list_lead == "Lead Schedule"
+            and display_status_lead == "Awaiting LC determination"
+        ):
             print("[PASS] Lead Schedule view display correct")
         else:
-            print(f"[FAIL] Lead Schedule view incorrect: List={display_list_lead}, Status={display_status_lead}")
+            print(
+                f"[FAIL] Lead Schedule view incorrect: List={display_list_lead}, Status={display_status_lead}"
+            )
             conn.close()
             return False
 
         conn.close()
 
-        print("LOG: Checklist view: case 202600001 shows correct Case No, List, Status.")
+        print(
+            "LOG: Checklist view: case 202600001 shows correct Case No, List, Status."
+        )
         return True
 
     except Exception as e:
         print(f"[FAIL] View cases display test failed: {e}")
         return False
+
 
 def test_assessment_evidence_link_persistence():
     """Test that assessment evidence link persists after save"""
@@ -945,12 +1133,14 @@ def test_assessment_evidence_link_persistence():
         cursor = conn.cursor()
 
         # Find a case with Confirmed status and evidence
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT base_transaction_no, assessment_status, evidence_paths
             FROM cases
             WHERE assessment_status = 'Confirmed' AND evidence_paths IS NOT NULL AND is_finalized = 0
             LIMIT 1
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
 
@@ -966,8 +1156,8 @@ def test_assessment_evidence_link_persistence():
         if evidence_paths_json:
             try:
                 evidence_paths = json.loads(evidence_paths_json)
-                if 'assessment' in evidence_paths:
-                    evidence_path = evidence_paths['assessment']
+                if "assessment" in evidence_paths:
+                    evidence_path = evidence_paths["assessment"]
                     if os.path.exists(evidence_path):
                         print(f"[PASS] Evidence file exists at {evidence_path}")
                     else:
@@ -989,12 +1179,15 @@ def test_assessment_evidence_link_persistence():
 
         conn.close()
 
-        print("LOG: Case 202600001 saved with evidence, link persisted, file opened successfully.")
+        print(
+            "LOG: Case 202600001 saved with evidence, link persisted, file opened successfully."
+        )
         return True
 
     except Exception as e:
         print(f"[FAIL] Evidence link persistence test failed: {e}")
         return False
+
 
 def test_view_cases_no_edit_button():
     """Test that ViewCasesDialog has no Edit button and double-click opens EditCaseDialog"""
@@ -1006,7 +1199,9 @@ def test_view_cases_no_edit_button():
         # For now, we'll verify that the code changes are in place
 
         # Check that the table has 7 columns (removed Actions column)
-        print("[PASS] ViewCasesDialog table configured with 7 columns (removed Actions)")
+        print(
+            "[PASS] ViewCasesDialog table configured with 7 columns (removed Actions)"
+        )
 
         # Check that edit_case method has been removed
         print("[PASS] edit_case method removed from ViewCasesDialog")
@@ -1014,12 +1209,15 @@ def test_view_cases_no_edit_button():
         # Check that double-click functionality remains
         print("[PASS] Double-click functionality preserved for opening EditCaseDialog")
 
-        print("LOG: Confirmed no Edit button in ViewCasesDialog, double-click opens EditCaseDialog for case 202600001.")
+        print(
+            "LOG: Confirmed no Edit button in ViewCasesDialog, double-click opens EditCaseDialog for case 202600001."
+        )
         return True
 
     except Exception as e:
         print(f"[FAIL] View cases no edit button test failed: {e}")
         return False
+
 
 def test_edit_case_dialog_display_and_evidence_link():
     """Test EditCaseDialog display and evidence link functionality
@@ -1035,11 +1233,13 @@ def test_edit_case_dialog_display_and_evidence_link():
         cursor = conn.cursor()
 
         # Find case 202600001 with Confirmed status and evidence for testing
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT id, base_transaction_no, assessment_status, lc_status, suffixes, evidence_paths
             FROM cases
             WHERE base_transaction_no = '202600001' AND assessment_status = 'Confirmed' AND evidence_paths IS NOT NULL AND is_finalized = 0
-        """)
+        """
+        )
 
         test_case = cursor.fetchone()
 
@@ -1048,20 +1248,33 @@ def test_edit_case_dialog_display_and_evidence_link():
             conn.close()
             return True
 
-        case_id, base_no, assessment_status, lc_status, suffixes, evidence_paths_json = test_case
-        print(f"Testing case {base_no} with status '{assessment_status}', lc_status '{lc_status}', suffixes '{suffixes}'")
+        (
+            case_id,
+            base_no,
+            assessment_status,
+            lc_status,
+            suffixes,
+            evidence_paths_json,
+        ) = test_case
+        print(
+            f"Testing case {base_no} with status '{assessment_status}', lc_status '{lc_status}', suffixes '{suffixes}'"
+        )
 
         # Simulate EditCaseDialog for Checklist view
         print("Simulating EditCaseDialog in Checklist view")
         checklist_selected_list = "Checklist"
         expected_list_checklist = "Checklist"
-        expected_status_checklist = assessment_status  # Should show assessment_status for Checklist view
+        expected_status_checklist = (
+            assessment_status  # Should show assessment_status for Checklist view
+        )
 
         # Simulate EditCaseDialog for Lead Schedule view
         print("Simulating EditCaseDialog in Lead Schedule view")
         lead_selected_list = "Lead Schedule"
         expected_list_lead = "Lead Schedule"
-        expected_status_lead = lc_status or "Awaiting LC determination"  # Should show lc_status or default for Lead Schedule view
+        expected_status_lead = (
+            lc_status or "Awaiting LC determination"
+        )  # Should show lc_status or default for Lead Schedule view
 
         # Simulate workflow status cache
         workflow_status = get_case_workflow_status(case_id)
@@ -1071,27 +1284,49 @@ def test_edit_case_dialog_display_and_evidence_link():
             return False
 
         # Verify display values using workflow status (simulating QLabel.text() checks)
-        checklist_status_from_workflow = workflow_status['assessment_status'] if checklist_selected_list == "Checklist" else workflow_status['lc_status'] or "Awaiting LC determination"
-        lead_status_from_workflow = workflow_status['assessment_status'] if lead_selected_list == "Checklist" else workflow_status['lc_status'] or "Awaiting LC determination"
+        checklist_status_from_workflow = (
+            workflow_status["assessment_status"]
+            if checklist_selected_list == "Checklist"
+            else workflow_status["lc_status"] or "Awaiting LC determination"
+        )
+        lead_status_from_workflow = (
+            workflow_status["assessment_status"]
+            if lead_selected_list == "Checklist"
+            else workflow_status["lc_status"] or "Awaiting LC determination"
+        )
 
         # Simulate QLabel.text() checks - in real UI test: self.list_display_value.text() and self.status_display_value.text()
         simulated_list_label_checklist = expected_list_checklist
         simulated_status_label_checklist = expected_status_checklist
 
-        if simulated_list_label_checklist == checklist_selected_list and simulated_status_label_checklist == checklist_status_from_workflow:
-            print(f"[PASS] Checklist view QLabel.text(): List={simulated_list_label_checklist}, Status={simulated_status_label_checklist}")
+        if (
+            simulated_list_label_checklist == checklist_selected_list
+            and simulated_status_label_checklist == checklist_status_from_workflow
+        ):
+            print(
+                f"[PASS] Checklist view QLabel.text(): List={simulated_list_label_checklist}, Status={simulated_status_label_checklist}"
+            )
         else:
-            print(f"[FAIL] Checklist view QLabel.text() incorrect: List={simulated_list_label_checklist}, Status={simulated_status_label_checklist}")
+            print(
+                f"[FAIL] Checklist view QLabel.text() incorrect: List={simulated_list_label_checklist}, Status={simulated_status_label_checklist}"
+            )
             conn.close()
             return False
 
         simulated_list_label_lead = expected_list_lead
         simulated_status_label_lead = expected_status_lead
 
-        if simulated_list_label_lead == lead_selected_list and simulated_status_label_lead == lead_status_from_workflow:
-            print(f"[PASS] Lead Schedule view QLabel.text(): List={simulated_list_label_lead}, Status={simulated_status_label_lead}")
+        if (
+            simulated_list_label_lead == lead_selected_list
+            and simulated_status_label_lead == lead_status_from_workflow
+        ):
+            print(
+                f"[PASS] Lead Schedule view QLabel.text(): List={simulated_list_label_lead}, Status={simulated_status_label_lead}"
+            )
         else:
-            print(f"[FAIL] Lead Schedule view QLabel.text() incorrect: List={simulated_list_label_lead}, Status={simulated_status_label_lead}")
+            print(
+                f"[FAIL] Lead Schedule view QLabel.text() incorrect: List={simulated_list_label_lead}, Status={simulated_status_label_lead}"
+            )
             conn.close()
             return False
 
@@ -1100,12 +1335,14 @@ def test_edit_case_dialog_display_and_evidence_link():
         if evidence_paths_json:
             try:
                 evidence_paths = json.loads(evidence_paths_json)
-                if 'assessment' in evidence_paths:
-                    evidence_path = evidence_paths['assessment']
+                if "assessment" in evidence_paths:
+                    evidence_path = evidence_paths["assessment"]
                     print(f"[PASS] Assessment evidence path found: {evidence_path}")
                     # Simulate self.assessment_evidence_edit.text() == evidence_path
                     if evidence_path:  # Assuming the field would be set to this value
-                        print("[PASS] Assessment evidence link displayed in field (QLineEdit.text() simulation)")
+                        print(
+                            "[PASS] Assessment evidence link displayed in field (QLineEdit.text() simulation)"
+                        )
                     else:
                         print("[FAIL] Assessment evidence link not set in field")
                         conn.close()
@@ -1115,7 +1352,9 @@ def test_edit_case_dialog_display_and_evidence_link():
                     if evidence_path == expected_path:
                         print("[PASS] Assessment evidence path format correct")
                     else:
-                        print(f"[WARN] Assessment evidence path format unexpected: {evidence_path}")
+                        print(
+                            f"[WARN] Assessment evidence path format unexpected: {evidence_path}"
+                        )
                 else:
                     print("[FAIL] Assessment evidence not found in evidence_paths")
                     conn.close()
@@ -1131,14 +1370,20 @@ def test_edit_case_dialog_display_and_evidence_link():
 
         # Test View button functionality (simulate opening file and button visibility)
         print("Testing View button functionality")
-        if evidence_paths and 'assessment' in evidence_paths:
-            file_path = evidence_paths['assessment']
+        if evidence_paths and "assessment" in evidence_paths:
+            file_path = evidence_paths["assessment"]
             # Simulate button.isVisible() check - in real UI test: self.view_assessment_evidence_button.isVisible()
-            simulated_button_visible = assessment_status == "Confirmed" and bool(file_path)
+            simulated_button_visible = assessment_status == "Confirmed" and bool(
+                file_path
+            )
             if simulated_button_visible:
-                print("[PASS] View button.isVisible() = True for Confirmed case with evidence (QPushButton.isVisible() simulation)")
+                print(
+                    "[PASS] View button.isVisible() = True for Confirmed case with evidence (QPushButton.isVisible() simulation)"
+                )
             else:
-                print("[FAIL] View button.isVisible() = False for Confirmed case with evidence")
+                print(
+                    "[FAIL] View button.isVisible() = False for Confirmed case with evidence"
+                )
                 conn.close()
                 return False
 
@@ -1151,7 +1396,9 @@ def test_edit_case_dialog_display_and_evidence_link():
 
         conn.close()
 
-        print(f"LOG: Checklist view: List={expected_list_checklist}, Status={expected_status_checklist}, evidence link displayed")
+        print(
+            f"LOG: Checklist view: List={expected_list_checklist}, Status={expected_status_checklist}, evidence link displayed"
+        )
         print(f"LOG: Lead Schedule view: Status={expected_status_lead}")
         print("[PASS] Edit case dialog display and evidence link test passed")
         return True
@@ -1159,6 +1406,7 @@ def test_edit_case_dialog_display_and_evidence_link():
     except Exception as e:
         print(f"[FAIL] Edit case dialog display test failed: {e}")
         return False
+
 
 def test_import_case_numbering():
     """Test that import numbering starts at 202600001"""
@@ -1171,7 +1419,8 @@ def test_import_case_numbering():
 
         # Clear existing data before testing (optional, controlled by environment variable)
         import os
-        if os.getenv('WIPE_DB', 'false').lower() == 'true':
+
+        if os.getenv("WIPE_DB", "false").lower() == "true":
             cursor.execute("DELETE FROM cases WHERE base_transaction_no LIKE '2026%'")
             conn.commit()
             print("LOG: Cleared existing 2026 cases for testing")
@@ -1182,29 +1431,39 @@ def test_import_case_numbering():
         test_base_no = "202699999"  # Use a high number to avoid conflicts
 
         # Simulate import of 1 case - create case with unique base_transaction_no
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO cases (
                 base_transaction_no, transaction_no, assessment_status, fy_id, period_id,
                 date_incurred, description, amount, responsibility_id
             ) VALUES (?, ?, ?, 1, 1, '2024-01-01', 'Test imported case', 1000.00, 1)
-        """, (test_base_no, test_base_no, "Alleged"))
+        """,
+            (test_base_no, test_base_no, "Alleged"),
+        )
 
         conn.commit()
 
         # Verify the case was assigned the correct base_transaction_no
-        cursor.execute("SELECT base_transaction_no FROM cases WHERE base_transaction_no = ?", (test_base_no,))
+        cursor.execute(
+            "SELECT base_transaction_no FROM cases WHERE base_transaction_no = ?",
+            (test_base_no,),
+        )
         case = cursor.fetchone()
 
         if case and case[0] == test_base_no:
             print(f"[PASS] Imported case has base_transaction_no='{test_base_no}'")
             print(f"LOG: Imported first case as {test_base_no}.")
             # Clean up test case
-            cursor.execute("DELETE FROM cases WHERE base_transaction_no = ?", (test_base_no,))
+            cursor.execute(
+                "DELETE FROM cases WHERE base_transaction_no = ?", (test_base_no,)
+            )
             conn.commit()
             conn.close()
             return True
         else:
-            print(f"[FAIL] Expected '{test_base_no}', got '{case[0] if case else 'None'}'")
+            print(
+                f"[FAIL] Expected '{test_base_no}', got '{case[0] if case else 'None'}'"
+            )
             conn.close()
             return False
 
@@ -1214,13 +1473,15 @@ def test_import_case_numbering():
         conn.close()
         return False
 
+
 def test_save_without_loss_control_status_combo_error():
     """Test that saving a Confirmed case works without loss_control_status_combo error"""
     print("\n=== Testing Save Without Loss Control Status Combo Error ===")
 
     try:
-        import tempfile
         import os
+        import tempfile
+
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("BEGIN TRANSACTION")
@@ -1236,25 +1497,38 @@ def test_save_without_loss_control_status_combo_error():
             except:
                 pass
 
-        with open(temp_evidence_path, 'wb') as temp_file:
+        with open(temp_evidence_path, "wb") as temp_file:
             temp_file.write(b"Dummy PDF content")
 
         evidence_paths = {"assessment": temp_evidence_path}
         evidence_paths_json = json.dumps(evidence_paths)
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO cases (
                 base_transaction_no, transaction_no, assessment_status, lc_status, suffixes,
                 evidence_paths, fy_id, period_id, date_incurred, description, amount, responsibility_id
             ) VALUES (?, ?, ?, ?, ?, ?, 1, 1, '2024-01-01', 'Test confirmed case', 2000.00, 1)
-        """, ("202699998", "202699998", "Confirmed", "Awaiting LC determination", "-LS", evidence_paths_json))
+        """,
+            (
+                "202699998",
+                "202699998",
+                "Confirmed",
+                "Awaiting LC determination",
+                "-LS",
+                evidence_paths_json,
+            ),
+        )
 
         case_id = cursor.lastrowid
 
         # Simulate save operation - update the case
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET assessment_status = 'Confirmed' WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
 
         conn.commit()
 
@@ -1270,11 +1544,15 @@ def test_save_without_loss_control_status_combo_error():
 
         if result and result[0] == "Confirmed":
             print("[PASS] Case saved successfully with assessment_status='Confirmed'")
-            print("LOG: Saved case 202600002 as Confirmed, no loss_control_status_combo error.")
+            print(
+                "LOG: Saved case 202600002 as Confirmed, no loss_control_status_combo error."
+            )
             conn.close()
             return True
         else:
-            print(f"[FAIL] Expected 'Confirmed', got '{result[0] if result else 'None'}'")
+            print(
+                f"[FAIL] Expected 'Confirmed', got '{result[0] if result else 'None'}'"
+            )
             conn.close()
             return False
 
@@ -1284,25 +1562,30 @@ def test_save_without_loss_control_status_combo_error():
         conn.close()
         return False
 
+
 def test_app_performance():
     """Test app performance for EditCaseDialog load, save, and file upload operations"""
     print("\n=== Testing App Performance ===")
 
     try:
-        import time
-        import tempfile
         import shutil
+        import tempfile
+        import time
+
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("BEGIN TRANSACTION")
 
         # Create a test case for performance testing
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO cases (
                 base_transaction_no, transaction_no, assessment_status, fy_id, period_id,
                 date_incurred, description, amount, responsibility_id
             ) VALUES (?, ?, ?, 1, 1, '2024-01-01', 'Performance test case', 1500.00, 1)
-        """, ("202699997", "202699997", "Alleged"))
+        """,
+            ("202699997", "202699997", "Alleged"),
+        )
 
         case_id = cursor.lastrowid
         conn.commit()
@@ -1315,9 +1598,12 @@ def test_app_performance():
 
         # Simulate save operation time
         start_time = time.time()
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE cases SET description = 'Updated performance test case' WHERE id = ?
-        """, (case_id,))
+        """,
+            (case_id,),
+        )
         conn.commit()
         save_time = time.time() - start_time
 
@@ -1332,9 +1618,11 @@ def test_app_performance():
             except:
                 pass
 
-        with open(test_file_path, 'wb') as temp_file:
+        with open(test_file_path, "wb") as temp_file:
             # Create a dummy PDF file for testing
-            temp_file.write(b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n/Contents 4 0 R\n>>\nendobj\n4 0 obj\n<<\n/Length 44\n>>\nstream\nBT\n/F1 12 Tf\n100 700 Td\n(Performance Test) Tj\nET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000200 00000 n \ntrailer\n<<\n/Size 5\n/Root 1 0 R\n>>\nstartxref\n284\n%%EOF")
+            temp_file.write(
+                b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n/Contents 4 0 R\n>>\nendobj\n4 0 obj\n<<\n/Length 44\n>>\nstream\nBT\n/F1 12 Tf\n100 700 Td\n(Performance Test) Tj\nET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000200 00000 n \ntrailer\n<<\n/Size 5\n/Root 1 0 R\n>>\nstartxref\n284\n%%EOF"
+            )
 
         start_time = time.time()
         # Simulate the file copy operation that happens during save
@@ -1370,7 +1658,9 @@ def test_app_performance():
             print(f"[FAIL] File upload time: {upload_time:.2f}s (>= 0.5s)")
             return False
 
-        print(f"LOG: EditCaseDialog loaded in {load_time:.2f}s, saved in {save_time:.2f}s, uploaded in {upload_time:.2f}s")
+        print(
+            f"LOG: EditCaseDialog loaded in {load_time:.2f}s, saved in {save_time:.2f}s, uploaded in {upload_time:.2f}s"
+        )
         print("[PASS] App performance test passed")
         return True
 
@@ -1379,6 +1669,7 @@ def test_app_performance():
         conn.rollback()
         conn.close()
         return False
+
 
 def run_all_tests():
     """Run all test suites"""
@@ -1410,7 +1701,7 @@ def run_all_tests():
         test_edit_case_dialog_display_and_evidence_link,
         test_import_case_numbering,
         test_save_without_loss_control_status_combo_error,
-        test_app_performance
+        test_app_performance,
     ]
 
     results = []
@@ -1441,6 +1732,7 @@ def run_all_tests():
     else:
         print("WARNING: Some tests failed. Please review the issues above.")
         return False
+
 
 if __name__ == "__main__":
     success = run_all_tests()

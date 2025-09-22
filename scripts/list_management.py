@@ -1,27 +1,20 @@
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFormLayout,
-    QLineEdit,
-    QPushButton,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QMessageBox,
-    QComboBox,
-    QDialogButtonBox,
-    QWidget,
-    QCheckBox,
-)
-from PyQt5.QtCore import Qt
-import sys
 import os
+import sys
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
+                             QFormLayout, QHBoxLayout, QLineEdit, QMessageBox,
+                             QPushButton, QTreeWidget, QTreeWidgetItem,
+                             QVBoxLayout, QWidget)
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from scripts.Utilities.list_utils import save_lists, load_lists
-from scripts.Utilities.config import DB_PATH
-import sqlite3
 import logging
+import sqlite3
+
+from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.list_utils import load_lists, save_lists
+
 
 class ManageListsDialog(QDialog):
     def __init__(self, parent=None):
@@ -114,7 +107,7 @@ class ManageListsDialog(QDialog):
                     "id": new_id,
                     "name": list_data["name"],
                     "parent_id": list_data["parent_id"],
-                    "is_default": list_data["is_default"]
+                    "is_default": list_data["is_default"],
                 }
 
                 # If setting as default, unset others
@@ -141,7 +134,11 @@ class ManageListsDialog(QDialog):
 
         # Check if it's a system list
         if selected_list.get("is_system", False):
-            QMessageBox.warning(self, "Cannot Edit", "Cannot edit system lists. They are required for the application workflow.")
+            QMessageBox.warning(
+                self,
+                "Cannot Edit",
+                "Cannot edit system lists. They are required for the application workflow.",
+            )
             return
 
         try:
@@ -181,12 +178,18 @@ class ManageListsDialog(QDialog):
 
         # Check if it's a system list
         if selected_list.get("is_system", False):
-            QMessageBox.warning(self, "Cannot Delete", "Cannot delete system lists. They are required for the application workflow.")
+            QMessageBox.warning(
+                self,
+                "Cannot Delete",
+                "Cannot delete system lists. They are required for the application workflow.",
+            )
             return
 
         # Check if list has children
         if any(l["parent_id"] == list_id for l in self.lists):
-            QMessageBox.warning(self, "Cannot Delete", "Cannot delete a list with sublists.")
+            QMessageBox.warning(
+                self, "Cannot Delete", "Cannot delete a list with sublists."
+            )
             return
 
         # Check if list is used in cases
@@ -195,7 +198,9 @@ class ManageListsDialog(QDialog):
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM cases WHERE list = ?", (list_name,))
             if cursor.fetchone()[0] > 0:
-                QMessageBox.warning(self, "Cannot Delete", "Cannot delete a list used in cases.")
+                QMessageBox.warning(
+                    self, "Cannot Delete", "Cannot delete a list used in cases."
+                )
                 conn.close()
                 return
             conn.close()
@@ -205,8 +210,10 @@ class ManageListsDialog(QDialog):
             return
 
         reply = QMessageBox.question(
-            self, "Confirm Delete", f"Delete list '{list_name}'?",
-            QMessageBox.Yes | QMessageBox.No
+            self,
+            "Confirm Delete",
+            f"Delete list '{list_name}'?",
+            QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             try:
@@ -228,7 +235,9 @@ class ManageListsDialog(QDialog):
             seen.add(current_id)
             if current_id == editing_id:  # Prevent self-referencing during edit
                 return True
-            parent = next((l["parent_id"] for l in lists if l["id"] == current_id), None)
+            parent = next(
+                (l["parent_id"] for l in lists if l["id"] == current_id), None
+            )
             current_id = parent
         return False
 
@@ -262,7 +271,9 @@ class AddListDialog(QDialog):
 
         # Default list checkbox
         self.default_check = QCheckBox("Set as default list")
-        self.default_check.setToolTip("Check to make this the default list for new cases")
+        self.default_check.setToolTip(
+            "Check to make this the default list for new cases"
+        )
         form_layout.addRow("", self.default_check)
 
         layout.addLayout(form_layout)
@@ -288,7 +299,11 @@ class AddListDialog(QDialog):
 
         # Check for circular reference
         if parent_id and self.would_create_cycle(parent_id, self.lists):
-            QMessageBox.warning(self, "Invalid Input", "Cannot create circular parent-child relationship.")
+            QMessageBox.warning(
+                self,
+                "Invalid Input",
+                "Cannot create circular parent-child relationship.",
+            )
             return
 
         self.accept()
@@ -301,7 +316,9 @@ class AddListDialog(QDialog):
             if current_id in seen:
                 return True
             seen.add(current_id)
-            parent = next((l["parent_id"] for l in lists if l["id"] == current_id), None)
+            parent = next(
+                (l["parent_id"] for l in lists if l["id"] == current_id), None
+            )
             current_id = parent
         return False
 
@@ -309,7 +326,7 @@ class AddListDialog(QDialog):
         return {
             "name": self.name_edit.text().strip(),
             "parent_id": self.parent_combo.currentData(),
-            "is_default": self.default_check.isChecked()
+            "is_default": self.default_check.isChecked(),
         }
 
 
@@ -348,7 +365,9 @@ class EditListDialog(QDialog):
 
         # Default list checkbox
         self.default_check = QCheckBox("Set as default list")
-        self.default_check.setToolTip("Check to make this the default list for new cases")
+        self.default_check.setToolTip(
+            "Check to make this the default list for new cases"
+        )
         self.default_check.setChecked(self.list_item.get("is_default", False))
         form_layout.addRow("", self.default_check)
 
@@ -369,12 +388,21 @@ class EditListDialog(QDialog):
             QMessageBox.warning(self, "Invalid Input", "Name is required.")
             return
 
-        if any(l["name"] == name and l["id"] != self.list_item["id"] for l in self.lists):
+        if any(
+            l["name"] == name and l["id"] != self.list_item["id"] for l in self.lists
+        ):
             QMessageBox.warning(self, "Invalid Input", "List name must be unique.")
             return
 
-        if parent_id and (parent_id == self.list_item["id"] or self.would_create_cycle(parent_id, self.lists, self.list_item["id"])):
-            QMessageBox.warning(self, "Invalid Input", "Cannot create circular parent-child relationship.")
+        if parent_id and (
+            parent_id == self.list_item["id"]
+            or self.would_create_cycle(parent_id, self.lists, self.list_item["id"])
+        ):
+            QMessageBox.warning(
+                self,
+                "Invalid Input",
+                "Cannot create circular parent-child relationship.",
+            )
             return
 
         self.accept()
@@ -389,7 +417,9 @@ class EditListDialog(QDialog):
             seen.add(current_id)
             if current_id == editing_id:  # Prevent self-referencing during edit
                 return True
-            parent = next((l["parent_id"] for l in lists if l["id"] == current_id), None)
+            parent = next(
+                (l["parent_id"] for l in lists if l["id"] == current_id), None
+            )
             current_id = parent
         return False
 
@@ -397,7 +427,7 @@ class EditListDialog(QDialog):
         return {
             "name": self.name_edit.text().strip(),
             "parent_id": self.parent_combo.currentData(),
-            "is_default": self.default_check.isChecked()
+            "is_default": self.default_check.isChecked(),
         }
 
 

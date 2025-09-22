@@ -33,7 +33,11 @@ def validate_add_data(dialog):
         missing_fields.append("Amount")
 
     if missing_fields:
-        QMessageBox.warning(dialog, "Invalid Input", f"The following fields are required: {', '.join(missing_fields)}")
+        QMessageBox.warning(
+            dialog,
+            "Invalid Input",
+            f"The following fields are required: {', '.join(missing_fields)}",
+        )
         return False
 
     # Validate amount
@@ -42,7 +46,9 @@ def validate_add_data(dialog):
         if amount <= 0:
             raise ValueError
     except ValueError:
-        QMessageBox.warning(dialog, "Invalid Input", "Amount must be a positive number.")
+        QMessageBox.warning(
+            dialog, "Invalid Input", "Amount must be a positive number."
+        )
         return False
 
     # Validate responsibility selection
@@ -51,10 +57,16 @@ def validate_add_data(dialog):
         return False
 
     # Validate supporting evidence if compulsory
-    if dialog.supporting_evidence_compulsory and not dialog.file_path_edit.text().strip():
-        QMessageBox.warning(dialog, "Assessment Evidence Required",
-                          "Assessment Evidence is compulsory for Valid/Confirmed status cases.\n\n"
-                          "Please select a file before saving.")
+    if (
+        dialog.supporting_evidence_compulsory
+        and not dialog.file_path_edit.text().strip()
+    ):
+        QMessageBox.warning(
+            dialog,
+            "Assessment Evidence Required",
+            "Assessment Evidence is compulsory for Valid/Confirmed status cases.\n\n"
+            "Please select a file before saving.",
+        )
         return False
 
     return True
@@ -129,15 +141,16 @@ def get_case_data(dialog):
         "assessment_date": str(assessment_date_str),
         "assessment_result": "",
         "prevention_steps": dialog.prevention_steps_edit.toPlainText().strip(),
-        "original_list": list_text
+        "original_list": list_text,
     }
 
 
 def handle_file_operations(case, fy, transaction_no):
     """Handle file copying and moving for the case"""
     import os
-    from scripts.Utilities.financial_utils import create_year_folder
     import shutil
+
+    from scripts.Utilities.financial_utils import create_year_folder
 
     year_folder = create_year_folder(fy)
     supporting_evidence_folder = os.path.join(year_folder, "Supporting Evidence")
@@ -149,7 +162,7 @@ def handle_file_operations(case, fy, transaction_no):
         "source_document": f"{transaction_no} Source Document.pdf",
         "minutes": f"{transaction_no} Loss Control Minutes.pdf",
         "evidence_path": f"{transaction_no} Assessment Evidence.pdf",
-        "supporting_evidence_path": f"{transaction_no} Supporting Evidence.pdf"
+        "supporting_evidence_path": f"{transaction_no} Supporting Evidence.pdf",
     }
 
     for field, filename in file_mappings.items():
@@ -164,7 +177,7 @@ def handle_file_operations(case, fy, transaction_no):
 
             if os.path.exists(source_path):
                 # Check if it's a PDF file (only copy PDF files to avoid corruption)
-                if not source_path.lower().endswith('.pdf'):
+                if not source_path.lower().endswith(".pdf"):
                     print(f"Warning: Skipping non-PDF file for {field}: {source_path}")
                     continue
 
@@ -175,12 +188,18 @@ def handle_file_operations(case, fy, transaction_no):
                     shutil.copy2(source_path, dest_path)
                     case[field] = dest_path
                 except Exception as e:
-                    QMessageBox.warning(None, "File Save Error",
-                                      f"Failed to save {field} file: {str(e)}")
+                    QMessageBox.warning(
+                        None,
+                        "File Save Error",
+                        f"Failed to save {field} file: {str(e)}",
+                    )
                     return False
             else:
-                QMessageBox.warning(None, "File Not Found",
-                                  f"The selected {field} file could not be found: {source_path}")
+                QMessageBox.warning(
+                    None,
+                    "File Not Found",
+                    f"The selected {field} file could not be found: {source_path}",
+                )
                 return False
     return True
 
@@ -211,7 +230,11 @@ def reset_form_fields(dialog):
     dialog.prevention_steps_edit.clear()
 
     # Always reset list combo to Checklist
-    if "Checklist" in [l["name"] for l in dialog.lists if l.get("is_system", False) and l["name"] != "Deleted Cases"]:
+    if "Checklist" in [
+        l["name"]
+        for l in dialog.lists
+        if l.get("is_system", False) and l["name"] != "Deleted Cases"
+    ]:
         dialog.list_combo.setCurrentText("Checklist")
 
     # Reset dates to current date

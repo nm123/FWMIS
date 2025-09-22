@@ -2,8 +2,9 @@
 """
 Script to clean all cases from the database while preserving all other data
 """
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # Try relative imports first, fall back to absolute
@@ -11,7 +12,9 @@ try:
     from Utilities.config import DB_PATH
 except ImportError:
     from scripts.Utilities.config import DB_PATH
+
 import sqlite3
+
 
 def clean_all_cases():
     """Delete all cases from the database while preserving other data"""
@@ -52,6 +55,7 @@ def clean_all_cases():
         print(f"Error cleaning cases: {e}")
         return False
 
+
 def verify_cleanup():
     """Verify that cases were cleaned but other data remains"""
     print("\nVerifying cleanup...")
@@ -67,12 +71,12 @@ def verify_cleanup():
 
         # Check other important tables
         tables_to_check = [
-            'responsibilities',
-            'categories',
-            'lists',
-            'financial_years',
-            'periods',
-            'audit_logs'
+            "responsibilities",
+            "categories",
+            "lists",
+            "financial_years",
+            "periods",
+            "audit_logs",
         ]
 
         for table in tables_to_check:
@@ -92,6 +96,7 @@ def verify_cleanup():
     except Exception as e:
         print(f"Error verifying cleanup: {e}")
         return False
+
 
 def main():
     """Main function"""
@@ -119,6 +124,7 @@ def main():
     else:
         print("Database cleanup failed!")
     print("=" * 60)
+
 
 if __name__ == "__main__":
     main()

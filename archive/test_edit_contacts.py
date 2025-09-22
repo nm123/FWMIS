@@ -1,19 +1,21 @@
-import sqlite3
 import os
+import sqlite3
 import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import DB_PATH
+
 
 def test_contact_insertion():
     """Test that contact insertion works with the new schema"""
     test_contact = {
-        'title': 'Mr',
-        'initials': 'JD',
-        'names': 'John',
-        'surname': 'Doe',
-        'job_title': 'Manager',
-        'telephone': '021 123 4567',
-        'email': 'john.doe@example.com'
+        "title": "Mr",
+        "initials": "JD",
+        "names": "John",
+        "surname": "Doe",
+        "job_title": "Manager",
+        "telephone": "021 123 4567",
+        "email": "john.doe@example.com",
     }
 
     try:
@@ -21,16 +23,31 @@ def test_contact_insertion():
         cursor = conn.cursor()
 
         # Create combined name for backward compatibility
-        combined_name = f"{test_contact.get('names', '')} {test_contact.get('surname', '')}".strip()
+        combined_name = (
+            f"{test_contact.get('names', '')} {test_contact.get('surname', '')}".strip()
+        )
 
         # Test INSERT statement (similar to what's used in edit_responsibility)
         cursor.execute(
             "INSERT INTO contacts (responsibility_id, name, title, initials, names, surname, job_title, telephone, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (99999, combined_name, test_contact.get("title"), test_contact.get("initials"), test_contact.get("names"), test_contact.get("surname"), test_contact.get("job_title"), test_contact.get("telephone"), test_contact.get("email"))
+            (
+                99999,
+                combined_name,
+                test_contact.get("title"),
+                test_contact.get("initials"),
+                test_contact.get("names"),
+                test_contact.get("surname"),
+                test_contact.get("job_title"),
+                test_contact.get("telephone"),
+                test_contact.get("email"),
+            ),
         )
 
         # Verify the insertion
-        cursor.execute("SELECT name, title, initials, names, surname, job_title, telephone, email FROM contacts WHERE responsibility_id = ?", (99999,))
+        cursor.execute(
+            "SELECT name, title, initials, names, surname, job_title, telephone, email FROM contacts WHERE responsibility_id = ?",
+            (99999,),
+        )
         result = cursor.fetchone()
 
         if result:
@@ -57,6 +74,7 @@ def test_contact_insertion():
         print(f"Database error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
+
 
 if __name__ == "__main__":
     test_contact_insertion()

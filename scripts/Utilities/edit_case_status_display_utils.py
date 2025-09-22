@@ -3,6 +3,7 @@ Utilities for Edit Case Dialog status display.
 Handles grid updates for List Status Information.
 """
 
+
 def update_list_status_display(dialog_instance) -> None:
     """
     Update the List Status Information grid based on database statuses
@@ -26,7 +27,14 @@ def update_list_status_display(dialog_instance) -> None:
     assumed_suffix_list: list[str] = assumed_suffixes
 
     # Calculate statuses for each list using assumed suffixes
-    headers: list[str] = ["Checklist", "Lead Schedule", "Recovered", "Write-Off Recommended", "Written Off", "Deleted Cases"]
+    headers: list[str] = [
+        "Checklist",
+        "Lead Schedule",
+        "Recovered",
+        "Write-Off Recommended",
+        "Written Off",
+        "Deleted Cases",
+    ]
     list_statuses: list[str] = []
     for header in headers:
         if header == "Checklist":
@@ -37,11 +45,17 @@ def update_list_status_display(dialog_instance) -> None:
             else:
                 list_statuses.append("N/A")
         elif header == "Recovered":
-            list_statuses.append("Recovered" if "-REC" in assumed_suffix_list else "N/A")
+            list_statuses.append(
+                "Recovered" if "-REC" in assumed_suffix_list else "N/A"
+            )
         elif header == "Write-Off Recommended":
-            list_statuses.append("Write Off Recommended" if "-WOR" in assumed_suffix_list else "N/A")
+            list_statuses.append(
+                "Write Off Recommended" if "-WOR" in assumed_suffix_list else "N/A"
+            )
         elif header == "Written Off":
-            list_statuses.append("Written Off" if "-WO" in assumed_suffix_list else "N/A")
+            list_statuses.append(
+                "Written Off" if "-WO" in assumed_suffix_list else "N/A"
+            )
         elif header == "Deleted Cases":
             list_statuses.append("Active")
 

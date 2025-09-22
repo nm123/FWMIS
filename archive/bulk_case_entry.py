@@ -1,35 +1,19 @@
 import os
 import sqlite3
 from datetime import datetime
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFormLayout,
-    QLineEdit,
-    QTextEdit,
-    QPushButton,
-    QFileDialog,
-    QMessageBox,
-    QWizard,
-    QWizardPage,
-    QListWidget,
-    QListWidgetItem,
-    QLabel,
-    QDateEdit,
-    QComboBox,
-    QGroupBox,
-    QScrollArea,
-    QWidget,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-)
-from PyQt5.QtCore import QDate, Qt, QEvent
+
+from PyQt5.QtCore import QDate, QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
-from scripts.Utilities.config import DB_PATH, initialize_shared_documents_table
-from scripts.Utilities.financial_utils import get_financial_year, generate_transaction_no
+from PyQt5.QtWidgets import (QComboBox, QDateEdit, QDialog, QFileDialog,
+                             QFormLayout, QGroupBox, QHBoxLayout, QHeaderView,
+                             QLabel, QLineEdit, QListWidget, QListWidgetItem,
+                             QMessageBox, QPushButton, QScrollArea,
+                             QTableWidget, QTableWidgetItem, QTextEdit,
+                             QVBoxLayout, QWidget, QWizard, QWizardPage)
 from scripts.Utilities.audit_utils import save_audit_log
+from scripts.Utilities.config import DB_PATH, initialize_shared_documents_table
+from scripts.Utilities.financial_utils import (generate_transaction_no,
+                                               get_financial_year)
 from scripts.Utilities.utils import format_currency_amount
 
 
@@ -85,16 +69,24 @@ class BulkCaseEntryWizard(QWizard):
     def on_finish(self):
         """Handle wizard completion"""
         if save_bulk_cases(self):
-            QMessageBox.information(self, "Success", f"Successfully created {len(self.cases_data)} cases with shared document.")
+            QMessageBox.information(
+                self,
+                "Success",
+                f"Successfully created {len(self.cases_data)} cases with shared document.",
+            )
         else:
-            QMessageBox.critical(self, "Error", "Failed to save cases. Please try again.")
+            QMessageBox.critical(
+                self, "Error", "Failed to save cases. Please try again."
+            )
 
 
 class DocumentUploadPage(QWizardPage):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Step 1: Upload Shared Assessment Evidence")
-        self.setSubTitle("Upload the document that will be shared across multiple cases")
+        self.setSubTitle(
+            "Upload the document that will be shared across multiple cases"
+        )
 
         self.document_path = ""
         self.document_name = ""
@@ -131,7 +123,9 @@ class DocumentUploadPage(QWizardPage):
         # Description
         self.description_edit = QTextEdit()
         self.description_edit.setMaximumHeight(80)
-        self.description_edit.setPlaceholderText("Optional: Describe what this document covers")
+        self.description_edit.setPlaceholderText(
+            "Optional: Describe what this document covers"
+        )
         upload_layout.addRow("Description:", self.description_edit)
 
         layout.addWidget(upload_group)
@@ -148,22 +142,27 @@ class DocumentUploadPage(QWizardPage):
             self.document_path = file_path
             self.doc_path_edit.setText(os.path.basename(file_path))
             if not self.doc_name_edit.text():
-                self.doc_name_edit.setText(os.path.splitext(os.path.basename(file_path))[0])
+                self.doc_name_edit.setText(
+                    os.path.splitext(os.path.basename(file_path))[0]
+                )
 
             # Create shared document record
             try:
                 conn = sqlite3.connect(DB_PATH)
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO shared_documents (document_path, document_name, upload_date, fy_id, document_type)
                     VALUES (?, ?, ?, ?, ?)
-                """, (
-                    file_path,  # Temporary path, will be updated when saved
-                    os.path.splitext(os.path.basename(file_path))[0],
-                    datetime.now().isoformat(),
-                    get_financial_year(),
-                    "assessment_evidence"
-                ))
+                """,
+                    (
+                        file_path,  # Temporary path, will be updated when saved
+                        os.path.splitext(os.path.basename(file_path))[0],
+                        datetime.now().isoformat(),
+                        get_financial_year(),
+                        "assessment_evidence",
+                    ),
+                )
                 doc_id = cursor.lastrowid
                 conn.commit()
                 conn.close()
@@ -172,14 +171,20 @@ class DocumentUploadPage(QWizardPage):
                 self.wizard().set_shared_document_id(doc_id)
 
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to create document record: {str(e)}")
+                QMessageBox.critical(
+                    self, "Error", f"Failed to create document record: {str(e)}"
+                )
 
     def validatePage(self):
         if not self.document_path:
-            QMessageBox.warning(self, "Document Required", "Please select a document to upload.")
+            QMessageBox.warning(
+                self, "Document Required", "Please select a document to upload."
+            )
             return False
         if not self.doc_name_edit.text().strip():
-            QMessageBox.warning(self, "Document Name Required", "Please enter a document name.")
+            QMessageBox.warning(
+                self, "Document Name Required", "Please enter a document name."
+            )
             return False
         return True
 
@@ -206,7 +211,9 @@ class CaseEntryPage(QWizardPage):
         # Cases table
         self.cases_table = QTableWidget()
         self.cases_table.setColumnCount(4)
-        self.cases_table.setHorizontalHeaderLabels(["Case No", "Description", "Amount", "Status"])
+        self.cases_table.setHorizontalHeaderLabels(
+            ["Case No", "Description", "Amount", "Status"]
+        )
         self.cases_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.cases_table.setMaximumHeight(200)
         cases_layout.addWidget(self.cases_table)
@@ -238,7 +245,9 @@ class CaseEntryPage(QWizardPage):
 
         # Status
         self.status_combo = NoWheelComboBox()
-        self.status_combo.addItems(["Alleged", "Under Assessment", "Valid", "Confirmed"])
+        self.status_combo.addItems(
+            ["Alleged", "Under Assessment", "Valid", "Confirmed"]
+        )
         self.status_combo.setCurrentText("Alleged")
         self.form_layout.addRow("Status:", self.status_combo)
 
@@ -260,7 +269,9 @@ class CaseEntryPage(QWizardPage):
         status = self.status_combo.currentText()
 
         if not description:
-            QMessageBox.warning(self, "Description Required", "Please enter a case description.")
+            QMessageBox.warning(
+                self, "Description Required", "Please enter a case description."
+            )
             return
         if not amount:
             QMessageBox.warning(self, "Amount Required", "Please enter an amount.")
@@ -271,7 +282,9 @@ class CaseEntryPage(QWizardPage):
             if amount_val <= 0:
                 raise ValueError
         except ValueError:
-            QMessageBox.warning(self, "Invalid Amount", "Amount must be a positive number.")
+            QMessageBox.warning(
+                self, "Invalid Amount", "Amount must be a positive number."
+            )
             return
 
         # Generate case number
@@ -292,7 +305,7 @@ class CaseEntryPage(QWizardPage):
             "transaction_no": case_no,
             "description": description,
             "amount": amount_val,
-            "status": status
+            "status": status,
         }
         self.cases.append(case_data)
         self.wizard().add_case_data(case_data)
@@ -348,7 +361,9 @@ class ReviewPage(QWizardPage):
 
         self.review_table = QTableWidget()
         self.review_table.setColumnCount(4)
-        self.review_table.setHorizontalHeaderLabels(["Case No", "Description", "Amount", "Status"])
+        self.review_table.setHorizontalHeaderLabels(
+            ["Case No", "Description", "Amount", "Status"]
+        )
         self.review_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         review_layout.addWidget(self.review_table)
 
@@ -359,7 +374,7 @@ class ReviewPage(QWizardPage):
 
         # Get document info from upload page
         upload_page = wizard.page(0)
-        if hasattr(upload_page, 'doc_name_edit'):
+        if hasattr(upload_page, "doc_name_edit"):
             doc_name = upload_page.doc_name_edit.text().strip()
             self.doc_name_label.setText(doc_name if doc_name else "Document uploaded")
 
@@ -396,7 +411,7 @@ def save_bulk_cases(wizard):
 
         # Save shared document
         fy = get_financial_year()
-        year_folder = os.path.join(os.path.dirname(DB_PATH), 'documents', 'shared', fy)
+        year_folder = os.path.join(os.path.dirname(DB_PATH), "documents", "shared", fy)
         os.makedirs(year_folder, exist_ok=True)
 
         # Copy document to shared location
@@ -404,60 +419,74 @@ def save_bulk_cases(wizard):
         dest_path = os.path.join(year_folder, doc_filename)
 
         # Copy file
-        with open(doc_page.document_path, 'rb') as src:
-            with open(dest_path, 'wb') as dst:
+        with open(doc_page.document_path, "rb") as src:
+            with open(dest_path, "wb") as dst:
                 dst.write(src.read())
 
         # Update shared document record
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE shared_documents
             SET document_path = ?, document_name = ?, upload_date = ?, fy_id = ?, description = ?
             WHERE id = ?
-        """, (
-            dest_path,
-            doc_page.doc_name_edit.text().strip(),
-            datetime.now().isoformat(),
-            fy,
-            doc_page.description_edit.toPlainText().strip(),
-            wizard.shared_document_id
-        ))
+        """,
+            (
+                dest_path,
+                doc_page.doc_name_edit.text().strip(),
+                datetime.now().isoformat(),
+                fy,
+                doc_page.description_edit.toPlainText().strip(),
+                wizard.shared_document_id,
+            ),
+        )
 
         # Get proper fy_id
-        from scripts.Utilities.financial_utils import get_current_open_financial_year
+        from scripts.Utilities.financial_utils import \
+            get_current_open_financial_year
+
         current_fy = get_current_open_financial_year()
         fy_id = current_fy[0] if current_fy else None
 
         if fy_id is None:
-            raise Exception("Cannot save bulk cases: No open financial year found. Please ensure a financial year is open in Financial Year Management.")
+            raise Exception(
+                "Cannot save bulk cases: No open financial year found. Please ensure a financial year is open in Financial Year Management."
+            )
 
         # Save cases
         for case in cases_data:
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO cases (
                     transaction_no, description, amount, status, list,
                     shared_document_id, fy_id, date_reported
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                case["transaction_no"],
-                case["description"],
-                case["amount"],
-                case["status"],
-                "Checklist",  # Default to Checklist
-                wizard.shared_document_id,
-                fy_id,
-                datetime.now().strftime("%Y-%m-%d")
-            ))
+            """,
+                (
+                    case["transaction_no"],
+                    case["description"],
+                    case["amount"],
+                    case["status"],
+                    "Checklist",  # Default to Checklist
+                    wizard.shared_document_id,
+                    fy_id,
+                    datetime.now().strftime("%Y-%m-%d"),
+                ),
+            )
 
         conn.commit()
         conn.close()
 
         # Log audit trail
-        save_audit_log("bulk_case_entry", {
-            "timestamp": datetime.now().isoformat(),
-            "shared_document_id": wizard.shared_document_id,
-            "cases_count": len(cases_data),
-            "cases": cases_data
-        }, fy)
+        save_audit_log(
+            "bulk_case_entry",
+            {
+                "timestamp": datetime.now().isoformat(),
+                "shared_document_id": wizard.shared_document_id,
+                "cases_count": len(cases_data),
+                "cases": cases_data,
+            },
+            fy,
+        )
 
         return True
 

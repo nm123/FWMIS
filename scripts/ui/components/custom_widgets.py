@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QComboBox
 from PyQt5.QtCore import QEvent
+from PyQt5.QtWidgets import QComboBox
 
 
 class NoWheelComboBox(QComboBox):

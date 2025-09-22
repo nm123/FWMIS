@@ -6,27 +6,27 @@ from PyQt5.QtWidgets import QLabel
 
 # Professional Color Palette
 COLORS = {
-    'primary': '#007bff',      # Blue - Primary actions
-    'success': '#28a745',      # Green - Success states
-    'warning': '#fd7e14',      # Orange - Warning states
-    'danger': '#dc3545',       # Red - Danger/error states
-    'info': '#17a2b8',         # Cyan - Information
-    'secondary': '#6c757d',    # Gray - Secondary actions
-    'light': '#f8f9fa',        # Light background
-    'dark': '#343a40',         # Dark text
-    'muted': '#6c757d',        # Muted text
-    'border': '#dee2e6',       # Border color
-    'hover': '#0056b3',        # Primary hover
-    'success_hover': '#218838', # Success hover
-    'warning_hover': '#e8680f', # Warning hover
-    'danger_hover': '#c82333',  # Danger hover
-    'info_hover': '#138496',   # Info hover
+    "primary": "#007bff",  # Blue - Primary actions
+    "success": "#28a745",  # Green - Success states
+    "warning": "#fd7e14",  # Orange - Warning states
+    "danger": "#dc3545",  # Red - Danger/error states
+    "info": "#17a2b8",  # Cyan - Information
+    "secondary": "#6c757d",  # Gray - Secondary actions
+    "light": "#f8f9fa",  # Light background
+    "dark": "#343a40",  # Dark text
+    "muted": "#6c757d",  # Muted text
+    "border": "#dee2e6",  # Border color
+    "hover": "#0056b3",  # Primary hover
+    "success_hover": "#218838",  # Success hover
+    "warning_hover": "#e8680f",  # Warning hover
+    "danger_hover": "#c82333",  # Danger hover
+    "info_hover": "#138496",  # Info hover
 }
 
 
-def get_status_style(status_type='info'):
+def get_status_style(status_type="info"):
     """Get status message style"""
-    if status_type == 'success':
+    if status_type == "success":
         return f"""
             QLabel {{
                 background-color: #d4edda;
@@ -39,7 +39,7 @@ def get_status_style(status_type='info'):
                 line-height: 1.4;
             }}
         """
-    elif status_type == 'warning':
+    elif status_type == "warning":
         return f"""
             QLabel {{
                 background-color: #fff3cd;
@@ -52,7 +52,7 @@ def get_status_style(status_type='info'):
                 line-height: 1.4;
             }}
         """
-    elif status_type == 'error':
+    elif status_type == "error":
         return f"""
             QLabel {{
                 background-color: #f8d7da;
@@ -80,7 +80,7 @@ def get_status_style(status_type='info'):
         """
 
 
-def create_status_label(text, status_type='info'):
+def create_status_label(text, status_type="info"):
     """Create a professional status label"""
     label = QLabel(text)
     label.setStyleSheet(get_status_style(status_type))

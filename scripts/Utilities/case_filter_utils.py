@@ -1,8 +1,11 @@
 """
 Utilities for case filtering and searching in EditCasesDialog.
 """
-from scripts.Utilities.config import DB_PATH
+
 import sqlite3
+
+from scripts.Utilities.config import DB_PATH
+
 
 def get_responsibilities_with_cases(fy_filter_combo) -> set[int]:
     """Get set of responsibility IDs that have cases, including their parents."""
@@ -26,7 +29,10 @@ def get_responsibilities_with_cases(fy_filter_combo) -> set[int]:
         print(f"Error: {e}")
     return responsibilities_with_cases
 
-def search_case_by_number(case_no: str, fy_filter_combo, list_filter_combo) -> list[tuple]:
+
+def search_case_by_number(
+    case_no: str, fy_filter_combo, list_filter_combo
+) -> list[tuple]:
     """Search for a specific case by number."""
     # Build search query with list filtering
     base_conditions = ["transaction_no LIKE ?"]
@@ -47,7 +53,9 @@ def search_case_by_number(case_no: str, fy_filter_combo, list_filter_combo) -> l
         pass
     elif selected_list == "Lead Schedule":
         # Lead Schedule shows Confirmed cases with -LS suffix, not finalized
-        base_conditions.append("assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'")
+        base_conditions.append(
+            "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'"
+        )
     elif selected_list == "Write-Off Recommended":
         # Write-Off Recommended shows cases with -WOR suffix
         base_conditions.append("suffixes LIKE '%-WOR%'")

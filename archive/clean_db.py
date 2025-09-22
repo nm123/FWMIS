@@ -4,22 +4,24 @@ Database cleanup utility for FWMIS
 Provides functions to clean up test data and orphaned records
 """
 
-import sqlite3
-import os
-import sys
 import argparse
+import os
+import sqlite3
+import sys
 from typing import Optional
 
 # Add scripts directory to Python path
-scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(scripts_dir)
 
 try:
     from Utilities.config import DB_PATH
 except ImportError:
     # Fallback if config.py is missing
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
-    DB_PATH = os.path.join(BASE_DIR, 'fruitless.db')
+    BASE_DIR = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "data")
+    )
+    DB_PATH = os.path.join(BASE_DIR, "fruitless.db")
     print(f"Warning: config.py not found, using fallback paths: {DB_PATH}")
 
 
@@ -55,7 +57,9 @@ def clean_responsibility_by_id(resp_id: int, dry_run: bool = False) -> bool:
         print(f"Found responsibility: ID={resp[0]}, Name='{resp[1]}'")
 
         # Count associated contacts
-        cursor.execute("SELECT COUNT(*) FROM contacts WHERE responsibility_id = ?", (resp_id,))
+        cursor.execute(
+            "SELECT COUNT(*) FROM contacts WHERE responsibility_id = ?", (resp_id,)
+        )
         contact_count = cursor.fetchone()[0]
         print(f"Found {contact_count} associated contacts")
 
@@ -65,7 +69,9 @@ def clean_responsibility_by_id(resp_id: int, dry_run: bool = False) -> bool:
 
         # Delete contacts first (foreign key constraint)
         if contact_count > 0:
-            cursor.execute("DELETE FROM contacts WHERE responsibility_id = ?", (resp_id,))
+            cursor.execute(
+                "DELETE FROM contacts WHERE responsibility_id = ?", (resp_id,)
+            )
             print(f"Deleted {contact_count} contacts")
 
         # Delete responsibility
@@ -123,9 +129,15 @@ def main():
     """Main entry point with command line argument parsing"""
     parser = argparse.ArgumentParser(description="FWMIS Database Cleanup Utility")
     parser.add_argument("--resp-id", type=int, help="Responsibility ID to clean up")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be deleted without actually deleting")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be deleted without actually deleting",
+    )
     parser.add_argument("--list", action="store_true", help="List all responsibilities")
-    parser.add_argument("--limit", type=int, help="Limit number of responsibilities to list")
+    parser.add_argument(
+        "--limit", type=int, help="Limit number of responsibilities to list"
+    )
 
     args = parser.parse_args()
 

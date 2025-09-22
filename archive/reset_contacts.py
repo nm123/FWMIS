@@ -1,19 +1,21 @@
-import sqlite3
 import os
+import sqlite3
 import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import DB_PATH
+
 
 def reset_contacts():
     # Default contact data
     default_contact = {
-        'title': 'Mrs',
-        'initials': 'TP',
-        'names': 'Thandeka',
-        'surname': 'Meyiwa',
-        'job_title': 'SFMO',
-        'telephone': '033 395 2680',
-        'email': 'Thandeka.Mthembu@kznhealth.gov.za'
+        "title": "Mrs",
+        "initials": "TP",
+        "names": "Thandeka",
+        "surname": "Meyiwa",
+        "job_title": "SFMO",
+        "telephone": "033 395 2680",
+        "email": "Thandeka.Mthembu@kznhealth.gov.za",
     }
 
     try:
@@ -35,20 +37,23 @@ def reset_contacts():
             # Create a combined name for backward compatibility
             combined_name = f"{default_contact['names']} {default_contact['surname']}"
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO contacts (responsibility_id, name, title, initials, names, surname, job_title, telephone, email)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                resp_id,
-                combined_name,
-                default_contact['title'],
-                default_contact['initials'],
-                default_contact['names'],
-                default_contact['surname'],
-                default_contact['job_title'],
-                default_contact['telephone'],
-                default_contact['email']
-            ))
+            """,
+                (
+                    resp_id,
+                    combined_name,
+                    default_contact["title"],
+                    default_contact["initials"],
+                    default_contact["names"],
+                    default_contact["surname"],
+                    default_contact["job_title"],
+                    default_contact["telephone"],
+                    default_contact["email"],
+                ),
+            )
             inserted_count += 1
 
         conn.commit()
@@ -60,18 +65,22 @@ def reset_contacts():
         print(f"Total contacts in database: {total_contacts}")
 
         # Show a sample of the inserted contacts
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT r.name as responsibility_name, c.title, c.initials, c.names, c.surname, c.job_title, c.telephone, c.email
             FROM contacts c
             JOIN responsibilities r ON c.responsibility_id = r.id
             LIMIT 5
-        """)
+        """
+        )
         sample_contacts = cursor.fetchall()
 
         print("\nSample of inserted contacts:")
         for contact in sample_contacts:
             print(f"Responsibility: {contact[0]}")
-            print(f"  Contact: {contact[1]} {contact[2]} {contact[3]} {contact[4]} - {contact[5]}")
+            print(
+                f"  Contact: {contact[1]} {contact[2]} {contact[3]} {contact[4]} - {contact[5]}"
+            )
             print(f"  Phone: {contact[6]}, Email: {contact[7]}")
             print()
 
@@ -80,6 +89,7 @@ def reset_contacts():
 
     except Exception as e:
         print(f"Error: {e}")
+
 
 if __name__ == "__main__":
     reset_contacts()

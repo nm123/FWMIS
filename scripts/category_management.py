@@ -1,26 +1,15 @@
-from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFormLayout,
-    QLineEdit,
-    QPushButton,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QMessageBox,
-    QComboBox,
-    QGroupBox,
-    QRadioButton,
-    QLabel,
-    QDialogButtonBox,
-    QWidget,
-    QCheckBox,
-)
-from PyQt5.QtCore import Qt
-from scripts.Utilities.category_utils import save_categories, load_categories
-from scripts.Utilities.config import DB_PATH
-import sqlite3
 import logging
+import sqlite3
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
+                             QFormLayout, QGroupBox, QHBoxLayout, QLabel,
+                             QLineEdit, QMessageBox, QPushButton, QRadioButton,
+                             QTreeWidget, QTreeWidgetItem, QVBoxLayout,
+                             QWidget)
+from scripts.Utilities.category_utils import load_categories, save_categories
+from scripts.Utilities.config import DB_PATH
+
 
 class ManageCategoriesDialog(QDialog):
     def __init__(self, parent=None):
@@ -29,7 +18,6 @@ class ManageCategoriesDialog(QDialog):
         self.setFixedSize(700, 500)
         self.categories = load_categories()
         self.setup_ui()
-
 
     def setup_ui(self):
         layout = QHBoxLayout(self)
@@ -64,14 +52,15 @@ class ManageCategoriesDialog(QDialog):
         self.select_button = QPushButton("Select Category")
         self.select_button.clicked.connect(self.select_category)
         self.select_button.setMinimumHeight(35)
-        self.select_button.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
+        self.select_button.setStyleSheet(
+            "QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }"
+        )
         button_layout.addWidget(self.select_button)
 
         layout.addWidget(button_widget, 1)
 
         self.setLayout(layout)
         self.refresh_tree()
-
 
     def refresh_tree(self):
         self.tree.clear()
@@ -118,7 +107,7 @@ class ManageCategoriesDialog(QDialog):
                     "name": category_data["name"],
                     "parent_id": category_data["parent_id"],
                     "persal_compulsory": category_data["persal_compulsory"],
-                    "bas_payment_compulsory": category_data["bas_payment_compulsory"]
+                    "bas_payment_compulsory": category_data["bas_payment_compulsory"],
                 }
                 self.categories.append(new_category)
                 save_categories(self.categories)
@@ -134,7 +123,9 @@ class ManageCategoriesDialog(QDialog):
     def edit_category(self):
         selected_category = self.get_selected_category()
         if not selected_category:
-            QMessageBox.warning(self, "No Selection", "Please select a category to edit.")
+            QMessageBox.warning(
+                self, "No Selection", "Please select a category to edit."
+            )
             return
 
         try:
@@ -146,13 +137,19 @@ class ManageCategoriesDialog(QDialog):
                     if category["id"] == selected_category["id"]:
                         category["name"] = category_data["name"]
                         category["parent_id"] = category_data["parent_id"]
-                        category["persal_compulsory"] = category_data["persal_compulsory"]
-                        category["bas_payment_compulsory"] = category_data["bas_payment_compulsory"]
+                        category["persal_compulsory"] = category_data[
+                            "persal_compulsory"
+                        ]
+                        category["bas_payment_compulsory"] = category_data[
+                            "bas_payment_compulsory"
+                        ]
                         break
 
                 save_categories(self.categories)
 
-                QMessageBox.information(self, "Success", "Category edited successfully.")
+                QMessageBox.information(
+                    self, "Success", "Category edited successfully."
+                )
                 self.refresh_tree()
         except sqlite3.Error as e:
             logging.error(f"Failed to edit category: {e}")
@@ -161,7 +158,9 @@ class ManageCategoriesDialog(QDialog):
     def delete_category(self):
         selected_category = self.get_selected_category()
         if not selected_category:
-            QMessageBox.warning(self, "No Selection", "Please select a category to delete.")
+            QMessageBox.warning(
+                self, "No Selection", "Please select a category to delete."
+            )
             return
 
         cat_id = selected_category["id"]
@@ -169,16 +168,22 @@ class ManageCategoriesDialog(QDialog):
 
         # Check if category has children
         if any(c["parent_id"] == cat_id for c in self.categories):
-            QMessageBox.warning(self, "Cannot Delete", "Cannot delete a category with subcategories.")
+            QMessageBox.warning(
+                self, "Cannot Delete", "Cannot delete a category with subcategories."
+            )
             return
 
         # Check if category is used in cases
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM cases WHERE category = ?", (category_name,))
+            cursor.execute(
+                "SELECT COUNT(*) FROM cases WHERE category = ?", (category_name,)
+            )
             if cursor.fetchone()[0] > 0:
-                QMessageBox.warning(self, "Cannot Delete", "Cannot delete a category used in cases.")
+                QMessageBox.warning(
+                    self, "Cannot Delete", "Cannot delete a category used in cases."
+                )
                 conn.close()
                 return
             conn.close()
@@ -188,18 +193,24 @@ class ManageCategoriesDialog(QDialog):
             return
 
         reply = QMessageBox.question(
-            self, "Confirm Delete", f"Delete category '{category_name}'?",
-            QMessageBox.Yes | QMessageBox.No
+            self,
+            "Confirm Delete",
+            f"Delete category '{category_name}'?",
+            QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             try:
                 self.categories = [c for c in self.categories if c["id"] != cat_id]
                 save_categories(self.categories)
-                QMessageBox.information(self, "Success", "Category deleted successfully.")
+                QMessageBox.information(
+                    self, "Success", "Category deleted successfully."
+                )
                 self.refresh_tree()
             except sqlite3.Error as e:
                 logging.error(f"Failed to delete category: {e}")
-                QMessageBox.critical(self, "Error", f"Failed to delete category: {str(e)}")
+                QMessageBox.critical(
+                    self, "Error", f"Failed to delete category: {str(e)}"
+                )
 
     def select_category(self):
         """Select the currently selected category and close the dialog"""
@@ -207,7 +218,9 @@ class ManageCategoriesDialog(QDialog):
         if selected_category:
             self.accept()
         else:
-            QMessageBox.warning(self, "No Selection", "Please select a category to choose.")
+            QMessageBox.warning(
+                self, "No Selection", "Please select a category to choose."
+            )
 
     def on_tree_double_click(self, item, column):
         """Handle double-click on tree item to select category"""
@@ -223,7 +236,9 @@ class ManageCategoriesDialog(QDialog):
             seen.add(current_id)
             if current_id == editing_id:  # Prevent self-referencing during edit
                 return True
-            parent = next((c["parent_id"] for c in categories if c["id"] == current_id), None)
+            parent = next(
+                (c["parent_id"] for c in categories if c["id"] == current_id), None
+            )
             current_id = parent
         return False
 
@@ -296,7 +311,11 @@ class AddCategoryDialog(QDialog):
 
         # Check for circular reference
         if parent_id and self.parent.would_create_cycle(parent_id, self.categories):
-            QMessageBox.warning(self, "Invalid Input", "Cannot create circular parent-child relationship.")
+            QMessageBox.warning(
+                self,
+                "Invalid Input",
+                "Cannot create circular parent-child relationship.",
+            )
             return
 
         # Set compulsory settings
@@ -305,13 +324,12 @@ class AddCategoryDialog(QDialog):
 
         self.accept()
 
-
     def get_category_data(self):
         return {
             "name": self.name_edit.text().strip(),
             "parent_id": self.parent_combo.currentData(),
             "persal_compulsory": self.persal_compulsory,
-            "bas_payment_compulsory": self.bas_payment_compulsory
+            "bas_payment_compulsory": self.bas_payment_compulsory,
         }
 
 
@@ -325,7 +343,6 @@ class EditCategoryDialog(QDialog):
         self.persal_compulsory = category.get("persal_compulsory", False)
         self.bas_payment_compulsory = category.get("bas_payment_compulsory", False)
         self.setup_ui()
-
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -384,12 +401,24 @@ class EditCategoryDialog(QDialog):
             QMessageBox.warning(self, "Invalid Input", "Name is required.")
             return
 
-        if any(c["name"] == name and c["id"] != self.category["id"] for c in self.categories):
+        if any(
+            c["name"] == name and c["id"] != self.category["id"]
+            for c in self.categories
+        ):
             QMessageBox.warning(self, "Invalid Input", "Category name must be unique.")
             return
 
-        if parent_id and (parent_id == self.category["id"] or self.parent.would_create_cycle(parent_id, self.categories, self.category["id"])):
-            QMessageBox.warning(self, "Invalid Input", "Cannot create circular parent-child relationship.")
+        if parent_id and (
+            parent_id == self.category["id"]
+            or self.parent.would_create_cycle(
+                parent_id, self.categories, self.category["id"]
+            )
+        ):
+            QMessageBox.warning(
+                self,
+                "Invalid Input",
+                "Cannot create circular parent-child relationship.",
+            )
             return
 
         # Set compulsory settings
@@ -398,13 +427,12 @@ class EditCategoryDialog(QDialog):
 
         self.accept()
 
-
     def get_category_data(self):
         return {
             "name": self.name_edit.text().strip(),
             "parent_id": self.parent_combo.currentData(),
             "persal_compulsory": self.persal_compulsory,
-            "bas_payment_compulsory": self.bas_payment_compulsory
+            "bas_payment_compulsory": self.bas_payment_compulsory,
         }
 
 
