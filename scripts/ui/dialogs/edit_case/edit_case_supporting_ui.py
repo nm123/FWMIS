@@ -19,16 +19,13 @@ def setup_supporting_ui_components(dialog_instance):
     supporting_group = QGroupBox("Supporting Evidence (To Prove Existence)")
     supporting_layout = QFormLayout(supporting_group)
 
-    # BAS Payment fields
-    dialog_instance.bas_label = QLabel("BAS Payment No:")
+    # BAS Payment No and Date in one row
+    bas_payment_layout = QHBoxLayout()
+    
     dialog_instance.bas_payment_no_edit = QLineEdit()
-    supporting_layout.addRow(
-        dialog_instance.bas_label, dialog_instance.bas_payment_no_edit
-    )
-
+    bas_payment_layout.addWidget(dialog_instance.bas_payment_no_edit)
+    
     # BAS Payment Date with manual date picker
-    bas_payment_date_layout = QHBoxLayout()
-    dialog_instance.bas_date_label = QLabel("BAS Payment Date:")
     dialog_instance.bas_payment_date_edit = QLineEdit()
     dialog_instance.bas_payment_date_edit.setPlaceholderText("YYYY-MM-DD")
     dialog_instance.bas_payment_date_button = QPushButton("...")
@@ -36,20 +33,19 @@ def setup_supporting_ui_components(dialog_instance):
     dialog_instance.bas_payment_date_button.clicked.connect(
         dialog_instance.select_bas_payment_date
     )
-    bas_payment_date_layout.addWidget(dialog_instance.bas_payment_date_edit)
-    bas_payment_date_layout.addWidget(dialog_instance.bas_payment_date_button)
-    supporting_layout.addRow(dialog_instance.bas_date_label, bas_payment_date_layout)
+    bas_payment_layout.addWidget(QLabel("Date:"))
+    bas_payment_layout.addWidget(dialog_instance.bas_payment_date_edit)
+    bas_payment_layout.addWidget(dialog_instance.bas_payment_date_button)
+    
+    supporting_layout.addRow("BAS Payment No:", bas_payment_layout)
 
-    # BAS Journal fields
-    dialog_instance.bas_journal_label = QLabel("BAS Journal No:")
+    # BAS Journal No and Date in one row
+    bas_journal_layout = QHBoxLayout()
+    
     dialog_instance.bas_journal_no_edit = QLineEdit()
-    supporting_layout.addRow(
-        dialog_instance.bas_journal_label, dialog_instance.bas_journal_no_edit
-    )
-
+    bas_journal_layout.addWidget(dialog_instance.bas_journal_no_edit)
+    
     # BAS Journal Date with manual date picker
-    bas_journal_date_layout = QHBoxLayout()
-    dialog_instance.bas_journal_date_label = QLabel("BAS Journal Date:")
     dialog_instance.bas_journal_date_edit = QLineEdit()
     dialog_instance.bas_journal_date_edit.setPlaceholderText("YYYY-MM-DD")
     dialog_instance.bas_journal_date_button = QPushButton("...")
@@ -57,18 +53,22 @@ def setup_supporting_ui_components(dialog_instance):
     dialog_instance.bas_journal_date_button.clicked.connect(
         dialog_instance.select_bas_journal_date
     )
-    bas_journal_date_layout.addWidget(dialog_instance.bas_journal_date_edit)
-    bas_journal_date_layout.addWidget(dialog_instance.bas_journal_date_button)
-    supporting_layout.addRow(
-        dialog_instance.bas_journal_date_label, bas_journal_date_layout
-    )
+    bas_journal_layout.addWidget(QLabel("Date:"))
+    bas_journal_layout.addWidget(dialog_instance.bas_journal_date_edit)
+    bas_journal_layout.addWidget(dialog_instance.bas_journal_date_button)
+    
+    supporting_layout.addRow("BAS Journal No:", bas_journal_layout)
 
-    # Persal No field
+    # Persal No field (conditional on HR Related category)
     dialog_instance.persal_label = QLabel("Persal No:")
     dialog_instance.persal_no_edit = QLineEdit()
     supporting_layout.addRow(
         dialog_instance.persal_label, dialog_instance.persal_no_edit
     )
+    
+    # Hide Persal No field by default - will be shown only for HR Related category
+    dialog_instance.persal_label.setVisible(False)
+    dialog_instance.persal_no_edit.setVisible(False)
 
     # Supporting Evidence Document upload
     dialog_instance.supporting_evidence_label = QLabel("Supporting Evidence Document:")
@@ -102,22 +102,22 @@ def setup_supporting_ui_components(dialog_instance):
     additional_group = QGroupBox("Additional Information")
     additional_layout = QFormLayout(additional_group)
 
-    # Criminal Charges Laid
+    # Criminal Charges and Disciplinary process in one row
+    charges_disciplinary_layout = QHBoxLayout()
+    
     dialog_instance.criminal_charges_combo = NoWheelComboBox()
     dialog_instance.criminal_charges_combo.addItems(["N/A", "Yes", "No"])
     dialog_instance.criminal_charges_combo.setCurrentText("N/A")
-    additional_layout.addRow(
-        "Criminal Charges Laid:", dialog_instance.criminal_charges_combo
-    )
-
-    # Disciplinary process
+    charges_disciplinary_layout.addWidget(QLabel("Criminal Charges Laid:"))
+    charges_disciplinary_layout.addWidget(dialog_instance.criminal_charges_combo)
+    
     dialog_instance.disciplinary_combo = NoWheelComboBox()
     dialog_instance.disciplinary_combo.addItems(["N/A", "Yes", "No"])
     dialog_instance.disciplinary_combo.setCurrentText("N/A")
-    additional_layout.addRow(
-        "Disciplinary process in progress or completed:",
-        dialog_instance.disciplinary_combo,
-    )
+    charges_disciplinary_layout.addWidget(QLabel("Disciplinary process:"))
+    charges_disciplinary_layout.addWidget(dialog_instance.disciplinary_combo)
+    
+    additional_layout.addRow("Charges/Disciplinary:", charges_disciplinary_layout)
 
     # Loss recovery
     dialog_instance.loss_recovery_combo = NoWheelComboBox()
@@ -127,9 +127,45 @@ def setup_supporting_ui_components(dialog_instance):
         "Loss recovery commenced or completed:", dialog_instance.loss_recovery_combo
     )
 
+    # Recovery in Progress fields (conditional)
+    dialog_instance.debtor_name_edit = QLineEdit()
+    dialog_instance.debtor_name_edit.setPlaceholderText("Enter debtor name...")
+    additional_layout.addRow("Debtor Name:", dialog_instance.debtor_name_edit)
+
+    dialog_instance.debt_number_edit = QLineEdit()
+    dialog_instance.debt_number_edit.setPlaceholderText("Enter debt number...")
+    additional_layout.addRow("Debt Number:", dialog_instance.debt_number_edit)
+
+    # Latest installment amount and date in one row
+    installment_layout = QHBoxLayout()
+    
+    dialog_instance.latest_installment_amount_edit = QLineEdit()
+    dialog_instance.latest_installment_amount_edit.setPlaceholderText("0.00")
+    installment_layout.addWidget(dialog_instance.latest_installment_amount_edit)
+    
+    dialog_instance.latest_installment_date_edit = QLineEdit()
+    dialog_instance.latest_installment_date_edit.setPlaceholderText("YYYY-MM-DD")
+    dialog_instance.latest_installment_date_button = QPushButton("...")
+    dialog_instance.latest_installment_date_button.setFixedWidth(30)
+    dialog_instance.latest_installment_date_button.clicked.connect(
+        dialog_instance.select_latest_installment_date
+    )
+    installment_layout.addWidget(QLabel("Date:"))
+    installment_layout.addWidget(dialog_instance.latest_installment_date_edit)
+    installment_layout.addWidget(dialog_instance.latest_installment_date_button)
+    
+    additional_layout.addRow("Latest Installment Amount:", installment_layout)
+
+    # Total recovered amount (read-only, calculated)
+    dialog_instance.total_recovered_amount_edit = QLineEdit()
+    dialog_instance.total_recovered_amount_edit.setReadOnly(True)
+    dialog_instance.total_recovered_amount_edit.setPlaceholderText("0.00")
+    additional_layout.addRow("Total Recovered Amount:", dialog_instance.total_recovered_amount_edit)
+
     # Steps to prevent future occurrence
     dialog_instance.prevention_steps_edit = QTextEdit()
     dialog_instance.prevention_steps_edit.setMinimumHeight(40)
+    dialog_instance.prevention_steps_edit.setMaximumHeight(40)  # Force height to prevent overrides
     additional_layout.addRow(
         "Steps taken to prevent future occurrence of F&W expenditure:",
         dialog_instance.prevention_steps_edit,

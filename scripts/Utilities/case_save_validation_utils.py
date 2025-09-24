@@ -2,9 +2,12 @@
 Validation utilities for case saving.
 """
 
+import json
 import os
+import sqlite3
 
 from PyQt5.QtWidgets import QMessageBox
+from scripts.Utilities.config import DB_PATH
 
 
 def validate_case_data(dialog_instance) -> bool:
@@ -127,8 +130,42 @@ def validate_case_data(dialog_instance) -> bool:
     if selected_assessment_status in ["Valid", "Confirmed"]:
         # Check if evidence exists in the current evidence field (uploaded during this session)
         current_evidence_path = dialog_instance.assessment_evidence_edit.text().strip()
+        
+        # Also check if evidence already exists in the database
+        existing_evidence = False
+        if hasattr(dialog_instance, 'case_id') and dialog_instance.case_id:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT evidence_paths FROM cases WHERE id = ?", (dialog_instance.case_id,))
+            evidence_data = cursor.fetchone()
+            conn.close()
+            
+            if evidence_data and evidence_data[0]:
+                try:
+                    evidence_dict = json.loads(evidence_data[0])
+                    if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                        existing_evidence = True
+                except json.JSONDecodeError:
+                    pass
+        else:
+            # Fallback: check by transaction_no if case_id not available
+            if hasattr(dialog_instance, 'base_transaction_no') and dialog_instance.base_transaction_no:
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                cursor.execute("SELECT evidence_paths FROM cases WHERE base_transaction_no = ?", (dialog_instance.base_transaction_no,))
+                evidence_data = cursor.fetchone()
+                conn.close()
+                
+                if evidence_data and evidence_data[0]:
+                    try:
+                        evidence_dict = json.loads(evidence_data[0])
+                        if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                            existing_evidence = True
+                    except json.JSONDecodeError:
+                        pass
 
-        if not current_evidence_path or not os.path.exists(current_evidence_path):
+        # Require evidence if not in current session AND not in database
+        if (not current_evidence_path or not os.path.exists(current_evidence_path)) and not existing_evidence:
             QMessageBox.warning(
                 dialog_instance,
                 "Cannot Save",
@@ -141,12 +178,12 @@ def validate_case_data(dialog_instance) -> bool:
             return False
 
         print(
-            f"LOG: Found assessment evidence for case {dialog_instance.base_transaction_no}: {current_evidence_path}"
+            f"LOG: Found assessment evidence for case {dialog_instance.base_transaction_no}: {current_evidence_path or 'existing in database'}"
         )
 
     # Validate LC evidence for LC statuses
     selected_lc_status = dialog_instance.lc_status_combo.currentText()
-    if selected_lc_status in ["Recovered", "Write Off Recommended"]:
+    if selected_lc_status in ["Recovered", "Write-Off Recommended"]:
         if (
             selected_lc_status == "Recovered"
             and not dialog_instance.recovery_evidence_edit.text().strip()

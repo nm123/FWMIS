@@ -38,7 +38,7 @@ def setup_import_ui(dialog):
 
     # Header section
     header_layout = QHBoxLayout()
-    header_label = QLabel("📊 Import Undisclosed Cases")
+    header_label = QLabel("Import Undisclosed Cases")
     header_label.setStyleSheet(
         """
         QLabel {
@@ -54,7 +54,7 @@ def setup_import_ui(dialog):
     layout.addLayout(header_layout)
 
     # File selection section
-    file_group = create_professional_groupbox("📁 BAS Report File Selection", "blue")
+    file_group = create_professional_groupbox("BAS Report File Selection", "blue")
     file_layout = QHBoxLayout()
     file_layout.setSpacing(10)
 
@@ -65,7 +65,7 @@ def setup_import_ui(dialog):
     dialog.file_path_edit.setReadOnly(True)
     dialog.file_path_edit.setMinimumHeight(35)
 
-    dialog.browse_button = create_professional_button("📂 Browse", "success")
+    dialog.browse_button = create_professional_button("Browse", "success")
     dialog.browse_button.clicked.connect(lambda: browse_file(dialog))
 
     file_layout.addWidget(dialog.file_path_edit)
@@ -74,14 +74,14 @@ def setup_import_ui(dialog):
     layout.addWidget(file_group)
 
     # Import settings section
-    settings_group = create_professional_groupbox("⚙️ Import Configuration")
+    settings_group = create_professional_groupbox("Import Configuration")
     settings_layout = QGridLayout()
     settings_layout.setSpacing(15)
 
     # Category selection
-    category_label = QLabel("📋 Category:")
+    category_label = QLabel("Category:")
     category_label.setStyleSheet("font-weight: bold;")
-    dialog.category_button = create_professional_button("🎯 Select Category")
+    dialog.category_button = create_professional_button("Select Category")
     dialog.category_button.clicked.connect(lambda: select_category(dialog))
     dialog.category_button.setMinimumHeight(35)
     dialog.category_label = QLabel("No category selected")
@@ -126,7 +126,7 @@ def setup_import_ui(dialog):
     date_range_layout.addStretch()
 
     # Parse button
-    dialog.parse_button = create_professional_button("🔍 Parse File", "info")
+    dialog.parse_button = create_professional_button("Parse File", "info")
     dialog.parse_button.clicked.connect(lambda: dialog.logic.parse_file())
     dialog.parse_button.setEnabled(False)
     dialog.parse_button.setMinimumHeight(40)
@@ -146,7 +146,7 @@ def setup_import_ui(dialog):
 
     # Results section
     results_group = create_professional_groupbox(
-        "📋 Transaction Analysis & Processing", "purple"
+        "Transaction Analysis & Processing", "purple"
     )
     results_layout = QVBoxLayout()
     results_layout.setSpacing(10)
@@ -169,7 +169,7 @@ def setup_import_ui(dialog):
     table_layout = QVBoxLayout()
     table_layout.setContentsMargins(0, 0, 0, 0)
 
-    table_header = QLabel("📊 Parsed Transactions:")
+    table_header = QLabel("Parsed Transactions:")
     table_header.setStyleSheet(
         """
         QLabel {
@@ -186,15 +186,15 @@ def setup_import_ui(dialog):
     dialog.transactions_table.setColumnCount(9)
     dialog.transactions_table.setHorizontalHeaderLabels(
         [
-            "🏢 Responsibility",
-            "🔢 Type",
-            "💰 Amount",
-            "📅 Date",
-            "📝 Description",
-            "✅ Resp Status",
-            "🔍 Dup Status",
-            "🎫 Case Number",
-            "⚡ Actions",
+            "Responsibility",
+            "Type",
+            "Amount",
+            "Date",
+            "Description",
+            "Resp Status",
+            "Dup Status",
+            "Case Number",
+            "Actions",
         ]
     )
 
@@ -228,7 +228,7 @@ def setup_import_ui(dialog):
     layout.addWidget(results_group)
 
     # Action buttons section
-    actions_group = create_professional_groupbox("🎯 Import Actions", "red")
+    actions_group = create_professional_groupbox("Import Actions", "red")
     actions_layout = QVBoxLayout()
     actions_layout.setSpacing(15)
 
@@ -246,7 +246,7 @@ def setup_import_ui(dialog):
     dialog.manage_resp_button.setMinimumHeight(40)
 
     dialog.check_duplicates_button = create_professional_button(
-        "🔍 Check Duplicates", "warning"
+        "Check Duplicates", "warning"
     )
     dialog.check_duplicates_button.clicked.connect(
         lambda: dialog.logic.check_duplicates()
@@ -274,13 +274,21 @@ def setup_import_ui(dialog):
     final_actions_layout = QHBoxLayout()
     final_actions_layout.addStretch()
 
-    dialog.import_button = create_professional_button("🚀 Import Cases", "success")
+    dialog.import_button = create_professional_button("Import Cases", "success")
     dialog.import_button.clicked.connect(lambda: dialog.logic.import_cases())
     dialog.import_button.setEnabled(False)
     dialog.import_button.setMinimumHeight(50)
 
-    dialog.cancel_button = create_professional_button("❌ Cancel", "secondary")
-    dialog.cancel_button.clicked.connect(lambda: setattr(dialog, 'cancelled', True))
+    dialog.cancel_button = create_professional_button("Cancel", "secondary")
+    def _cancel_import():
+        # If a worker is running, request cancellation; otherwise close dialog
+        if hasattr(dialog, 'worker') and dialog.worker is not None:
+            try:
+                dialog.worker.cancel()
+            except Exception:
+                pass
+        dialog.reject()
+    dialog.cancel_button.clicked.connect(_cancel_import)
     dialog.cancel_button.setMinimumHeight(45)
 
     final_actions_layout.addWidget(dialog.import_button)
@@ -307,7 +315,7 @@ def select_category(dialog):
         selected = dialog_cat.get_selected_category()
         if selected:
             dialog.category = selected
-            dialog.category_label.setText(f"✅ {selected['name']}")
+            dialog.category_label.setText(f"Selected: {selected['name']}")
             dialog.category_label.setStyleSheet(
                 """
                 QLabel {
@@ -529,7 +537,14 @@ def update_progress(dialog, percentage, message):
 
 def import_finished(dialog, imported_cases):
     dialog.progress_bar.setVisible(False)
-
+    if not imported_cases:
+        QMessageBox.warning(
+            dialog,
+            "No Cases Imported",
+            "No cases were imported. Please review the transactions and try again.",
+        )
+        dialog.import_button.setEnabled(True)
+        return
     QMessageBox.information(
         dialog,
         "Import Complete",

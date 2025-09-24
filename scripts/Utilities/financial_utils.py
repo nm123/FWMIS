@@ -13,8 +13,8 @@ def get_financial_year():
 
 def generate_transaction_no(fy):
     """
-    Generate transaction number in format YYYY00001 based on financial year
-    Example: 202600001, 202600002, etc. for FY 2025-2026
+    Generate transaction number in format FW-YYYY00001 based on financial year
+    Example: FW-202600001, FW-202600002, etc. for FY 2025-2026
     """
     import sqlite3
 
@@ -77,8 +77,8 @@ def generate_transaction_no(fy):
         conn.commit()
         conn.close()
 
-        # Format as YYYY00001 (padded to 5 digits)
-        transaction_no = f"{fy_end_year}{counter:05d}"
+        # Format as FW-YYYY00001 (padded to 5 digits)
+        transaction_no = f"FW-{fy_end_year}{counter:05d}"
 
         # Check for uniqueness and increment if necessary
         conn = sqlite3.connect(DB_PATH)
@@ -91,7 +91,7 @@ def generate_transaction_no(fy):
                 break  # Unique, proceed
             # Not unique, increment counter
             counter += 1
-            transaction_no = f"{fy_end_year}{counter:05d}"
+            transaction_no = f"FW-{fy_end_year}{counter:05d}"
             # Update the counter in database for future calls
             cursor.execute(
                 """

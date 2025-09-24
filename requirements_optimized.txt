@@ -1,0 +1,22 @@
+# FWMIS Optimized Dependencies
+# Core dependencies (existing)
+PyQt5>=5.15.0
+sqlite3  # Built into Python
+
+# Performance optimization dependencies
+psutil>=5.8.0  # Memory monitoring and system information
+openpyxl>=3.0.0  # Excel processing (already used)
+
+# Optional high-performance alternatives
+# polars>=0.20.0  # Faster alternative to pandas (uncomment if needed)
+# numba>=0.56.0  # JIT compilation for CPU-bound tasks (uncomment if needed)
+
+# Development and testing
+pytest>=6.0.0  # For running performance tests
+pytest-benchmark>=3.4.0  # For performance benchmarking
+
+# Packaging
+pyinstaller>=4.0  # For creating standalone executables
+
+# Note: pandas is intentionally not included as we're using streaming alternatives
+# If you need pandas for specific features, add: pandas>=1.3.0

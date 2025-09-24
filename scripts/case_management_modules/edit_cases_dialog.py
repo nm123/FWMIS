@@ -139,9 +139,9 @@ class EditCasesDialog(QDialog):
         self.list_filter_combo = NoWheelComboBox()
         self.list_filter_combo.addItems(
             [
-                "All Cases",
                 "Checklist",
                 "Lead Schedule",
+                "Recovery in Progress",
                 "Recovered",
                 "Write-Off Recommended",
                 "Written Off",
@@ -220,8 +220,8 @@ class EditCasesDialog(QDialog):
         header.setSectionResizeMode(QHeaderView.Interactive)
         header.setStretchLastSection(True)
 
-        # Set row height for better button display
-        self.case_table.verticalHeader().setDefaultSectionSize(50)
+        # Set row height for better button display and wrapped text
+        self.case_table.verticalHeader().setDefaultSectionSize(80)
 
         splitter.addWidget(self.case_table)
         print("DEBUG: case_table added to splitter")

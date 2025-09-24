@@ -15,14 +15,14 @@ def handle_loss_control_status_change(
 
     This function manages LC Committee determinations for Confirmed cases:
     - "Recovered": Case gets -REC suffix, finalized, appears in Recovered list
-    - "Write Off Recommended": Case gets -WOR suffix, appears in Write-Off Recommended list
+    - "Write-Off Recommended": Case gets -WOR suffix, appears in Write-Off Recommended list
 
     Both statuses require evidence uploads and LC minutes.
 
     Args:
         case_id: Database ID of the case
         base_transaction_no: Base transaction number (without suffixes)
-        loss_control_status: New Loss Control status ("Recovered" or "Write Off Recommended")
+        loss_control_status: New Loss Control status ("Recovered" or "Write-Off Recommended")
         user_id: User making the change (optional)
 
     Returns:
@@ -86,23 +86,32 @@ def handle_loss_control_status_change(
         suffixes = current_suffixes.split(",") if current_suffixes else []
 
         # Update based on new LC status
-        if loss_control_status == "Recovered":
+        if loss_control_status == "Recovery in Progress":
+            new_lc_status = "Recovery in Progress"
+            # Add -RIP suffix if not present (Recovery In Progress)
+            if "-RIP" not in suffixes:
+                suffixes.append("-RIP")
+            # Remove conflicting suffixes
+            suffixes = [s for s in suffixes if s not in ["-REC", "-WOR", "-WO"]]
+            is_finalized = False
+            
+        elif loss_control_status == "Recovered":
             new_lc_status = "Recovered"
             # Add -REC suffix if not present
             if "-REC" not in suffixes:
                 suffixes.append("-REC")
             # Remove conflicting suffixes
-            suffixes = [s for s in suffixes if s not in ["-WOR", "-WO"]]
+            suffixes = [s for s in suffixes if s not in ["-RIP", "-WOR", "-WO"]]
             is_finalized = True
             finalization_reason = "Case recovered by Loss Control Committee"
 
-        elif loss_control_status == "Write Off Recommended":
-            new_lc_status = "Write Off Recommended"
+        elif loss_control_status in ["Write Off Recommended", "Write-Off Recommended"]:
+            new_lc_status = "Write-Off Recommended"
             # Add -WOR suffix if not present
             if "-WOR" not in suffixes:
                 suffixes.append("-WOR")
             # Remove conflicting suffixes
-            suffixes = [s for s in suffixes if s not in ["-REC", "-WO"]]
+            suffixes = [s for s in suffixes if s not in ["-RIP", "-REC", "-WO"]]
             is_finalized = False
 
         else:
@@ -360,7 +369,7 @@ def approve_write_off_submission(write_off_group_id, user_id=None):
             """
             SELECT id, base_transaction_no, suffixes
             FROM cases
-            WHERE write_off_group_id = ? AND lc_status = 'Write Off Recommended'
+            WHERE write_off_group_id = ? AND lc_status = 'Write-Off Recommended'
         """,
             (write_off_group_id,),
         )
@@ -594,7 +603,7 @@ def check_workflow_completion():
             """
             SELECT base_transaction_no, assessment_status, lc_status
             FROM cases
-            WHERE lc_status = 'Write Off Recommended'
+            WHERE lc_status = 'Write-Off Recommended'
             AND write_off_group_id IS NULL
             AND is_finalized = 0
         """
@@ -624,16 +633,9 @@ def get_list_filter_query(list_name):
     Returns:
         str: SQL WHERE clause
     """
-    filters = {
-        "Checklist": "1=1",  # All cases
-        "Lead Schedule": "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'",
-        "Recovered": "suffixes LIKE '%-REC%'",
-        "Write-Off Recommended": "suffixes LIKE '%-WOR%'",
-        "Written Off": "suffixes LIKE '%-WO%'",
-        "Deleted Cases": "list = 'Deleted Cases'",  # Keep old list field for deleted cases
-    }
-
-    return filters.get(list_name, "1=1")
+    from scripts.Utilities.shared_case_filter_utils import get_list_filter_conditions
+    
+    return get_list_filter_conditions(list_name)
 
 
 def get_display_transaction_no(base_transaction_no, suffixes):

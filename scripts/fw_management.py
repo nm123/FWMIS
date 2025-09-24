@@ -1,3 +1,4 @@
+
 import os
 import sqlite3
 import sys
@@ -44,20 +45,24 @@ from scripts.ui.dialogs.checklist_dialog import ChecklistDialog
 from scripts.ui.dialogs.import_cases_dialog import import_undisclosed_cases
 from scripts.ui.dialogs.import_cases_dialog_core import \
     ImportUndisclosedCasesDialog
+from scripts.ui.dialogs.admin.delegation_manager import DelegationManagerDialog
+from scripts.ui.dialogs.annexure_preparation_dialog import AnnexurePreparationDialog
 from scripts.Utilities.config import DB_PATH, initialize_shared_documents_table
 from scripts.Utilities.financial_utils import get_active_period_display
 from scripts.Utilities.qt_diagnostics import (apply_qt_fixes,
                                               check_qt_compatibility,
                                               print_qt_diagnostics)
 from scripts.Utilities.ui_theme import apply_theme, create_status_label
+from scripts.Utilities.logging_utils import configure_logging
 from scripts.wipe_cases_dialog import WipeCasesDialog
+from scripts.optimization_management import open_optimization_management
 
 
 class FWManagementApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(
-            "🎯 FWMIS - Fruitless and Wasteful Expenditure Management System"
+            "FWMIS - Fruitless and Wasteful Expenditure Management Information System"
         )
 
         # Set minimum size and allow resizing/maximizing
@@ -111,18 +116,20 @@ class FWManagementApp(QMainWindow):
         # Welcome header
         active_period_text = get_active_period_display()
         if active_period_text:
-            welcome_text = f"🏢 Welcome to FWMIS\n{active_period_text}"
+            welcome_text = f"Welcome to the FWMIS\n{active_period_text}"
         else:
-            welcome_text = "🏢 Welcome to FWMIS"
+            welcome_text = "Welcome to the FWMIS"
 
         welcome_label = QLabel(welcome_text)
         welcome_label.setWordWrap(True)
+        welcome_label.setAlignment(Qt.AlignCenter)  # Center align the text within the label
         welcome_label.setStyleSheet(
             """
             QLabel {
                 font-size: 24px;
-                font-weight: bold;
-                color: #343a40;
+                font-weight: 600;
+                font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+                color: #1a365d;
                 margin-bottom: 10px;
             }
         """
@@ -133,11 +140,13 @@ class FWManagementApp(QMainWindow):
         subtitle_label = QLabel(
             "Fruitless and Wasteful Expenditure Management Information System"
         )
+        subtitle_label.setAlignment(Qt.AlignCenter)  # Center align the text within the label
         subtitle_label.setStyleSheet(
             """
             QLabel {
                 font-size: 16px;
-                color: #6c757d;
+                font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+                color: #4a5568;
                 margin-bottom: 30px;
             }
         """
@@ -149,13 +158,14 @@ class FWManagementApp(QMainWindow):
         actions_layout = QVBoxLayout(actions_group)
         actions_layout.setSpacing(15)
 
-        actions_title = QLabel("🚀 Quick Actions")
+        actions_title = QLabel("Quick Actions")
         actions_title.setStyleSheet(
             """
             QLabel {
                 font-size: 18px;
-                font-weight: bold;
-                color: #495057;
+                font-weight: 600;
+                font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+                color: #2d3748;
                 margin-bottom: 15px;
             }
         """
@@ -169,23 +179,23 @@ class FWManagementApp(QMainWindow):
         buttons_layout = QGridLayout()
         buttons_layout.setSpacing(15)
 
-        # Create professional action buttons
-        add_case_btn = create_professional_button("➕ Add New Case", "success", "large")
+        # Create professional corporate action buttons
+        add_case_btn = create_professional_button("Add New Case", "success", "large")
         add_case_btn.clicked.connect(self.add_new_case)
         buttons_layout.addWidget(add_case_btn, 0, 0)
 
-        view_cases_btn = create_professional_button("👁️ View Cases", "primary", "large")
+        view_cases_btn = create_professional_button("View Cases", "primary", "large")
         view_cases_btn.clicked.connect(self.view_cases)
         buttons_layout.addWidget(view_cases_btn, 0, 1)
 
         import_cases_btn = create_professional_button(
-            "📊 Import Cases", "info", "large"
+            "Import Cases", "info", "large"
         )
         import_cases_btn.clicked.connect(self.import_undisclosed_cases)
         buttons_layout.addWidget(import_cases_btn, 1, 0)
 
         reports_btn = create_professional_button(
-            "📈 Generate Reports", "warning", "large"
+            "Generate Reports", "warning", "large"
         )
         reports_btn.clicked.connect(self.generate_reports)
         buttons_layout.addWidget(reports_btn, 1, 1)
@@ -193,12 +203,6 @@ class FWManagementApp(QMainWindow):
         actions_layout.addLayout(buttons_layout)
         layout.addWidget(actions_group)
 
-        # Status information
-        status_label = create_status_label(
-            "ℹ️ System ready. Use the menu above or quick actions below to get started.",
-            "info",
-        )
-        layout.addWidget(status_label)
 
         # Add stretch to push everything to the top
         layout.addStretch()
@@ -253,6 +257,10 @@ class FWManagementApp(QMainWindow):
         cases_menu.addSeparator()  # Add separator
 
         # Write-off management
+        prepare_annexures_action = QAction("Prepare Write-Off Annexures", self)
+        prepare_annexures_action.triggered.connect(self.prepare_write_off_annexures)
+        cases_menu.addAction(prepare_annexures_action)
+
         create_write_off_action = QAction("Create Write-Off Submission", self)
         create_write_off_action.triggered.connect(self.create_write_off_submission)
         cases_menu.addAction(create_write_off_action)
@@ -303,11 +311,22 @@ class FWManagementApp(QMainWindow):
         fy_action.triggered.connect(self.manage_financial_years)
         manage_submenu.addAction(fy_action)
 
+        # Add Write-Off Delegations to Administrator > Manage
+        delegations_action = QAction("Write-Off Delegations", self)
+        delegations_action.triggered.connect(self.manage_write_off_delegations)
+        manage_submenu.addAction(delegations_action)
+
+        # Add Performance Optimization Management
+        optimization_action = QAction("Performance Optimization", self)
+        optimization_action.triggered.connect(self.open_optimization_management)
+        optimization_action.setToolTip("Configure performance optimizations for large datasets")
+        admin_menu.addAction(optimization_action)
+
         # Add separator before dangerous operations
         admin_menu.addSeparator()
 
         # Wipe Cases action (dangerous operation)
-        wipe_cases_action = QAction("🗑️ Wipe Cases (DANGER)", self)
+        wipe_cases_action = QAction("Wipe Cases (Dangerous)", self)
         wipe_cases_action.triggered.connect(self.wipe_cases)
         wipe_cases_action.setToolTip(
             "Permanently delete all cases for a selected financial year"
@@ -483,6 +502,35 @@ class FWManagementApp(QMainWindow):
                 self, "Error", f"Failed to open Write-Off Management dialog: {str(e)}"
             )
 
+    def open_optimization_management(self):
+        """Open the performance optimization management dialog"""
+        try:
+            open_optimization_management(self)
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Performance Optimization dialog: {str(e)}"
+            )
+
+    def manage_write_off_delegations(self):
+        """Open the write-off delegation management dialog"""
+        try:
+            dialog = DelegationManagerDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Write-Off Delegations dialog: {str(e)}"
+            )
+
+    def prepare_write_off_annexures(self):
+        """Open the annexure preparation dialog"""
+        try:
+            dialog = AnnexurePreparationDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Annexure Preparation dialog: {str(e)}"
+            )
+
 
 def exception_handler(exctype, value, traceback):
     """Global exception handler to catch unhandled exceptions"""
@@ -525,7 +573,6 @@ def exception_handler(exctype, value, traceback):
                 # Try to restart the application
                 try:
                     import subprocess
-                    import sys
 
                     subprocess.Popen([sys.executable] + sys.argv)
                     print("CRITICAL: Application restart initiated")
@@ -548,6 +595,32 @@ def exception_handler(exctype, value, traceback):
 if __name__ == "__main__":
     # Install global exception handler
     sys.excepthook = exception_handler
+
+    # Run Qt diagnostics and apply fixes
+    # Initialize structured logging
+    try:
+        from scripts.Utilities.logging_utils import configure_logging
+
+        configure_logging()
+    except Exception:
+        pass
+
+    # Initialize performance monitoring and optimizations
+    try:
+        from scripts.Utilities.performance_profiler import (
+            performance_profiler, memory_profiler, log_performance_report
+        )
+        from scripts.Utilities.optimization_manager import enable_all_optimizations
+        
+        # Enable all optimizations
+        enable_all_optimizations()
+        
+        # Start performance monitoring
+        memory_profiler.take_snapshot("app_start")
+        performance_profiler.start_timer("app_initialization")
+        log_performance_report()
+    except Exception:
+        pass
 
     # Run Qt diagnostics and apply fixes
     apply_qt_fixes()

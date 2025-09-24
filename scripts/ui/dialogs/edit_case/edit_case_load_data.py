@@ -157,25 +157,8 @@ def load_case_data_components(dialog_instance):
     # Set list and status display after conditional updates using shared logic with ViewCasesDialog
     # Use workflow_utils for consistent display logic
     workflow_status = dialog_instance.workflow_status_cache
-    if workflow_status:
-        display_list = "Checklist"
-        display_status = workflow_status["assessment_status"]
-
-        dialog_instance.list_display_value.setText(display_list)
-        dialog_instance.status_display_value.setText(display_status)
-        print(
-            f"LOG: Set List={display_list}, Status={display_status} for case {dialog_instance.base_transaction_no}"
-        )
-    else:
-        # Fallback to original logic if workflow status unavailable
-        display_list = "Checklist"
-        display_status = dialog_instance.assessment_status
-
-        dialog_instance.list_display_value.setText(display_list)
-        dialog_instance.status_display_value.setText(display_status)
-        print(
-            f"LOG: Set List={display_list}, Status={display_status} for case {dialog_instance.base_transaction_no}"
-        )
+    # List and Status information is now handled by the List Status Information group
+    # No need to set display values since those fields were removed
 
     # Check if case is finalized and disable editing if so
     if dialog_instance.is_finalized:
@@ -220,7 +203,7 @@ def load_case_data_components(dialog_instance):
         finalization_reason = "Case has been finalized"  # Default reason since we don't have this field in the current schema
         finalization_label = QLabel(f"Finalized: {finalization_reason}")
         finalization_label.setStyleSheet(
-            "color: #d32f2f; font-weight: bold; font-size: 14px; margin-top: 10px;"
+            "color: #d32f2f; font-weight: bold; font-size: 15px; margin-top: 10px;"
         )
         dialog_instance.main_layout.insertWidget(0, finalization_label)
 
@@ -285,11 +268,41 @@ def load_case_data_components(dialog_instance):
         # Update recovery evidence visibility, LC Minutes placeholder, and list status grid based on status
 
         # First, reset all statuses to N/A
+        dialog_instance.update_list_status_grid("Recovery in Progress", "N/A")
         dialog_instance.update_list_status_grid("Recovered", "N/A")
         dialog_instance.update_list_status_grid("Write-Off Recommended", "N/A")
 
         status = dialog_instance.lc_status
-        if status == "Recovered":
+        if status == "Recovery in Progress":
+            # Show recovery fields for installment tracking
+            dialog_instance.debtor_name_edit.setVisible(True)
+            dialog_instance.debt_number_edit.setVisible(True)
+            dialog_instance.latest_installment_amount_edit.setVisible(True)
+            dialog_instance.latest_installment_date_edit.setVisible(True)
+            dialog_instance.latest_installment_date_button.setVisible(True)
+            dialog_instance.total_recovered_amount_edit.setVisible(True)
+            
+            # Show recovery evidence
+            dialog_instance.recovery_evidence_label.setVisible(True)
+            dialog_instance.recovery_evidence_edit.setVisible(True)
+            dialog_instance.recovery_evidence_button.setVisible(True)
+            dialog_instance.recovery_evidence_view_button.setVisible(True)
+            dialog_instance.minutes_edit.setPlaceholderText(
+                "Loss Control Minutes are REQUIRED"
+            )
+            # Update List Status Information grid
+            dialog_instance.update_list_status_grid("Recovery in Progress", "Recovery in Progress")
+            
+        elif status == "Recovered":
+            # Hide installment fields, show only total recovered
+            dialog_instance.debtor_name_edit.setVisible(False)
+            dialog_instance.debt_number_edit.setVisible(False)
+            dialog_instance.latest_installment_amount_edit.setVisible(False)
+            dialog_instance.latest_installment_date_edit.setVisible(False)
+            dialog_instance.latest_installment_date_button.setVisible(False)
+            dialog_instance.total_recovered_amount_edit.setVisible(True)
+            
+            # Show recovery evidence
             dialog_instance.recovery_evidence_label.setVisible(True)
             dialog_instance.recovery_evidence_edit.setVisible(True)
             dialog_instance.recovery_evidence_button.setVisible(True)
@@ -299,7 +312,16 @@ def load_case_data_components(dialog_instance):
             )
             # Update List Status Information grid
             dialog_instance.update_list_status_grid("Recovered", "Recovered")
+            
         elif status == "Write Off Recommended":
+            # Hide all recovery fields
+            dialog_instance.debtor_name_edit.setVisible(False)
+            dialog_instance.debt_number_edit.setVisible(False)
+            dialog_instance.latest_installment_amount_edit.setVisible(False)
+            dialog_instance.latest_installment_date_edit.setVisible(False)
+            dialog_instance.latest_installment_date_button.setVisible(False)
+            dialog_instance.total_recovered_amount_edit.setVisible(False)
+            
             dialog_instance.recovery_evidence_label.setVisible(False)
             dialog_instance.recovery_evidence_edit.setVisible(False)
             dialog_instance.recovery_evidence_button.setVisible(False)
@@ -313,12 +335,42 @@ def load_case_data_components(dialog_instance):
                 "Write-Off Recommended", "Write Off Recommended"
             )
         else:
+            # Hide all recovery fields for other statuses
+            dialog_instance.debtor_name_edit.setVisible(False)
+            dialog_instance.debt_number_edit.setVisible(False)
+            dialog_instance.latest_installment_amount_edit.setVisible(False)
+            dialog_instance.latest_installment_date_edit.setVisible(False)
+            dialog_instance.latest_installment_date_button.setVisible(False)
+            dialog_instance.total_recovered_amount_edit.setVisible(False)
+            
             dialog_instance.recovery_evidence_label.setVisible(False)
             dialog_instance.recovery_evidence_edit.setVisible(False)
             dialog_instance.recovery_evidence_button.setVisible(False)
             dialog_instance.recovery_evidence_view_button.setVisible(False)
             dialog_instance.recovery_evidence_edit.clear()
             dialog_instance.minutes_edit.setPlaceholderText("")
+
+    # Set recovery fields with proper type conversion and null checking
+    if len(dialog_instance.case_data) > 30:  # debtor_name
+        debtor_name = dialog_instance.case_data[30]
+        if debtor_name is not None:
+            dialog_instance.debtor_name_edit.setText(str(debtor_name))
+    if len(dialog_instance.case_data) > 31:  # debt_number
+        debt_number = dialog_instance.case_data[31]
+        if debt_number is not None:
+            dialog_instance.debt_number_edit.setText(str(debt_number))
+    if len(dialog_instance.case_data) > 32:  # total_recovered_amount
+        total_recovered = dialog_instance.case_data[32]
+        if total_recovered is not None and total_recovered != 0:
+            dialog_instance.total_recovered_amount_edit.setText(str(total_recovered))
+    if len(dialog_instance.case_data) > 33:  # latest_installment_amount
+        latest_installment = dialog_instance.case_data[33]
+        if latest_installment is not None and latest_installment != 0:
+            dialog_instance.latest_installment_amount_edit.setText(str(latest_installment))
+    if len(dialog_instance.case_data) > 34:  # latest_installment_date
+        latest_date = dialog_instance.case_data[34]
+        if latest_date is not None:
+            dialog_instance.latest_installment_date_edit.setText(str(latest_date))
 
     # Set BAS fields
     if dialog_instance.case_data[6]:  # bas_payment_no

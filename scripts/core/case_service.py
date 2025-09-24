@@ -1,8 +1,8 @@
-import sqlite3
+import logging
 from datetime import datetime
 
 from scripts.Utilities.audit_utils import save_audit_log
-from scripts.Utilities.config import DB_PATH
+from scripts.Utilities.db_utils import get_db_connection
 from scripts.Utilities.financial_utils import (generate_transaction_no,
                                                get_financial_year)
 
@@ -14,8 +14,8 @@ class CaseService:
     def create_case(case_data):
         """Create a new case in the database"""
         try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
 
             # Insert case
             cursor.execute(
@@ -63,8 +63,6 @@ class CaseService:
             )
 
             case_id = cursor.lastrowid
-            conn.commit()
-            conn.close()
 
             # Log audit trail
             save_audit_log(
@@ -81,18 +79,15 @@ class CaseService:
             return case_id
 
         except Exception as e:
-            print(f"Error creating case: {e}")
-            if "conn" in locals():
-                conn.rollback()
-                conn.close()
+            logging.getLogger(__name__).exception("Error creating case")
             raise
 
     @staticmethod
     def update_case(case_id, case_data):
         """Update an existing case"""
         try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
 
             # Update case
             cursor.execute(
@@ -138,9 +133,6 @@ class CaseService:
                 ),
             )
 
-            conn.commit()
-            conn.close()
-
             # Log audit trail
             save_audit_log(
                 "update_case",
@@ -156,18 +148,15 @@ class CaseService:
             return True
 
         except Exception as e:
-            print(f"Error updating case: {e}")
-            if "conn" in locals():
-                conn.rollback()
-                conn.close()
+            logging.getLogger(__name__).exception("Error updating case")
             raise
 
     @staticmethod
     def delete_case(case_id, transaction_no):
         """Delete case by moving it to Deleted Cases"""
         try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
 
             # Get current list before updating
             cursor.execute("SELECT list FROM cases WHERE id = ?", (case_id,))
@@ -183,9 +172,6 @@ class CaseService:
             """,
                 (current_list, case_id),
             )
-
-            conn.commit()
-            conn.close()
 
             # Log audit trail
             save_audit_log(
@@ -203,54 +189,47 @@ class CaseService:
             return True
 
         except Exception as e:
-            print(f"Error deleting case: {e}")
-            if "conn" in locals():
-                conn.rollback()
-                conn.close()
+            logging.getLogger(__name__).exception("Error deleting case")
             raise
 
     @staticmethod
     def get_case_by_id(case_id):
         """Get case data by ID"""
         try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM cases WHERE id = ?", (case_id,))
+                case_data = cursor.fetchone()
+                columns = [desc[0] for desc in cursor.description] if case_data else None
 
-            cursor.execute("SELECT * FROM cases WHERE id = ?", (case_id,))
-            case_data = cursor.fetchone()
-            conn.close()
-
-            if case_data:
+            if case_data and columns:
                 # Convert to dictionary for easier handling
-                columns = [desc[0] for desc in cursor.description]
                 return dict(zip(columns, case_data))
             return None
 
         except Exception as e:
-            print(f"Error getting case: {e}")
+            logging.getLogger(__name__).exception("Error getting case by id")
             return None
 
     @staticmethod
     def get_case_by_transaction_no(transaction_no):
         """Get case data by transaction number"""
         try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,)
+                )
+                case_data = cursor.fetchone()
+                columns = [desc[0] for desc in cursor.description] if case_data else None
 
-            cursor.execute(
-                "SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,)
-            )
-            case_data = cursor.fetchone()
-            conn.close()
-
-            if case_data:
+            if case_data and columns:
                 # Convert to dictionary for easier handling
-                columns = [desc[0] for desc in cursor.description]
                 return dict(zip(columns, case_data))
             return None
 
         except Exception as e:
-            print(f"Error getting case: {e}")
+            logging.getLogger(__name__).exception("Error getting case by transaction number")
             return None
 
     @staticmethod
@@ -290,8 +269,8 @@ class CaseService:
     ):
         """Find potential duplicate cases"""
         try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
 
             query = """
                 SELECT * FROM cases
@@ -309,10 +288,9 @@ class CaseService:
 
             cursor.execute(query, params)
             duplicates = cursor.fetchall()
-            conn.close()
 
             return duplicates
 
         except Exception as e:
-            print(f"Error finding duplicates: {e}")
+            logging.getLogger(__name__).exception("Error finding duplicates")
             return []

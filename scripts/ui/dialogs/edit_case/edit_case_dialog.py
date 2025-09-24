@@ -43,7 +43,7 @@ from .edit_case_handlers import (browse_assessment_evidence, browse_evidence,
                                  browse_source_doc, browse_supporting_evidence,
                                  on_assessment_status_changed,
                                  on_lc_status_changed, select_bas_journal_date,
-                                 select_bas_payment_date,
+                                 select_bas_payment_date, select_latest_installment_date,
                                  update_conditional_fields,
                                  update_list_status_grid,
                                  view_assessment_evidence, view_minutes,
@@ -76,7 +76,7 @@ class EditCaseDialog(QDialog):
         # Set title with list context for better user understanding
         self.list_name = selected_list or "Checklist"
         self.setWindowTitle(f"Edit Case Details - {self.list_name}")
-        self.setFixedSize(1200, 900)
+        self.setFixedSize(1400, 1000)  # Increased height to prevent scrolling
         try:
             initialize_case_data(self, case_data, selected_list)
 
@@ -175,6 +175,9 @@ class EditCaseDialog(QDialog):
 
     def select_bas_journal_date(self):
         select_bas_journal_date(self)
+
+    def select_latest_installment_date(self):
+        select_latest_installment_date(self)
 
     def delete_case(self):
         delete_case(self)

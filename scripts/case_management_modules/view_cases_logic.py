@@ -27,37 +27,17 @@ class ViewCasesLogic:
     @staticmethod
     def get_responsibilities_with_cases(dialog):
         """Get set of responsibility IDs that have cases, including their parents"""
-        responsibilities_with_cases = set()
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-
-            # Build query with financial year filter (but not for "All Cases" list filter)
-            query = "SELECT DISTINCT responsibility_id FROM cases WHERE list != 'Deleted Cases'"
-            params = []
-
-            # Add financial year filter if selected
-            selected_fy_id = dialog.fy_filter_combo.currentData()
-            if selected_fy_id:
-                query += " AND fy_id = ?"
-                params.append(selected_fy_id)
-
-            cursor.execute(query, params)
-            case_resp_ids = {row[0] for row in cursor.fetchall()}
-
-            # Include parent responsibilities
-            for resp_id in case_resp_ids:
-                responsibilities_with_cases.add(resp_id)
-                # Find and add parent IDs
-                resp = next(
-                    (r for r in dialog.responsibilities if r["id"] == resp_id), None
-                )
-                if resp and resp["parent_id"]:
-                    responsibilities_with_cases.add(resp["parent_id"])
-
-            conn.close()
-        except sqlite3.Error as e:
-            print(f"Error querying responsibilities with cases: {e}")
+        from scripts.Utilities.shared_case_filter_utils import get_responsibilities_with_cases as shared_get_resp
+        
+        responsibilities_with_cases = shared_get_resp(dialog.fy_filter_combo, dialog.list_filter_combo)
+        
+        # Include parent responsibilities
+        for resp_id in list(responsibilities_with_cases):
+            resp = next(
+                (r for r in dialog.responsibilities if r["id"] == resp_id), None
+            )
+            if resp and resp["parent_id"]:
+                responsibilities_with_cases.add(resp["parent_id"])
 
         return responsibilities_with_cases
 
@@ -170,64 +150,16 @@ class ViewCasesLogic:
 
     @staticmethod
     def refresh_cases(dialog, resp_ids=None):
+        from scripts.Utilities.shared_case_filter_utils import build_case_query, execute_case_query
+        
         dialog.case_table.setRowCount(0)
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
-        # Build base query with list filtering
-        base_conditions = ["list != 'Deleted Cases'"]
-        base_conditions.append("fy_id IS NOT NULL AND responsibility_id IS NOT NULL")
-        params = []
-
-        # Add financial year filter
-        selected_fy_id = dialog.fy_filter_combo.currentData()
-        if selected_fy_id:
-            base_conditions.append("fy_id = ?")
-            params.append(selected_fy_id)
-
-        # Add list filter condition using new single-case model
+        
+        # Build consistent query using shared filtering logic
+        query, params = build_case_query(dialog.fy_filter_combo, dialog.list_filter_combo, resp_ids)
+        
+        # Execute query and populate table
+        rows = execute_case_query(query, params)
         selected_list = dialog.list_filter_combo.currentText()
-        if selected_list == "Checklist":
-            # Checklist shows all cases
-            pass
-        elif selected_list == "Lead Schedule":
-            # Lead Schedule shows cases with list = 'Lead Schedule'
-            base_conditions.append("list = 'Lead Schedule'")
-        elif selected_list == "Write-Off Recommended":
-            # Write-Off Recommended shows cases with lc_status = 'Write Off Recommended' and not finalized
-            base_conditions.append("lc_status = 'Write Off Recommended' AND is_finalized = 0")
-        elif selected_list == "Recovered":
-            # Recovered shows cases with list = 'Recovered'
-            base_conditions.append("list = 'Recovered'")
-        elif selected_list == "Written Off":
-            # Written Off shows cases with list = 'Written Off'
-            base_conditions.append("list = 'Written Off'")
-        elif selected_list == "To-Do List":
-            # Show both actual To-Do List cases and GJ cases with outstanding actions
-            base_conditions.append(
-                "(list = 'To-Do List' OR bas_journal_no IS NOT NULL)"
-            )
-        elif selected_list == "Deleted Cases":
-            # Deleted Cases shows cases with -DEL suffix
-            base_conditions.append("suffixes LIKE '%-DEL%'")
-
-        # Add responsibility filter if provided
-        if resp_ids:
-            placeholders = ",".join("?" for _ in resp_ids)
-            base_conditions.append(f"responsibility_id IN ({placeholders})")
-            params.extend(resp_ids)
-
-        where_clause = " AND ".join(base_conditions)
-        # Select columns for shared table population (match Edit Cases query)
-        query = f"SELECT transaction_no, date_reported, category, amount, assessment_status, lc_status, suffixes, bas_payment_no, bas_journal_no FROM cases WHERE {where_clause}"
-
-        try:
-            cursor.execute(query, params)
-            rows = cursor.fetchall()
-        except sqlite3.Error as e:
-            QMessageBox.warning(dialog, "Query Error", str(e))
-            rows = []
-        conn.close()
         populate_case_table(dialog.case_table, rows, selected_list, include_edit=False)
 
     @staticmethod

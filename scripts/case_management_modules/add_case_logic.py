@@ -184,78 +184,8 @@ class AddCaseLogic:
         # Get the selected status after updating options
         selected_status = self.dialog.status_combo.currentText()
 
-        # Show assessment fields only for Lead Schedule + Valid/Confirmed status
-        show_assessment_fields = (
-            selected_list == "Lead Schedule"
-            and selected_status in ["Valid", "Confirmed"]
-        )
-
-        # Update visibility of assessment-related fields
-        self.dialog.source_doc_label.setVisible(show_assessment_fields)
-        self.dialog.source_doc_edit.setVisible(show_assessment_fields)
-        self.dialog.source_doc_button.setVisible(show_assessment_fields)
-
-        self.dialog.minutes_label.setVisible(show_assessment_fields)
-        self.dialog.minutes_edit.setVisible(show_assessment_fields)
-        self.dialog.minutes_button.setVisible(show_assessment_fields)
-
-        self.dialog.evidence_label.setVisible(show_assessment_fields)
-        self.dialog.evidence_edit.setVisible(show_assessment_fields)
-        self.dialog.evidence_button.setVisible(show_assessment_fields)
-
-        self.dialog.assessed_by_label.setVisible(show_assessment_fields)
-        self.dialog.assessed_by_edit.setVisible(show_assessment_fields)
-
-        self.dialog.assessment_date_label.setVisible(show_assessment_fields)
-        self.dialog.assessment_date_edit.setVisible(show_assessment_fields)
-
-        # Update compulsory fields based on category
-        selected_category = (
-            self.dialog.category_combo.currentText()
-            if self.dialog.category_combo.count() > 0
-            else ""
-        )
-        if selected_category:
-            category = next(
-                (c for c in self.dialog.categories if c["name"] == selected_category),
-                None,
-            )
-            if category:
-                bas_comp = category.get("bas_payment_compulsory", False)
-                persal_comp = category.get("persal_compulsory", False)
-            else:
-                bas_comp = False
-                persal_comp = False
-        else:
-            bas_comp = False
-            persal_comp = False
-
-        # Update BAS fields
-        self.dialog.bas_label.setText("BAS Payment No:" + (" *" if bas_comp else ""))
-        self.dialog.bas_label.setVisible(bas_comp)
-        self.dialog.bas_payment_no_edit.setVisible(bas_comp)
-        self.dialog.bas_date_label.setText(
-            "BAS Payment Date:" + (" *" if bas_comp else "")
-        )
-        self.dialog.bas_date_label.setVisible(bas_comp)
-        self.dialog.bas_payment_date_edit.setVisible(bas_comp)
-
-        # Update BAS Journal fields
-        self.dialog.bas_journal_label.setText(
-            "BAS Journal No:" + (" *" if bas_comp else "")
-        )
-        self.dialog.bas_journal_label.setVisible(bas_comp)
-        self.dialog.bas_journal_no_edit.setVisible(bas_comp)
-        self.dialog.bas_journal_date_label.setText(
-            "BAS Journal Date:" + (" *" if bas_comp else "")
-        )
-        self.dialog.bas_journal_date_label.setVisible(bas_comp)
-        self.dialog.bas_journal_date_edit.setVisible(bas_comp)
-
-        # Update Persal field
-        self.dialog.persal_label.setText("Persal No:" + (" *" if persal_comp else ""))
-        self.dialog.persal_label.setVisible(persal_comp)
-        self.dialog.persal_no_edit.setVisible(persal_comp)
+        # All fields are now always visible - no more conditional hiding
+        # This prevents screen jumping and provides a consistent experience
 
     def save_case(self):
         from scripts.Utilities.add_case_utils import (get_case_data,

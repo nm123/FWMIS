@@ -54,16 +54,14 @@ def update_conditional_fields(dialog):
     try:
         # Safety checks for required widgets
         if (
-            not hasattr(dialog, "list_combo")
-            or not hasattr(dialog, "status_combo")
+            not hasattr(dialog, "status_combo")
             or not hasattr(dialog, "category_combo")
         ):
             return  # Exit early if required widgets don't exist
 
         # Get current selections safely
-        selected_list = (
-            dialog.list_combo.currentText() if dialog.list_combo.count() > 0 else ""
-        )
+        # List information is now handled by the List Status Information group
+        selected_list = dialog.selected_list or "Checklist"
         # Use assessment_status_combo if available (for edit case), otherwise status_combo
         if hasattr(dialog, "assessment_status_combo"):
             selected_status = (
@@ -229,6 +227,14 @@ def update_conditional_fields(dialog):
             )
             dialog.supporting_evidence_label.setText(new_text)
             print(f"DEBUG: Updated supporting_evidence_label text to: {new_text}")
+        
+        # Show/hide Persal No field based on category
+        if hasattr(dialog, "persal_label") and hasattr(dialog, "persal_no_edit"):
+            selected_category = dialog.category_combo.currentText() if dialog.category_combo.count() > 0 else ""
+            is_hr_related = "HR Related" in selected_category
+            dialog.persal_label.setVisible(is_hr_related)
+            dialog.persal_no_edit.setVisible(is_hr_related)
+            print(f"DEBUG: Persal No field visibility: {is_hr_related} for category: {selected_category}")
 
     except Exception as e:
         print(f"Warning: Error in update_conditional_fields: {e}")
@@ -449,6 +455,29 @@ def select_bas_journal_date(dialog):
     print("BAS journal date selection")
 
 
+def select_latest_installment_date(dialog):
+    """Select latest installment date using date picker"""
+    from PyQt5.QtWidgets import QCalendarWidget, QDialog, QVBoxLayout
+    from PyQt5.QtCore import QDate
+
+    calendar_dialog = QDialog(dialog)
+    calendar_dialog.setWindowTitle("Select Latest Installment Date")
+    calendar_dialog.setFixedSize(300, 250)
+
+    layout = QVBoxLayout(calendar_dialog)
+    calendar = QCalendarWidget()
+    layout.addWidget(calendar)
+
+    def on_date_selected():
+        selected_date = calendar.selectedDate()
+        dialog.latest_installment_date_edit.setText(selected_date.toString("yyyy-MM-dd"))
+        calendar_dialog.accept()
+
+    calendar.clicked.connect(on_date_selected)
+    calendar_dialog.exec_()
+    print("Latest installment date selection")
+
+
 def update_lc_fields_visibility(dialog, lc_status):
     """
     Update visibility of LC-specific fields based on LC status.
@@ -458,7 +487,18 @@ def update_lc_fields_visibility(dialog, lc_status):
         lc_status (str): The current LC status.
     """
     print(f"LC fields updated for status: {lc_status}")
-    if lc_status == "Recovered":
+    
+    # Update recovery fields visibility based on LC status
+    if lc_status == "Recovery in Progress":
+        # Show recovery fields for installment tracking
+        dialog.debtor_name_edit.setVisible(True)
+        dialog.debt_number_edit.setVisible(True)
+        dialog.latest_installment_amount_edit.setVisible(True)
+        dialog.latest_installment_date_edit.setVisible(True)
+        dialog.latest_installment_date_button.setVisible(True)
+        dialog.total_recovered_amount_edit.setVisible(True)
+        
+        # Show recovery evidence
         dialog.recovery_evidence_label.setVisible(True)
         dialog.recovery_evidence_edit.setVisible(True)
         dialog.recovery_evidence_button.setVisible(True)
@@ -467,7 +507,35 @@ def update_lc_fields_visibility(dialog, lc_status):
             "Recovery Evidence is REQUIRED"
         )
         dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+        
+    elif lc_status == "Recovered":
+        # Hide installment fields, show only total recovered
+        dialog.debtor_name_edit.setVisible(False)
+        dialog.debt_number_edit.setVisible(False)
+        dialog.latest_installment_amount_edit.setVisible(False)
+        dialog.latest_installment_date_edit.setVisible(False)
+        dialog.latest_installment_date_button.setVisible(False)
+        dialog.total_recovered_amount_edit.setVisible(True)
+        
+        # Show recovery evidence
+        dialog.recovery_evidence_label.setVisible(True)
+        dialog.recovery_evidence_edit.setVisible(True)
+        dialog.recovery_evidence_button.setVisible(True)
+        dialog.recovery_evidence_view_button.setVisible(True)
+        dialog.recovery_evidence_edit.setPlaceholderText(
+            "Recovery Evidence is REQUIRED"
+        )
+        dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+        
     elif lc_status == "Write Off Recommended":
+        # Hide all recovery fields
+        dialog.debtor_name_edit.setVisible(False)
+        dialog.debt_number_edit.setVisible(False)
+        dialog.latest_installment_amount_edit.setVisible(False)
+        dialog.latest_installment_date_edit.setVisible(False)
+        dialog.latest_installment_date_button.setVisible(False)
+        dialog.total_recovered_amount_edit.setVisible(False)
+        
         dialog.recovery_evidence_label.setVisible(False)
         dialog.recovery_evidence_edit.setVisible(False)
         dialog.recovery_evidence_button.setVisible(False)
@@ -475,7 +543,16 @@ def update_lc_fields_visibility(dialog, lc_status):
         dialog.recovery_evidence_edit.clear()
         dialog.recovery_evidence_edit.setPlaceholderText("")
         dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+        
     else:
+        # Hide all recovery fields for other statuses
+        dialog.debtor_name_edit.setVisible(False)
+        dialog.debt_number_edit.setVisible(False)
+        dialog.latest_installment_amount_edit.setVisible(False)
+        dialog.latest_installment_date_edit.setVisible(False)
+        dialog.latest_installment_date_button.setVisible(False)
+        dialog.total_recovered_amount_edit.setVisible(False)
+        
         dialog.recovery_evidence_label.setVisible(False)
         dialog.recovery_evidence_edit.setVisible(False)
         dialog.recovery_evidence_button.setVisible(False)

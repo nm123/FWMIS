@@ -43,10 +43,23 @@ def initialize_case_data(dialog_instance, case_data, selected_list):
     # Extract key fields
     dialog_instance.case_id = case_data[0]
     if isinstance(case_data, dict):
-        dialog_instance.base_transaction_no = (
-            case_data.get("base_transaction_no")
-            or str(case_data.get("transaction_no", "")).split("-")[0]
-        )
+        # Extract base transaction number properly
+        base_transaction_no = case_data.get("base_transaction_no")
+        if not base_transaction_no:
+            transaction_no = str(case_data.get("transaction_no", ""))
+            # For FW-202600001-LS-WOR, we want FW-202600001, not just FW
+            if transaction_no.startswith("FW-"):
+                # Find the first occurrence of a suffix pattern (-LS, -WOR, -REC, -WO)
+                import re
+                match = re.match(r'(FW-\d{9})', transaction_no)
+                if match:
+                    base_transaction_no = match.group(1)
+                else:
+                    # Fallback to original logic if pattern doesn't match
+                    base_transaction_no = transaction_no.split("-")[0]
+            else:
+                base_transaction_no = transaction_no.split("-")[0]
+        dialog_instance.base_transaction_no = base_transaction_no
         dialog_instance.transaction_no = case_data.get("transaction_no", "")
         dialog_instance.assessment_status = case_data.get(
             "assessment_status", "Alleged"
@@ -56,11 +69,25 @@ def initialize_case_data(dialog_instance, case_data, selected_list):
         dialog_instance.is_finalized = case_data.get("is_finalized", False)
     else:
         dialog_instance.transaction_no = case_data[1] if len(case_data) > 1 else ""
-        dialog_instance.base_transaction_no = (
-            case_data[45]
-            if len(case_data) > 45 and case_data[45]
-            else str(case_data[1]).split("-")[0]
+        # Extract base transaction number properly for tuple case
+        base_transaction_no = (
+            case_data[45] if len(case_data) > 45 and case_data[45] else None
         )
+        if not base_transaction_no:
+            transaction_no = str(case_data[1])
+            # For FW-202600001-LS-WOR, we want FW-202600001, not just FW
+            if transaction_no.startswith("FW-"):
+                # Find the first occurrence of a suffix pattern (-LS, -WOR, -REC, -WO)
+                import re
+                match = re.match(r'(FW-\d{9})', transaction_no)
+                if match:
+                    base_transaction_no = match.group(1)
+                else:
+                    # Fallback to original logic if pattern doesn't match
+                    base_transaction_no = transaction_no.split("-")[0]
+            else:
+                base_transaction_no = transaction_no.split("-")[0]
+        dialog_instance.base_transaction_no = base_transaction_no
         dialog_instance.assessment_status = (
             case_data[42] if len(case_data) > 42 and case_data[42] else "Alleged"
         )

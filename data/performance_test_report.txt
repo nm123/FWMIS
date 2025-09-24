@@ -1,0 +1,46 @@
+FWMIS Performance Test Report
+==================================================
+
+Database Optimization:
+  Status: PASSED
+  indexes_created: True
+  optimizations_applied: True
+  query_time: 0.0001468658447265625
+  case_count: 7
+
+Memory Usage:
+  Status: PASSED
+  memory_monitoring: True
+  optimal_chunk_size: 1000
+
+CSV Processing:
+  Status: PASSED
+  rows_processed: 10000
+  chunks: 10
+  processing_time: 0.06904935836791992
+  rows_per_second: 144823.93806929223
+
+Excel Export:
+  Status: PASSED
+  cases_exported: 5000
+  export_time: 4.220052480697632
+  file_size_mb: 0.22733592987060547
+  cases_per_second: 1184.819388590502
+
+Report Generation:
+  Status: PASSED
+  generation_time: 0.03885602951049805
+  categories_count: 2
+  statuses_count: 1
+  total_cases: 7
+
+Large Dataset Import:
+  Status: FAILED
+  Error: BatchDatabaseInserter.__init__() got an unexpected keyword argument 'chunk_size'
+
+Batch Operations:
+  Status: PASSED
+  single_insert_time: 0.008210420608520508
+  batch_insert_time: 0.0014188289642333984
+  performance_improvement: 5.786758527978491
+

@@ -115,11 +115,10 @@ class ViewCasesDialog(QDialog):
             [
                 "Checklist",
                 "Lead Schedule",
-                "To-Do List",
+                "Recovery in Progress",
                 "Recovered",
                 "Write-Off Recommended",
                 "Written Off",
-                "Deleted Cases",
             ]
         )
         self.list_filter_combo.setCurrentText("Checklist")
@@ -201,8 +200,8 @@ class ViewCasesDialog(QDialog):
             True
         )  # Last column stretches to fill remaining space
 
-        # Set row height for better readability
-        self.case_table.verticalHeader().setDefaultSectionSize(25)
+        # Set row height for better readability and wrapped text
+        self.case_table.verticalHeader().setDefaultSectionSize(80)
 
         splitter.addWidget(self.case_table)
 

@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QMessageBox
 from scripts.core.import_worker import ImportWorker
+from scripts.core.optimized_import_worker import OptimizedImportWorker
+from scripts.Utilities.optimization_manager import get_optimization_manager
 
 
 def import_cases(dialog):
@@ -44,69 +46,72 @@ def import_cases(dialog):
     )
 
     if reply == QMessageBox.Yes:
-        perform_import(dialog)
+        # Use background worker (consistent with other import flow)
+        dialog.progress_bar.setVisible(True)
+        dialog.progress_bar.setValue(0)
+        dialog.import_button.setEnabled(False)
+
+        # Some dialogs may not set selected_fy; default to None
+        selected_fy = getattr(dialog, "selected_fy", None)
+
+        # Get optimization manager and auto-enable for large datasets
+        optimization_manager = get_optimization_manager()
+        data_size = len(transactions_to_import)
+        
+        # Auto-enable optimizations for large datasets
+        optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(data_size, "import")
+        
+        if optimizations_enabled:
+            # Use optimized worker for large datasets
+            use_streaming = optimization_manager.should_use_streaming(data_size)
+            batch_size = optimization_manager.get_optimal_chunk_size()
+            
+            dialog.worker = OptimizedImportWorker(
+                transactions_to_import,
+                dialog.category,
+                dialog.date_from,
+                dialog.date_to,
+                dialog.bas_file_path,
+                selected_fy,
+                use_streaming=use_streaming,
+                batch_size=batch_size,
+            )
+            
+            # Show optimization notification
+            QMessageBox.information(
+                dialog,
+                "Performance Optimization",
+                f"Large dataset detected ({data_size} cases).\n\n"
+                "Performance optimizations have been automatically enabled:\n"
+                "• Memory-efficient imports\n"
+                "• Batch database operations\n"
+                "• Adaptive chunk sizing\n\n"
+                "This will provide better performance and memory usage."
+            )
+        else:
+            # Use original worker for small datasets
+            dialog.worker = ImportWorker(
+                transactions_to_import,
+                dialog.category,
+                dialog.date_from,
+                dialog.date_to,
+                dialog.bas_file_path,
+                selected_fy,
+            )
+        dialog.worker.progress.connect(lambda p, m: update_progress(dialog, p, m))
+        dialog.worker.finished.connect(lambda cases: import_finished(dialog, cases))
+        dialog.worker.error.connect(lambda msg: import_error(dialog, msg))
+        dialog.worker.start()
 
 
 def perform_import(dialog):
-    """Perform the actual import synchronously"""
-    transactions_to_import = [
-        t for t in dialog.transactions if not t.get("marked_for_removal", False)
-    ]
-
-    if not transactions_to_import:
-        QMessageBox.warning(
-            dialog,
-            "No Transactions",
-            "All transactions have been marked for removal. Nothing to import.",
-        )
-        return
-
-    dialog.cancelled = False
-    imported_cases = []
-    imported_ids = []
-    total = len(transactions_to_import)
-
-    dialog.progress_bar.setVisible(True)
-    dialog.progress_bar.setValue(0)
-    dialog.import_button.setEnabled(False)
-
-    for i, transaction in enumerate(transactions_to_import):
-        from PyQt5.QtCore import QCoreApplication
-        QCoreApplication.processEvents()
-        if dialog.cancelled:
-            break
-        dialog.progress_bar.setValue(int((i / total) * 100))
-        dialog.results_label.setText(f"Importing case {i+1} of {total}...")
-        case_number, case_id = _import_transaction_sync(transaction, dialog.category, dialog.date_from, dialog.date_to, dialog.bas_file_path)
-        if case_number:
-            imported_cases.append(case_number)
-            imported_ids.append(case_id)
-
-    dialog.progress_bar.setVisible(False)
-
-    if dialog.cancelled:
-        if imported_ids:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            placeholders = ','.join('?' * len(imported_ids))
-            cursor.execute(f"DELETE FROM cases WHERE id IN ({placeholders})", imported_ids)
-            conn.commit()
-            conn.close()
-        QMessageBox.information(dialog, "Import Cancelled", "Import was cancelled. Imported cases have been deleted.")
-        dialog.reject()
-    else:
-        QMessageBox.information(
-            dialog,
-            "Import Complete",
-            f"Successfully imported {len(imported_cases)} cases:\n\n"
-            + "\n".join(imported_cases[:10])
-            + (
-                f"\n... and {len(imported_cases) - 10} more"
-                if len(imported_cases) > 10
-                else ""
-            ),
-        )
-        dialog.accept()
+    """Deprecated synchronous import. Use import_cases() which starts the worker."""
+    QMessageBox.information(
+        dialog,
+        "Import",
+        "The import will now run in the background. Please monitor progress.",
+    )
+    import_cases(dialog)
 
 
 def update_progress(dialog, percentage, message):

@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem,
                              QVBoxLayout, QWidget)
 from scripts.Utilities.utils import format_currency_amount
+from scripts.Utilities.db_utils import get_db_connection
 
 
 def create_table_button(text):
@@ -63,10 +64,13 @@ def setup_case_table_columns(table, include_edit=False):
     table.setColumnWidth(3, 120)  # Amount
     table.setColumnWidth(4, 120)  # List
     table.setColumnWidth(5, 120)  # Status
-    table.setColumnWidth(6, 80)  # To-Do
+    table.setColumnWidth(6, 200)  # To-Do (increased for longer text)
     if include_edit:
         table.setColumnWidth(7, 90)  # Edit Case
-    table.verticalHeader().setDefaultSectionSize(50)
+    table.verticalHeader().setDefaultSectionSize(80)  # Further increased for wrapped text visibility
+    
+    # Enable text wrapping for To-Do column (column 6)
+    table.setWordWrap(True)
 
 
 def populate_case_table(
@@ -144,16 +148,46 @@ def populate_case_table(
         elif list_name == "Recovered":
             status_value = "Recovered"
         elif list_name == "Write-Off Recommended":
-            status_value = "Write Off Recommended"
+            status_value = "Write-Off Recommended"
         elif list_name == "Written Off":
             status_value = "Written Off"
         else:
             status_value = assessment_status
         table.setItem(row, 5, QTableWidgetItem(status_value))
 
-        # To-Do
-        todo_value = "Yes" if bas_payment_no or bas_journal_no else "No"
-        table.setItem(row, 6, QTableWidgetItem(todo_value))
+        # To-Do (view-specific logic)
+        if list_name == "Checklist":
+            if assessment_status in ["Alleged", "Under Assessment"]:
+                todo_value = "Yes - Assessment Outstanding"
+            elif assessment_status == "Valid":
+                todo_value = "No - Case is finalised"
+            elif assessment_status == "Confirmed":
+                todo_value = "Yes - Refer Lead Schedule"
+            else:
+                todo_value = "No"  # Fallback for any other status
+        elif list_name == "Lead Schedule":
+            if lc_status == "Awaiting LC determination":
+                todo_value = "Yes - LC Minutes Outstanding"
+            elif lc_status == "Recovered":
+                todo_value = "No - Case is finalised"
+            elif lc_status == "Write-Off Recommended":
+                todo_value = "Yes - Refer Write-Off Recommended list"
+            else:
+                todo_value = "No"  # Fallback for any other status
+        elif list_name == "Write-Off Recommended":
+            # Check if case is in an annexure
+            annexure_info = get_case_annexure_info(transaction_no)
+            if annexure_info:
+                todo_value = f"In annexure {annexure_info['annexure_no']}"
+            else:
+                todo_value = "Awaiting annexure preparation"
+        else:
+            # For other views, use the original logic
+            todo_value = "Yes" if bas_payment_no or bas_journal_no else "No"
+        # Create To-Do item with text wrapping
+        todo_item = QTableWidgetItem(todo_value)
+        todo_item.setTextAlignment(Qt.AlignCenter)
+        table.setItem(row, 6, todo_item)
 
         # Edit Case (if enabled)
         if include_edit:
@@ -166,3 +200,25 @@ def populate_case_table(
             layout.setSpacing(0)
             layout.addWidget(edit_button, alignment=Qt.AlignCenter)
             table.setCellWidget(row, 7, container)
+
+
+def get_case_annexure_info(transaction_no):
+    """Get annexure information for a case."""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT a.annexure_no, a.role
+                FROM annexures a
+                JOIN annexure_cases ac ON a.id = ac.annexure_id
+                JOIN cases c ON ac.case_id = c.id
+                WHERE c.transaction_no = ?
+            """, (transaction_no,))
+            
+            row = cursor.fetchone()
+            if row:
+                return {'annexure_no': row[0], 'role': row[1]}
+            return None
+    except Exception as e:
+        print(f"Error getting annexure info: {e}")
+        return None

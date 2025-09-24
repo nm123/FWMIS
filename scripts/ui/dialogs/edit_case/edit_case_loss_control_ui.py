@@ -22,7 +22,7 @@ def setup_loss_control_ui_components(dialog_instance):
     # Loss Control Status (moved from Assessment group)
     dialog_instance.lc_status_combo = NoWheelComboBox()
     dialog_instance.lc_status_combo.addItems(
-        ["Awaiting LC determination", "Recovered", "Write Off Recommended"]
+        ["Awaiting LC determination", "Recovery in Progress", "Recovered", "Write-Off Recommended"]
     )
     if dialog_instance.lc_status:
         dialog_instance.lc_status_combo.setCurrentText(dialog_instance.lc_status)

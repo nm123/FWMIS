@@ -272,7 +272,7 @@ def assign_case_numbers(dialog):
     cursor.execute("SELECT id FROM cases WHERE transaction_no IS NULL OR transaction_no = ''")  # Imported without numbers
     imported_ids = [row[0] for row in cursor.fetchall()]
     for i, case_id in enumerate(imported_ids, start=max_id + 1):
-        new_no = f"{fy_end_year}{i:05d}"  # Adjust format
+        new_no = f"FW-{fy_end_year}{i:05d}"  # Adjust format with FW- prefix
         cursor.execute("UPDATE cases SET transaction_no = ? WHERE id = ?", (new_no, case_id))
     conn.commit()
     conn.close()

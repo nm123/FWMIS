@@ -4,178 +4,134 @@ from datetime import datetime
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox
 from scripts.Utilities.financial_utils import get_financial_year
+from scripts.Utilities.optimized_excel_utils import StreamingExcelExporter, create_optimized_excel_export
+from scripts.Utilities.performance_profiler import memory_profiler
+from scripts.Utilities.optimization_manager import get_optimization_manager
 
 
 class ViewCasesUtils:
     @staticmethod
     def export_to_excel(dialog):
-        """Export the current case list to Excel format"""
+        """Export the current case list to Excel format using memory-efficient streaming."""
         try:
-            # Check if there are cases to export - show dialog if no data
+            # Check if there are cases to export
             if dialog.case_table.rowCount() == 0:
                 QMessageBox.warning(dialog, "No Data", "No cases to export.")
                 return
 
-            # Get current list filter for filename - replace spaces with underscores for valid filename
+            # Get optimization manager and auto-enable for large exports
+            optimization_manager = get_optimization_manager()
+            data_size = dialog.case_table.rowCount()
+            
+            # Auto-enable optimizations for large exports
+            optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(data_size, "export")
+            
+            if optimizations_enabled:
+                # Show optimization notification
+                QMessageBox.information(
+                    dialog,
+                    "Performance Optimization",
+                    f"Large dataset detected ({data_size} cases).\n\n"
+                    "Performance optimizations have been automatically enabled:\n"
+                    "• Streaming Excel exports\n"
+                    "• Memory-efficient processing\n\n"
+                    "This will provide better performance and memory usage."
+                )
+
+            # Take memory snapshot before export
+            memory_profiler.take_snapshot("before_export")
+
+            # Get current list filter for filename
             current_list = dialog.list_filter_combo.currentText().replace(" ", "_")
 
-            # Create year folder if it doesn't exist - ensures export directory structure
+            # Create year folder
             from scripts.Utilities.financial_utils import create_year_folder
-
             year_folder = create_year_folder(get_financial_year())
             export_dir = os.path.join(year_folder, "Exports")
             os.makedirs(export_dir, exist_ok=True)
 
-            # Generate filename with timestamp - format: List_Export_{list_name}_{timestamp}.xlsx
+            # Generate filename with timestamp
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"List_Export_{current_list}_{timestamp}.xlsx"
             filepath = os.path.join(export_dir, filename)
 
-            # Collect data from table - extract headers and row data for DataFrame creation
-            data = []
-            headers = []
-
-            # Get headers from table horizontal header
-            for col in range(dialog.case_table.columnCount()):
-                header_item = dialog.case_table.horizontalHeaderItem(col)
-                if header_item:
-                    headers.append(header_item.text())
-
-            # Get data rows - iterate through all table rows and columns
-            for row in range(dialog.case_table.rowCount()):
-                row_data = {}
+            # Extract data using memory-efficient generator
+            def extract_table_data():
+                """Generator to extract table data without loading everything into memory."""
+                headers = []
+                
+                # Get headers from table horizontal header
                 for col in range(dialog.case_table.columnCount()):
-                    item = dialog.case_table.item(row, col)
-                    if item:
-                        # Handle special case for Case No (extract transaction number from Qt.UserRole)
-                        if col == 0:  # Case No column
-                            transaction_no = item.data(Qt.UserRole)
-                            row_data[headers[col]] = (
-                                transaction_no if transaction_no else item.text()
-                            )
+                    header_item = dialog.case_table.horizontalHeaderItem(col)
+                    if header_item:
+                        headers.append(header_item.text())
+
+                # Yield headers first
+                yield {"type": "headers", "data": headers}
+
+                # Get data rows - iterate through all table rows and columns
+                for row in range(dialog.case_table.rowCount()):
+                    row_data = {}
+                    for col in range(dialog.case_table.columnCount()):
+                        item = dialog.case_table.item(row, col)
+                        if item:
+                            # Handle special case for Case No (extract transaction number from Qt.UserRole)
+                            if col == 0:  # Case No column
+                                transaction_no = item.data(Qt.UserRole)
+                                row_data[headers[col]] = (
+                                    transaction_no if transaction_no else item.text()
+                                )
+                            else:
+                                row_data[headers[col]] = item.text()
                         else:
-                            row_data[headers[col]] = item.text()
-                    else:
-                        # Check for widget (like buttons) - extract text if available
-                        widget = dialog.case_table.cellWidget(row, col)
-                        if widget and hasattr(widget, "text"):
-                            row_data[headers[col]] = widget.text()
-                        else:
-                            row_data[headers[col]] = ""
+                            # Check for widget (like buttons) - extract text if available
+                            widget = dialog.case_table.cellWidget(row, col)
+                            if widget and hasattr(widget, "text"):
+                                row_data[headers[col]] = widget.text()
+                            else:
+                                row_data[headers[col]] = ""
 
-                data.append(row_data)
+                    yield {"type": "row", "data": row_data}
 
-            # Create DataFrame and export to Excel - use pandas for data manipulation and openpyxl for Excel formatting
-            import pandas as pd
+            # Use optimized Excel exporter
+            exporter = StreamingExcelExporter(chunk_size=1000)
+            
+            # Convert generator to iterator for streaming export
+            def cases_iterator():
+                headers = None
+                for item in extract_table_data():
+                    if item["type"] == "headers":
+                        headers = item["data"]
+                    elif item["type"] == "row":
+                        yield item["data"]
 
-            df = pd.DataFrame(data)
+            # Export using streaming
+            exported_file = exporter.export_cases_to_excel_streaming(
+                cases_iterator(), 
+                filepath, 
+                f"{current_list} Cases"
+            )
 
-            # Calculate totals for Amount column if it exists - parse currency strings and sum
-            total_amount = 0.0
-            if "Amount" in df.columns:
-                for amount_str in df["Amount"]:
-                    try:
-                        # Remove currency formatting (R prefix, commas) for numeric conversion
-                        clean_amount = (
-                            amount_str.replace("R ", "").replace(",", "").strip()
-                        )
-                        total_amount += float(clean_amount)
-                    except (ValueError, AttributeError):
-                        pass
+            # Take memory snapshot after export
+            memory_profiler.take_snapshot("after_export")
 
-            # Create Excel writer with openpyxl engine for advanced formatting capabilities
-            with pd.ExcelWriter(filepath, engine="openpyxl") as writer:
-                # Write DataFrame to Excel with specified sheet name, excluding DataFrame index
-                df.to_excel(writer, sheet_name=f"{current_list} Cases", index=False)
-
-                # Get workbook and worksheet references for post-processing formatting
-                workbook = writer.book
-                worksheet = writer.sheets[f"{current_list} Cases"]
-
-                # Format amount column as South African currency if it exists (R with commas and 2 decimals)
-                amount_col = None
-                for col_num, column_title in enumerate(df.columns, 1):
-                    if column_title == "Amount":
-                        amount_col = col_num
-                        break
-
-                if amount_col:
-                    from openpyxl.styles import NamedStyle
-
-                    currency_style = NamedStyle(
-                        name="currency", number_format="R #,##0.00"
-                    )
-                    workbook.add_named_style(currency_style)
-
-                    # Apply currency formatting to data rows (skip header row)
-                    for row_num in range(
-                        2, len(df) + 2
-                    ):  # Start from row 2 (after header)
-                        cell = worksheet.cell(row=row_num, column=amount_col)
-                        cell.style = "currency"
-
-                # Add summary information at the top of the worksheet
-                worksheet.insert_rows(1)
-                worksheet["A1"] = f"{current_list} Cases Export"
-                worksheet["A2"] = (
-                    f'Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
-                )
-                worksheet["A3"] = f"Total Cases: {len(df)}"
-
-                if total_amount > 0:
-                    worksheet["A4"] = f"Total Amount: R {total_amount:,.2f}"
-
-                # Merge cells for title row spanning all columns
-                from openpyxl.utils import get_column_letter
-
-                last_col = get_column_letter(len(df.columns))
-                worksheet.merge_cells(f"A1:{last_col}1")
-
-                # Auto-adjust column widths based on content length for better readability
-                for column in worksheet.columns:
-                    max_length = 0
-                    column_letter = (
-                        column[0].column_letter
-                        if hasattr(column[0], "column_letter")
-                        else None
-                    )
-                    if column_letter is None:
-                        # Handle merged cells by getting column letter from coordinate
-                        for cell in column:
-                            if hasattr(cell, "column_letter"):
-                                column_letter = cell.column_letter
-                                break
-                        if column_letter is None:
-                            continue  # Skip if we can't determine column letter
-
-                    for cell in column:
-                        try:
-                            if len(str(cell.value)) > max_length:
-                                max_length = len(str(cell.value))
-                        except:
-                            pass
-                    adjusted_width = min(
-                        max_length + 2, 50
-                    )  # Cap at 50 characters for readability
-                    worksheet.column_dimensions[column_letter].width = adjusted_width
-
-            # Show success message with file details
+            # Show success message
             QMessageBox.information(
                 dialog,
                 "Export Successful",
-                f"Case list exported successfully!\n\n"
+                f"Case list exported successfully using optimized streaming!\n\n"
                 f"File: {filename}\n"
                 f"Location: {export_dir}\n"
-                f"Cases exported: {len(df)}",
+                f"Cases exported: {dialog.case_table.rowCount()}",
             )
 
         except ImportError:
-            # Handle missing pandas/openpyxl dependencies with user-friendly error
+            # Handle missing dependencies with user-friendly error
             QMessageBox.critical(
                 dialog,
                 "Missing Dependencies",
-                "Excel export requires pandas and openpyxl.\n\n"
-                "Please install with: pip install pandas openpyxl",
+                "Excel export requires openpyxl.\n\n"
+                "Please install with: pip install openpyxl",
             )
         except Exception as e:
             # Catch any other export errors and show to user
@@ -218,16 +174,9 @@ class ViewCasesUtils:
     @staticmethod
     def get_case_filter_conditions(selected_list):
         """Get SQL conditions for different list filters"""
-        conditions = {
-            "Checklist": "",
-            "Lead Schedule": "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO%'",
-            "Recovered": "suffixes LIKE '%-REC%'",
-            "Write-Off Recommended": "suffixes LIKE '%-WOR%'",
-            "Written Off": "suffixes LIKE '%-WO%'",
-            "To-Do List": "(list = 'To-Do List' OR bas_journal_no IS NOT NULL)",
-            "Deleted Cases": "suffixes LIKE '%-DEL%'",
-        }
-        return conditions.get(selected_list, "")
+        from scripts.Utilities.shared_case_filter_utils import get_list_filter_conditions
+        
+        return get_list_filter_conditions(selected_list)
 
     @staticmethod
     def calculate_case_totals(cases):

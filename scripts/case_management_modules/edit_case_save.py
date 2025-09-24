@@ -14,6 +14,16 @@ from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 
 
+def _safe_float_conversion(value):
+    """Safely convert a value to float, returning 0.0 if conversion fails"""
+    if not value or value.strip() == "":
+        return 0.0
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return 0.0
+
+
 def save_case_components(dialog_instance):
     """
     Save the case data to the database with validations and file operations.
@@ -135,7 +145,42 @@ def save_case_components(dialog_instance):
             current_evidence_path = (
                 dialog_instance.assessment_evidence_edit.text().strip()
             )
-            if not current_evidence_path or not os.path.exists(current_evidence_path):
+            
+            # Also check if evidence already exists in the database
+            existing_evidence = False
+            if hasattr(dialog_instance, 'case_id') and dialog_instance.case_id:
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                cursor.execute("SELECT evidence_paths FROM cases WHERE id = ?", (dialog_instance.case_id,))
+                evidence_data = cursor.fetchone()
+                conn.close()
+                
+                if evidence_data and evidence_data[0]:
+                    try:
+                        evidence_dict = json.loads(evidence_data[0])
+                        if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                            existing_evidence = True
+                    except json.JSONDecodeError:
+                        pass
+            else:
+                # Fallback: check by transaction_no if case_id not available
+                if hasattr(dialog_instance, 'base_transaction_no') and dialog_instance.base_transaction_no:
+                    conn = sqlite3.connect(DB_PATH)
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT evidence_paths FROM cases WHERE base_transaction_no = ?", (dialog_instance.base_transaction_no,))
+                    evidence_data = cursor.fetchone()
+                    conn.close()
+                    
+                    if evidence_data and evidence_data[0]:
+                        try:
+                            evidence_dict = json.loads(evidence_data[0])
+                            if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                                existing_evidence = True
+                        except json.JSONDecodeError:
+                            pass
+            
+            # Require evidence if not in current session AND not in database
+            if (not current_evidence_path or not os.path.exists(current_evidence_path)) and not existing_evidence:
                 QMessageBox.warning(
                     dialog_instance,
                     "Cannot Save",
@@ -147,11 +192,11 @@ def save_case_components(dialog_instance):
                 )
                 return
             print(
-                f"LOG: Found assessment evidence for case {dialog_instance.base_transaction_no}: {current_evidence_path}"
+                f"LOG: Found assessment evidence for case {dialog_instance.base_transaction_no}: {current_evidence_path or 'existing in database'}"
             )
         # Validate LC evidence for LC statuses
         selected_lc_status = dialog_instance.lc_status_combo.currentText()
-        if selected_lc_status in ["Recovered", "Write Off Recommended"]:
+        if selected_lc_status in ["Recovered", "Write-Off Recommended"]:
             if (
                 selected_lc_status == "Recovered"
                 and not dialog_instance.recovery_evidence_edit.text().strip()
@@ -262,6 +307,11 @@ def save_case_components(dialog_instance):
             "responsibility_id": dialog_instance.selected_responsibility_id,
             "amount": amount,
             "source_document": dialog_instance.source_doc_edit.text().strip(),
+            "debtor_name": dialog_instance.debtor_name_edit.text().strip(),
+            "debt_number": dialog_instance.debt_number_edit.text().strip(),
+            "total_recovered_amount": _safe_float_conversion(dialog_instance.total_recovered_amount_edit.text()),
+            "latest_installment_amount": _safe_float_conversion(dialog_instance.latest_installment_amount_edit.text()),
+            "latest_installment_date": dialog_instance.latest_installment_date_edit.text().strip(),
             "supporting_evidence_path": dialog_instance.supporting_evidence_edit.text().strip(),
             "minutes": dialog_instance.minutes_edit.text().strip(),
             "evidence_path": dialog_instance.assessment_evidence_edit.text().strip(),
@@ -458,7 +508,8 @@ def save_case_components(dialog_instance):
                         date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
                         bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
                         base_transaction_no = ?, evidence_paths = ?, assessment_status = ?, lc_status = ?, criminal_charges = ?, disciplinary_process = ?,
-                        loss_recovery = ?, prevention_steps = ?
+                        loss_recovery = ?, prevention_steps = ?, debtor_name = ?, debt_number = ?, total_recovered_amount = ?, 
+                        latest_installment_amount = ?, latest_installment_date = ?
                     WHERE id = ?
                 """,
                 (
@@ -482,6 +533,11 @@ def save_case_components(dialog_instance):
                     case["disciplinary_process"],
                     case["loss_recovery"],
                     case["prevention_steps"],
+                    case.get("debtor_name", ""),
+                    case.get("debt_number", ""),
+                    case.get("total_recovered_amount", 0.0),
+                    case.get("latest_installment_amount", 0.0),
+                    case.get("latest_installment_date", ""),
                     dialog_instance.case_id,
                 ),
             )
