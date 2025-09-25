@@ -113,14 +113,21 @@ def save_case_components(dialog_instance):
             return
         # Validate Loss Control fields
         loss_control_status = dialog_instance.lc_status_combo.currentText()
+        # Check recovery evidence based on status
+        recovery_evidence_text = (
+            dialog_instance.recovery_evidence_rip_edit.text().strip()
+            if loss_control_status == "Recovery in Progress" and hasattr(dialog_instance, "recovery_evidence_rip_edit")
+            else dialog_instance.recovery_evidence_edit.text().strip()
+        )
+        
         if (
-            loss_control_status == "Recovered"
-            and not dialog_instance.recovery_evidence_edit.text().strip()
+            loss_control_status in ["Recovered", "Recovery in Progress"]
+            and not recovery_evidence_text
         ):
             QMessageBox.warning(
                 dialog_instance,
                 "Recovery Evidence Required",
-                "Recovery evidence is required when status is 'Recovered'.\n\n"
+                f"Recovery evidence is required when status is '{loss_control_status}'.\n\n"
                 "Please select a recovery evidence file before saving.",
             )
             return
@@ -239,7 +246,7 @@ def save_case_components(dialog_instance):
         )
         criminal_charges_text = dialog_instance.criminal_charges_combo.currentText()
         disciplinary_text = dialog_instance.disciplinary_combo.currentText()
-        loss_recovery_text = dialog_instance.loss_recovery_combo.currentText()
+        # loss_recovery_text is now handled by the recovery progress system
         # Get existing fy_id and period_id from case data, or set defaults if missing
         existing_fy_id = (
             dialog_instance.case_data[21]
@@ -315,10 +322,14 @@ def save_case_components(dialog_instance):
             "supporting_evidence_path": dialog_instance.supporting_evidence_edit.text().strip(),
             "minutes": dialog_instance.minutes_edit.text().strip(),
             "evidence_path": dialog_instance.assessment_evidence_edit.text().strip(),
-            "recovery_evidence_path": dialog_instance.recovery_evidence_edit.text().strip(),
+            "recovery_evidence_path": (
+                dialog_instance.recovery_evidence_rip_edit.text().strip()
+                if lc_status_text == "Recovery in Progress" and hasattr(dialog_instance, "recovery_evidence_rip_edit")
+                else dialog_instance.recovery_evidence_edit.text().strip()
+            ),
             "criminal_charges": criminal_charges_text,
             "disciplinary_process": disciplinary_text,
-            "loss_recovery": loss_recovery_text,
+            "loss_recovery": "N/A",  # Now handled by recovery progress system
             "prevention_steps": dialog_instance.prevention_steps_edit.toPlainText().strip(),
             "fy_id": existing_fy_id,
             "period_id": existing_period_id,

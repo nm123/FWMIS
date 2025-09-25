@@ -17,7 +17,7 @@ class AnnexurePreparationDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Prepare Write-Off Annexures")
-        self.setMinimumSize(1200, 900)  # Increased size for better table visibility
+        self.setMinimumSize(1000, 700)
         
         # Data storage
         self.all_cases = []
@@ -33,12 +33,10 @@ class AnnexurePreparationDialog(QDialog):
         
     def setup_ui(self):
         layout = QVBoxLayout()
-        layout.setContentsMargins(15, 10, 15, 15)  # Further reduced margins
-        layout.setSpacing(5)  # Further reduced spacing
         
         # Header
         header_label = QLabel("Write-Off Annexure Preparation")
-        header_label.setFont(QFont("Arial", 14, QFont.Bold))  # Reduced font size
+        header_label.setFont(QFont("Arial", 16, QFont.Bold))
         header_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(header_label)
         
@@ -49,7 +47,7 @@ class AnnexurePreparationDialog(QDialog):
             "- HOD Cases: > current delegation limit"
         )
         instructions.setWordWrap(True)
-        instructions.setStyleSheet("QLabel { color: #666; margin: 2px; font-size: 14px; }")  # Increased font size for readability
+        instructions.setStyleSheet("QLabel { color: #666; margin: 10px; }")
         layout.addWidget(instructions)
         
         # Create splitter for two panels
@@ -65,7 +63,7 @@ class AnnexurePreparationDialog(QDialog):
         
         # Set splitter proportions
         splitter.setSizes([500, 500])
-        layout.addWidget(splitter, 1)  # Give stretch factor 1 to make it take most space
+        layout.addWidget(splitter)
         
         # Action buttons
         button_layout = QHBoxLayout()
@@ -73,92 +71,17 @@ class AnnexurePreparationDialog(QDialog):
         self.generate_btn = QPushButton("Generate Annexures")
         self.generate_btn.clicked.connect(self.generate_annexures)
         self.generate_btn.setEnabled(False)
-        self.generate_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1a365d;
-                color: white;
-                border: 1px solid #1a365d;
-                border-radius: 4px;
-                padding: 8px 20px;
-                font-size: 13px;
-                font-weight: 500;
-                min-width: 140px;
-            }
-            QPushButton:hover {
-                background-color: #2c5282;
-            }
-            QPushButton:disabled {
-                background-color: #e2e8f0;
-                color: #718096;
-                border-color: #e2e8f0;
-            }
-        """)
         
         self.export_excel_btn = QPushButton("Export Excel")
         self.export_excel_btn.clicked.connect(self.export_excel)
         self.export_excel_btn.setEnabled(False)
-        self.export_excel_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #38a169;
-                color: white;
-                border: 1px solid #38a169;
-                border-radius: 4px;
-                padding: 8px 20px;
-                font-size: 13px;
-                font-weight: 500;
-                min-width: 100px;
-            }
-            QPushButton:hover {
-                background-color: #2f855a;
-            }
-            QPushButton:disabled {
-                background-color: #e2e8f0;
-                color: #718096;
-                border-color: #e2e8f0;
-            }
-        """)
         
         self.export_pdf_btn = QPushButton("Export PDF")
         self.export_pdf_btn.clicked.connect(self.export_pdf)
         self.export_pdf_btn.setEnabled(False)
-        self.export_pdf_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #d69e2e;
-                color: white;
-                border: 1px solid #d69e2e;
-                border-radius: 4px;
-                padding: 8px 20px;
-                font-size: 13px;
-                font-weight: 500;
-                min-width: 100px;
-            }
-            QPushButton:hover {
-                background-color: #b7791f;
-            }
-            QPushButton:disabled {
-                background-color: #e2e8f0;
-                color: #718096;
-                border-color: #e2e8f0;
-            }
-        """)
         
         self.close_btn = QPushButton("Close")
         self.close_btn.clicked.connect(self.accept)
-        self.close_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                color: #4a5568;
-                border: 1px solid #e2e8f0;
-                border-radius: 4px;
-                padding: 8px 20px;
-                font-size: 13px;
-                font-weight: 500;
-                min-width: 80px;
-            }
-            QPushButton:hover {
-                background-color: #f7fafc;
-            }
-        """)
         
         button_layout.addWidget(self.generate_btn)
         button_layout.addWidget(self.export_excel_btn)
@@ -176,14 +99,7 @@ class AnnexurePreparationDialog(QDialog):
         
         # Summary info
         summary_label = QLabel()
-        summary_label.setStyleSheet("""
-            QLabel { 
-                font-weight: 600; 
-                font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-                color: #2d3748; 
-                font-size: 14px;
-            }
-        """)
+        summary_label.setStyleSheet("QLabel { font-weight: bold; color: #333; }")
         layout.addWidget(summary_label)
         
         # Select all checkbox

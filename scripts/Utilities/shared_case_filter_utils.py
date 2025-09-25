@@ -20,10 +20,10 @@ def get_list_filter_conditions(selected_list):
     """
     conditions = {
         "Checklist": "1=1",  # All cases appear in Checklist
-        "Lead Schedule": "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-RIP%' AND suffixes NOT LIKE '%-WO'",
+        "Lead Schedule": "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-WO'",
         "Recovery in Progress": "suffixes LIKE '%-RIP%'",
         "Write-Off Recommended": "suffixes LIKE '%-WOR%'",
-        "Recovered": "suffixes LIKE '%-REC%'",
+        "Recovered": "suffixes LIKE '%-REC%' OR EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id)",
         "Written Off": "suffixes LIKE '%-WO' AND suffixes NOT LIKE '%-WOR%'"
     }
     

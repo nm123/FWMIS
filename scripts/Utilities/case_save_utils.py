@@ -38,7 +38,7 @@ def save_case(dialog_instance) -> bool:
         status_text = dialog_instance.lc_status_combo.currentText()
         criminal_charges_text = dialog_instance.criminal_charges_combo.currentText()
         disciplinary_text = dialog_instance.disciplinary_combo.currentText()
-        loss_recovery_text = dialog_instance.loss_recovery_combo.currentText()
+        # loss_recovery_text is now handled by the recovery progress system
 
         # Get existing fy_id and period_id from case data, or set defaults if missing
         existing_fy_id = (
@@ -180,7 +180,7 @@ def save_case(dialog_instance) -> bool:
             "recovery_evidence_path": dialog_instance.recovery_evidence_edit.text().strip(),
             "criminal_charges": criminal_charges_text,
             "disciplinary_process": disciplinary_text,
-            "loss_recovery": loss_recovery_text,
+            "loss_recovery": "N/A",  # Now handled by recovery progress system
             "assessment_status": assessment_status_text,
             "lc_status": lc_status_text,
             "prevention_steps": dialog_instance.prevention_steps_edit.toPlainText().strip(),

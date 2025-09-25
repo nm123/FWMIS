@@ -36,16 +36,8 @@ def get_main_stylesheet():
         /* Label Styling */
         QLabel {{
             color: {COLORS['dark']};
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-        }}
-
-        /* Form Layout Label Alignment */
-        QFormLayout QLabel {{
-            text-align: left;
-            vertical-align: middle;
-            padding-top: 8px;
-            padding-bottom: 8px;
         }}
 
         /* Input Field Styling */
@@ -54,8 +46,8 @@ def get_main_stylesheet():
             border-radius: 4px;
             padding: 8px 12px;
             background-color: white;
-            font-size: 14px;
-            min-height: 24px;
+            font-size: 13px;
+            min-height: 20px;
         }}
 
         QLineEdit:focus, QDateEdit:focus, QComboBox:focus {{
@@ -79,11 +71,11 @@ def get_main_stylesheet():
         QPushButton {{
             border-radius: 6px;
             padding: 10px 16px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             border: none;
             min-width: 80px;
-            min-height: 24px;
+            min-height: 20px;
         }}
 
         QPushButton:enabled {{
@@ -120,13 +112,12 @@ def get_main_stylesheet():
             border: 1px solid {COLORS['border']};
             font-weight: 600;
             color: {COLORS['dark']};
-            font-size: 14px;
+            font-size: 12px;
         }}
 
         QTableWidget::item {{
             padding: 8px;
             border-bottom: 1px solid #f1f3f4;
-            font-size: 14px;
         }}
 
         QTableWidget::item:selected {{

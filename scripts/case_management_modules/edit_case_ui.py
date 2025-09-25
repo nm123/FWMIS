@@ -130,13 +130,7 @@ def setup_edit_ui(dialog):
         "Disciplinary process in progress or completed:", dialog.disciplinary_combo
     )
 
-    # Loss recovery
-    dialog.loss_recovery_combo = NoWheelComboBox()
-    dialog.loss_recovery_combo.addItems(["N/A", "Yes", "No"])
-    dialog.loss_recovery_combo.setCurrentText("N/A")
-    form_layout.addRow(
-        "Loss recovery commenced or completed:", dialog.loss_recovery_combo
-    )
+    # Loss recovery - now handled by recovery progress system in supporting UI
 
     # Steps to prevent future occurrence
     dialog.prevention_steps_edit = QTextEdit()

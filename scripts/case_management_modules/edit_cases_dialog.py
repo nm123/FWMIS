@@ -24,7 +24,7 @@ from scripts.Utilities.utils import format_currency_amount
 from scripts.ui.dialogs.edit_case import EditCaseDialog
 
 from .case_table_utils import (create_table_button, populate_case_table,
-                               setup_case_table_columns)
+                               setup_case_table_columns, create_totals_widget)
 
 
 class NoWheelComboBox(QComboBox):
@@ -223,8 +223,20 @@ class EditCasesDialog(QDialog):
         # Set row height for better button display and wrapped text
         self.case_table.verticalHeader().setDefaultSectionSize(80)
 
-        splitter.addWidget(self.case_table)
-        print("DEBUG: case_table added to splitter")
+        # Create a container for the table and totals
+        table_container = QWidget()
+        table_layout = QVBoxLayout(table_container)
+        table_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Add the table
+        table_layout.addWidget(self.case_table)
+        
+        # Add totals widget
+        self.totals_widget = create_totals_widget("Checklist")
+        table_layout.addWidget(self.totals_widget)
+        
+        splitter.addWidget(table_container)
+        print("DEBUG: table_container with totals added to splitter")
 
         splitter.setSizes([300, 700])
         content_layout.addWidget(splitter)

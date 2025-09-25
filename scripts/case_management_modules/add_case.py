@@ -7,7 +7,7 @@ class AddNewCaseDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Add New Case")
-        self.setFixedSize(1400, 1000)  # Increased size to eliminate scrolling
+        self.setFixedSize(1100, 900)
 
         # Set up logic first
         self.logic = AddCaseLogic(self)

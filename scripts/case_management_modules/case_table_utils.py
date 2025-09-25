@@ -3,9 +3,11 @@ Shared utilities for case table display in View Cases and Edit Cases dialogs.
 Ensures consistent list and status display.
 """
 
+import sqlite3
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem,
-                             QVBoxLayout, QWidget)
+                             QVBoxLayout, QWidget, QHBoxLayout, QLabel)
+from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.db_utils import get_db_connection
 
@@ -120,8 +122,9 @@ def populate_case_table(
         # Category
         table.setItem(row, 2, QTableWidgetItem(str(category) if category else ""))
 
-        # Amount
-        amount_item = format_currency_amount(amount, right_align=True)
+        # Amount - calculate based on list type
+        display_amount = calculate_display_amount(amount, suffixes, list_name, transaction_no)
+        amount_item = format_currency_amount(display_amount, right_align=True)
         table.setItem(row, 3, amount_item)
 
         # List (view-specific)
@@ -144,9 +147,17 @@ def populate_case_table(
         if list_name == "Checklist":
             status_value = assessment_status
         elif list_name == "Lead Schedule":
-            status_value = lc_status or "Awaiting LC determination"
+            if "-RIP" in suffixes:
+                status_value = "Recovery in Progress"
+            else:
+                status_value = lc_status or "Awaiting LC determination"
+        elif list_name == "Recovery in Progress":
+            status_value = "In progress"
         elif list_name == "Recovered":
-            status_value = "Recovered"
+            if "-REC" in suffixes:
+                status_value = "Recovered"
+            else:
+                status_value = "In progress"  # Partially recovered cases
         elif list_name == "Write-Off Recommended":
             status_value = "Write-Off Recommended"
         elif list_name == "Written Off":
@@ -166,7 +177,9 @@ def populate_case_table(
             else:
                 todo_value = "No"  # Fallback for any other status
         elif list_name == "Lead Schedule":
-            if lc_status == "Awaiting LC determination":
+            if "-RIP" in suffixes:
+                todo_value = "Yes - refer Recovery in progress"
+            elif lc_status == "Awaiting LC determination":
                 todo_value = "Yes - LC Minutes Outstanding"
             elif lc_status == "Recovered":
                 todo_value = "No - Case is finalised"
@@ -174,6 +187,10 @@ def populate_case_table(
                 todo_value = "Yes - Refer Write-Off Recommended list"
             else:
                 todo_value = "No"  # Fallback for any other status
+        elif list_name == "Recovery in Progress":
+            todo_value = "Yes - update latest installment"
+        elif list_name == "Recovered":
+            todo_value = "No"  # Recovery in Progress list already tells user what to do
         elif list_name == "Write-Off Recommended":
             # Check if case is in an annexure
             annexure_info = get_case_annexure_info(transaction_no)
@@ -222,3 +239,272 @@ def get_case_annexure_info(transaction_no):
     except Exception as e:
         print(f"Error getting annexure info: {e}")
         return None
+
+
+def calculate_display_amount(original_amount, suffixes, list_name, transaction_no):
+    """
+    Calculate the display amount based on list type and recovery status.
+    
+    Args:
+        original_amount (float): Original case amount
+        suffixes (str): Case suffixes (e.g., "-LS,-RIP")
+        list_name (str): Name of the list view
+        transaction_no (str): Transaction number for database lookup
+        
+    Returns:
+        float: Amount to display in the list view
+    """
+    try:
+        # For Checklist, always show original amount
+        if list_name == "Checklist":
+            return original_amount
+        
+        # For Recovery in Progress list, show remaining balance
+        if list_name == "Recovery in Progress":
+            amount_paid = get_total_installments_paid(transaction_no)
+            remaining = original_amount - amount_paid
+            return max(0.0, remaining)  # Don't show negative amounts
+        
+        # For Recovered list, show amount recovered so far
+        if list_name == "Recovered":
+            return get_total_installments_paid(transaction_no)
+        
+        # For Lead Schedule, show remaining balance if in recovery
+        if list_name == "Lead Schedule" and "-RIP" in suffixes:
+            amount_paid = get_total_installments_paid(transaction_no)
+            remaining = original_amount - amount_paid
+            return max(0.0, remaining)
+        
+        # For all other lists, show original amount
+        return original_amount
+        
+    except Exception as e:
+        print(f"Error calculating display amount: {e}")
+        return original_amount
+
+
+def get_total_installments_paid(transaction_no):
+    """
+    Get total amount paid from installments table.
+    
+    Args:
+        transaction_no (str): Transaction number
+        
+    Returns:
+        float: Total amount paid in installments
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Get case ID from transaction number
+        cursor.execute("SELECT id FROM cases WHERE transaction_no = ?", (transaction_no,))
+        case_result = cursor.fetchone()
+        
+        if not case_result:
+            conn.close()
+            return 0.0
+        
+        case_id = case_result[0]
+        
+        # Get total from installments
+        cursor.execute(
+            "SELECT COALESCE(SUM(amount), 0) FROM installments WHERE case_id = ?",
+            (case_id,)
+        )
+        result = cursor.fetchone()
+        conn.close()
+        
+        return float(result[0]) if result else 0.0
+        
+    except Exception as e:
+        print(f"Error getting installments total: {e}")
+        return 0.0
+
+
+def calculate_list_totals(list_name, fy_id=None):
+    """
+    Calculate totals for a specific list view.
+    
+    Args:
+        list_name (str): Name of the list view
+        fy_id (int): Financial year ID (optional)
+        
+    Returns:
+        tuple: (total_count, total_amount, explanation)
+    """
+    # Default values
+    total_count = 0
+    total_amount = 0.0
+    explanation = "Total for all cases"
+    
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Base query with financial year filter if provided
+        base_where = "WHERE fy_id = ?" if fy_id else ""
+        params = [fy_id] if fy_id else []
+        
+        if list_name == "Checklist":
+            # Total (Confirmed) - new cases for the reporting period
+            query = f"""
+                SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                FROM cases 
+                {base_where}
+                AND assessment_status = 'Confirmed'
+            """
+            explanation = "Total (Confirmed) - Reconciliation: New cases for the reporting period"
+            
+        elif list_name == "Lead Schedule":
+            # Lead Schedule shows active cases (already accounts for recovered/written off)
+            query = f"""
+                SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                FROM cases 
+                {base_where}
+                AND suffixes LIKE '%-LS%' 
+                AND suffixes NOT LIKE '%-REC%' 
+                AND suffixes NOT LIKE '%-WO'
+            """
+            explanation = "Total (Checklist - Recovered - Written Off) - Reconciliation: Movement for the reporting period"
+            
+        elif list_name == "Recovery in Progress":
+            # Show remaining balances for cases in recovery
+            query = f"""
+                SELECT COUNT(*), COALESCE(SUM(
+                    CASE 
+                        WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id) 
+                        THEN amount - COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
+                        ELSE amount 
+                    END
+                ), 0)
+                FROM cases 
+                {base_where}
+                AND suffixes LIKE '%-RIP%'
+            """
+            explanation = "Total remaining balances for cases in recovery"
+            
+        elif list_name == "Recovered":
+            # Show total amounts recovered
+            query = f"""
+                SELECT COUNT(*), COALESCE(SUM(
+                    CASE 
+                        WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id) 
+                        THEN COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
+                        ELSE amount 
+                    END
+                ), 0)
+                FROM cases 
+                {base_where}
+                AND (suffixes LIKE '%-REC%' OR EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id))
+            """
+            explanation = "Total amounts recovered to date - Reconciliation: Cases recovered during the reporting period"
+            
+        elif list_name == "Write-Off Recommended":
+            query = f"""
+                SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                FROM cases 
+                {base_where}
+                AND suffixes LIKE '%-WOR%'
+            """
+            explanation = "Total amounts recommended for write-off"
+            
+        elif list_name == "Written Off":
+            query = f"""
+                SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                FROM cases 
+                {base_where}
+                AND suffixes LIKE '%-WO'
+            """
+            explanation = "Total amounts written off - Reconciliation: Cases written off during the reporting period"
+            
+        else:
+            # Default: show all cases
+            query = f"""
+                SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                FROM cases 
+                {base_where}
+            """
+            explanation = "Total for all cases"
+        
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+        conn.close()
+        
+        if result:
+            total_count = result[0] if result[0] is not None else 0
+            total_amount = float(result[1]) if result[1] is not None else 0.0
+        
+    except Exception as e:
+        print(f"Error calculating list totals: {e}")
+        # Return safe defaults instead of error message
+    
+    return total_count, total_amount, explanation
+
+
+def create_totals_widget(list_name, fy_id=None):
+    """
+    Create a totals widget for a list view.
+    
+    Args:
+        list_name (str): Name of the list view
+        fy_id (int): Financial year ID (optional)
+        
+    Returns:
+        QWidget: Widget containing totals display
+    """
+    # Get totals with fallback to safe defaults
+    total_count, total_amount, explanation = calculate_list_totals(list_name, fy_id)
+    
+    # Create totals widget
+    totals_widget = QWidget()
+    totals_layout = QHBoxLayout(totals_widget)
+    totals_layout.setContentsMargins(10, 5, 10, 5)
+    
+    # Total count
+    count_label = QLabel(f"Total No: {total_count}")
+    count_label.setStyleSheet("""
+        QLabel {
+            font-weight: bold;
+            color: #2c5aa0;
+            padding: 5px;
+            background-color: #f0f8ff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    """)
+    
+    # Total amount - safe formatting
+    try:
+        formatted_amount = format_currency_amount(total_amount)
+    except:
+        formatted_amount = f"R {total_amount:,.2f}"
+    
+    amount_label = QLabel(f"Total Amt: {formatted_amount}")
+    amount_label.setStyleSheet("""
+        QLabel {
+            font-weight: bold;
+            color: #2d7d32;
+            padding: 5px;
+            background-color: #f1f8e9;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    """)
+    
+    # Explanation
+    explanation_label = QLabel(explanation)
+    explanation_label.setStyleSheet("""
+        QLabel {
+            color: #666;
+            font-style: italic;
+            padding: 5px;
+        }
+    """)
+    
+    totals_layout.addWidget(count_label)
+    totals_layout.addWidget(amount_label)
+    totals_layout.addWidget(explanation_label)
+    totals_layout.addStretch()
+    
+    return totals_widget

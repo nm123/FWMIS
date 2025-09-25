@@ -192,7 +192,6 @@ def load_case_data_components(dialog_instance):
         dialog_instance.recovery_evidence_button.setEnabled(False)
         dialog_instance.criminal_charges_combo.setEnabled(False)
         dialog_instance.disciplinary_combo.setEnabled(False)
-        dialog_instance.loss_recovery_combo.setEnabled(False)
         dialog_instance.prevention_steps_edit.setReadOnly(True)
 
         # Disable save button for finalized cases
@@ -217,11 +216,9 @@ def load_case_data_components(dialog_instance):
     if len(dialog_instance.case_data) > 23 and dialog_instance.case_data[23]:
         dialog_instance.disciplinary_combo.setCurrentText(dialog_instance.case_data[23])
 
-    # Set loss recovery
-    if len(dialog_instance.case_data) > 24 and dialog_instance.case_data[24]:
-        dialog_instance.loss_recovery_combo.setCurrentText(
-            dialog_instance.case_data[24]
-        )
+    # Set loss recovery (now handled by recovery progress system)
+    # The loss recovery status is now auto-managed based on installment data
+    # No need to set it manually as it's calculated from installments table
 
     # Set prevention steps
     if len(dialog_instance.case_data) > 25 and dialog_instance.case_data[25]:
@@ -274,19 +271,39 @@ def load_case_data_components(dialog_instance):
 
         status = dialog_instance.lc_status
         if status == "Recovery in Progress":
-            # Show recovery fields for installment tracking
-            dialog_instance.debtor_name_edit.setVisible(True)
-            dialog_instance.debt_number_edit.setVisible(True)
-            dialog_instance.latest_installment_amount_edit.setVisible(True)
-            dialog_instance.latest_installment_date_edit.setVisible(True)
-            dialog_instance.latest_installment_date_button.setVisible(True)
-            dialog_instance.total_recovered_amount_edit.setVisible(True)
+            # Show recovery group
+            if hasattr(dialog_instance, "recovery_group"):
+                dialog_instance.recovery_group.setVisible(True)
             
-            # Show recovery evidence
-            dialog_instance.recovery_evidence_label.setVisible(True)
-            dialog_instance.recovery_evidence_edit.setVisible(True)
-            dialog_instance.recovery_evidence_button.setVisible(True)
-            dialog_instance.recovery_evidence_view_button.setVisible(True)
+            # Initialize recovery progress
+            from scripts.ui.dialogs.edit_case.edit_case_handlers import update_recovery_progress
+            update_recovery_progress(dialog_instance)
+            
+            # Show recovery fields for installment tracking
+            if hasattr(dialog_instance, 'debtor_name_edit'):
+                dialog_instance.debtor_name_edit.setVisible(True)
+            if hasattr(dialog_instance, 'debtor_number_edit'):
+                dialog_instance.debtor_number_edit.setVisible(True)
+            if hasattr(dialog_instance, 'debt_number_edit'):
+                dialog_instance.debt_number_edit.setVisible(True)
+            
+            # Hide Loss Control Committee recovery evidence, show Recovery in Progress recovery evidence
+            dialog_instance.recovery_evidence_label.setVisible(False)
+            dialog_instance.recovery_evidence_edit.setVisible(False)
+            dialog_instance.recovery_evidence_button.setVisible(False)
+            dialog_instance.recovery_evidence_view_button.setVisible(False)
+            
+            # Show Recovery in Progress recovery evidence
+            if hasattr(dialog_instance, 'recovery_evidence_rip_label'):
+                dialog_instance.recovery_evidence_rip_label.setVisible(True)
+            if hasattr(dialog_instance, 'recovery_evidence_rip_edit'):
+                dialog_instance.recovery_evidence_rip_edit.setVisible(True)
+                dialog_instance.recovery_evidence_rip_edit.setPlaceholderText("Upload latest Debt Inquiry report")
+            if hasattr(dialog_instance, 'recovery_evidence_rip_button'):
+                dialog_instance.recovery_evidence_rip_button.setVisible(True)
+            if hasattr(dialog_instance, 'recovery_evidence_rip_view_button'):
+                dialog_instance.recovery_evidence_rip_view_button.setVisible(True)
+            
             dialog_instance.minutes_edit.setPlaceholderText(
                 "Loss Control Minutes are REQUIRED"
             )
@@ -295,18 +312,29 @@ def load_case_data_components(dialog_instance):
             
         elif status == "Recovered":
             # Hide installment fields, show only total recovered
-            dialog_instance.debtor_name_edit.setVisible(False)
-            dialog_instance.debt_number_edit.setVisible(False)
-            dialog_instance.latest_installment_amount_edit.setVisible(False)
-            dialog_instance.latest_installment_date_edit.setVisible(False)
-            dialog_instance.latest_installment_date_button.setVisible(False)
-            dialog_instance.total_recovered_amount_edit.setVisible(True)
+            if hasattr(dialog_instance, 'debtor_name_edit'):
+                dialog_instance.debtor_name_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debtor_number_edit'):
+                dialog_instance.debtor_number_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debt_number_edit'):
+                dialog_instance.debt_number_edit.setVisible(False)
             
-            # Show recovery evidence
+            # Show Loss Control Committee recovery evidence, hide Recovery in Progress recovery evidence
             dialog_instance.recovery_evidence_label.setVisible(True)
             dialog_instance.recovery_evidence_edit.setVisible(True)
             dialog_instance.recovery_evidence_button.setVisible(True)
             dialog_instance.recovery_evidence_view_button.setVisible(True)
+            
+            # Hide Recovery in Progress recovery evidence
+            if hasattr(dialog_instance, 'recovery_evidence_rip_label'):
+                dialog_instance.recovery_evidence_rip_label.setVisible(False)
+            if hasattr(dialog_instance, 'recovery_evidence_rip_edit'):
+                dialog_instance.recovery_evidence_rip_edit.setVisible(False)
+            if hasattr(dialog_instance, 'recovery_evidence_rip_button'):
+                dialog_instance.recovery_evidence_rip_button.setVisible(False)
+            if hasattr(dialog_instance, 'recovery_evidence_rip_view_button'):
+                dialog_instance.recovery_evidence_rip_view_button.setVisible(False)
+            
             dialog_instance.minutes_edit.setPlaceholderText(
                 "Loss Control Minutes are REQUIRED"
             )
@@ -315,12 +343,12 @@ def load_case_data_components(dialog_instance):
             
         elif status == "Write Off Recommended":
             # Hide all recovery fields
-            dialog_instance.debtor_name_edit.setVisible(False)
-            dialog_instance.debt_number_edit.setVisible(False)
-            dialog_instance.latest_installment_amount_edit.setVisible(False)
-            dialog_instance.latest_installment_date_edit.setVisible(False)
-            dialog_instance.latest_installment_date_button.setVisible(False)
-            dialog_instance.total_recovered_amount_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debtor_name_edit'):
+                dialog_instance.debtor_name_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debtor_number_edit'):
+                dialog_instance.debtor_number_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debt_number_edit'):
+                dialog_instance.debt_number_edit.setVisible(False)
             
             dialog_instance.recovery_evidence_label.setVisible(False)
             dialog_instance.recovery_evidence_edit.setVisible(False)
@@ -336,41 +364,49 @@ def load_case_data_components(dialog_instance):
             )
         else:
             # Hide all recovery fields for other statuses
-            dialog_instance.debtor_name_edit.setVisible(False)
-            dialog_instance.debt_number_edit.setVisible(False)
-            dialog_instance.latest_installment_amount_edit.setVisible(False)
-            dialog_instance.latest_installment_date_edit.setVisible(False)
-            dialog_instance.latest_installment_date_button.setVisible(False)
-            dialog_instance.total_recovered_amount_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debtor_name_edit'):
+                dialog_instance.debtor_name_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debtor_number_edit'):
+                dialog_instance.debtor_number_edit.setVisible(False)
+            if hasattr(dialog_instance, 'debt_number_edit'):
+                dialog_instance.debt_number_edit.setVisible(False)
             
-            dialog_instance.recovery_evidence_label.setVisible(False)
-            dialog_instance.recovery_evidence_edit.setVisible(False)
-            dialog_instance.recovery_evidence_button.setVisible(False)
-            dialog_instance.recovery_evidence_view_button.setVisible(False)
-            dialog_instance.recovery_evidence_edit.clear()
-            dialog_instance.minutes_edit.setPlaceholderText("")
+            if hasattr(dialog_instance, 'recovery_evidence_label'):
+                dialog_instance.recovery_evidence_label.setVisible(False)
+            if hasattr(dialog_instance, 'recovery_evidence_edit'):
+                dialog_instance.recovery_evidence_edit.setVisible(False)
+            if hasattr(dialog_instance, 'recovery_evidence_button'):
+                dialog_instance.recovery_evidence_button.setVisible(False)
+            if hasattr(dialog_instance, 'recovery_evidence_view_button'):
+                dialog_instance.recovery_evidence_view_button.setVisible(False)
+            if hasattr(dialog_instance, 'recovery_evidence_edit'):
+                dialog_instance.recovery_evidence_edit.clear()
+            if hasattr(dialog_instance, 'minutes_edit'):
+                dialog_instance.minutes_edit.setPlaceholderText("")
 
     # Set recovery fields with proper type conversion and null checking
+    # Clear any weird placeholder values and only set valid data
     if len(dialog_instance.case_data) > 30:  # debtor_name
         debtor_name = dialog_instance.case_data[30]
-        if debtor_name is not None:
-            dialog_instance.debtor_name_edit.setText(str(debtor_name))
+        if debtor_name is not None and str(debtor_name).strip() and str(debtor_name) not in ['7', '149', '-LS,-RIP']:
+            dialog_instance.debtor_name_edit.setText(str(debtor_name).strip())
+        else:
+            dialog_instance.debtor_name_edit.clear()
+    
     if len(dialog_instance.case_data) > 31:  # debt_number
         debt_number = dialog_instance.case_data[31]
-        if debt_number is not None:
-            dialog_instance.debt_number_edit.setText(str(debt_number))
-    if len(dialog_instance.case_data) > 32:  # total_recovered_amount
-        total_recovered = dialog_instance.case_data[32]
-        if total_recovered is not None and total_recovered != 0:
-            dialog_instance.total_recovered_amount_edit.setText(str(total_recovered))
-    if len(dialog_instance.case_data) > 33:  # latest_installment_amount
-        latest_installment = dialog_instance.case_data[33]
-        if latest_installment is not None and latest_installment != 0:
-            dialog_instance.latest_installment_amount_edit.setText(str(latest_installment))
-    if len(dialog_instance.case_data) > 34:  # latest_installment_date
-        latest_date = dialog_instance.case_data[34]
-        if latest_date is not None:
-            dialog_instance.latest_installment_date_edit.setText(str(latest_date))
+        if debt_number is not None and str(debt_number).strip() and str(debt_number) not in ['7', '149', '-LS,-RIP']:
+            dialog_instance.debt_number_edit.setText(str(debt_number).strip())
+        else:
+            dialog_instance.debt_number_edit.clear()
+    
+    # Initialize recovery progress display (this will calculate actual values from installments table)
+    if hasattr(dialog_instance, 'recovery_group') and dialog_instance.recovery_group.isVisible():
+        from scripts.ui.dialogs.edit_case.edit_case_handlers import update_recovery_progress
+        update_recovery_progress(dialog_instance)
+    
+    # Note: Old installment fields are no longer used in the new UI structure
+    # Installment data is now managed through the installments table
 
     # Set BAS fields
     if dialog_instance.case_data[6]:  # bas_payment_no

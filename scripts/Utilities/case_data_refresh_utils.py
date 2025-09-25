@@ -5,7 +5,7 @@ Utilities for refreshing case data in EditCasesDialog.
 import sqlite3
 
 from scripts.case_management_modules.case_table_utils import \
-    populate_case_table
+    populate_case_table, create_totals_widget
 from scripts.Utilities.config import DB_PATH
 
 
@@ -47,6 +47,21 @@ def refresh_cases(dialog_instance, resp_ids=None) -> None:
             include_edit=True,
             edit_callback=dialog_instance.edit_case_by_row,
         )
+        
+        # Update totals widget
+        if hasattr(dialog_instance, 'totals_widget'):
+            # Get financial year ID for totals calculation
+            fy_id = dialog_instance.fy_filter_combo.currentData()
+            new_totals_widget = create_totals_widget(selected_list, fy_id)
+            
+            # Replace the old totals widget
+            layout = dialog_instance.totals_widget.parent().layout()
+            layout.removeWidget(dialog_instance.totals_widget)
+            dialog_instance.totals_widget.setParent(None)  # Remove from parent
+            dialog_instance.totals_widget.deleteLater()
+            dialog_instance.totals_widget = new_totals_widget
+            layout.addWidget(dialog_instance.totals_widget)
+            
     except Exception as e:
         print(f"DEBUG: Error in database query or row processing: {e}")
         import traceback

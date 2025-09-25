@@ -28,7 +28,7 @@ def setup_loss_control_ui_components(dialog_instance):
         dialog_instance.lc_status_combo.setCurrentText(dialog_instance.lc_status)
     loss_control_layout.addRow("Loss Control Status:", dialog_instance.lc_status_combo)
 
-    # Recovery Evidence (conditional)
+    # Recovery Evidence (conditional - shown for "Recovered" status)
     dialog_instance.recovery_evidence_label = QLabel("Recovery Evidence:")
     dialog_instance.recovery_evidence_edit = QLineEdit()
     dialog_instance.recovery_evidence_button = QPushButton("Browse")

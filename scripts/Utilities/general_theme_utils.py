@@ -6,42 +6,23 @@ from PyQt5.QtWidgets import QDialog, QTableWidget, QTableWidgetItem
 
 from .theme_styles_utils import get_main_stylesheet
 
-# Corporate Professional Color Palette
+# Professional Color Palette
 COLORS = {
-    # Corporate Primary Colors
-    "primary": "#1a365d",  # Deep Navy - Primary actions and headers
-    "primary_light": "#2c5282",  # Lighter Navy - Hover states
-    "primary_dark": "#153a5e",  # Darker Navy - Active states
-    
-    # Professional Status Colors
-    "success": "#38a169",  # Professional Green - Success states
-    "warning": "#d69e2e",  # Corporate Amber - Warning states
-    "danger": "#e53e3e",  # Professional Red - Error states
-    "info": "#3182ce",  # Corporate Blue - Information
-    
-    # Corporate Neutral Palette
-    "secondary": "#4a5568",  # Charcoal Gray - Secondary actions
-    "light": "#f7fafc",  # Clean White - Light backgrounds
-    "dark": "#2d3748",  # Dark Gray - Primary text
-    "muted": "#718096",  # Muted Gray - Secondary text
-    "border": "#e2e8f0",  # Light Gray - Borders and dividers
-    
-    # Professional Backgrounds
-    "background": "#ffffff",  # Pure White - Main background
-    "surface": "#f7fafc",  # Light Gray - Surface backgrounds
-    "elevated": "#ffffff",  # White - Elevated surfaces
-    
-    # Hover States
-    "hover": "#2c5282",  # Navy hover
-    "success_hover": "#2f855a",  # Green hover
-    "warning_hover": "#b7791f",  # Amber hover
-    "danger_hover": "#c53030",  # Red hover
-    "info_hover": "#2b6cb0",  # Blue hover
-    
-    # Corporate Accents
-    "accent": "#3182ce",  # Corporate Blue - Accent elements
-    "accent_light": "#63b3ed",  # Light Blue - Light accents
-    "accent_dark": "#2c5282",  # Dark Blue - Dark accents
+    "primary": "#007bff",  # Blue - Primary actions
+    "success": "#28a745",  # Green - Success states
+    "warning": "#fd7e14",  # Orange - Warning states
+    "danger": "#dc3545",  # Red - Danger/error states
+    "info": "#17a2b8",  # Cyan - Information
+    "secondary": "#6c757d",  # Gray - Secondary actions
+    "light": "#f8f9fa",  # Light background
+    "dark": "#343a40",  # Dark text
+    "muted": "#6c757d",  # Muted text
+    "border": "#dee2e6",  # Border color
+    "hover": "#0056b3",  # Primary hover
+    "success_hover": "#218838",  # Success hover
+    "warning_hover": "#e8680f",  # Warning hover
+    "danger_hover": "#c82333",  # Danger hover
+    "info_hover": "#138496",  # Info hover
 }
 
 
@@ -66,7 +47,7 @@ def setup_professional_table(table, headers=None, emojis=None):
                     i, QTableWidgetItem(f"{emoji} {current_text}")
                 )
 
-    # Professional corporate styling
+    # Professional styling
     table.setStyleSheet(
         f"""
         QTableWidget {{
@@ -75,30 +56,23 @@ def setup_professional_table(table, headers=None, emojis=None):
             selection-color: white;
             border: 1px solid {COLORS['border']};
             border-radius: 4px;
-            background-color: {COLORS['background']};
-            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            background-color: white;
         }}
         QHeaderView::section {{
-            background-color: {COLORS['surface']};
-            padding: 10px 8px;
+            background-color: #f8f9fa;
+            padding: 8px;
             border: 1px solid {COLORS['border']};
             font-weight: 600;
             color: {COLORS['dark']};
-            font-size: 14px;
-            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            font-size: 12px;
         }}
         QTableWidget::item {{
-            padding: 10px 8px;
-            border-bottom: 1px solid {COLORS['border']};
-            font-size: 14px;
-            color: {COLORS['dark']};
+            padding: 8px;
+            border-bottom: 1px solid #f1f3f4;
         }}
         QTableWidget::item:selected {{
             background-color: {COLORS['primary']};
             color: white;
-        }}
-        QTableWidget::item:hover {{
-            background-color: {COLORS['surface']};
         }}
     """
     )

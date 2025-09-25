@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QComboBox, QDialog, QFormLayout, QGroupBox,
                              QTreeWidget, QTreeWidgetItem, QVBoxLayout,
                              QWidget)
 from scripts.case_management_modules.case_table_utils import \
-    setup_case_table_columns
+    setup_case_table_columns, create_totals_widget
 from scripts.case_management_modules.view_cases_logic import ViewCasesLogic
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import (get_all_financial_years,
@@ -203,7 +203,19 @@ class ViewCasesDialog(QDialog):
         # Set row height for better readability and wrapped text
         self.case_table.verticalHeader().setDefaultSectionSize(80)
 
-        splitter.addWidget(self.case_table)
+        # Create a container for the table and totals
+        table_container = QWidget()
+        table_layout = QVBoxLayout(table_container)
+        table_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Add the table
+        table_layout.addWidget(self.case_table)
+        
+        # Add totals widget - start with a clean widget
+        self.totals_widget = create_totals_widget("Checklist")
+        table_layout.addWidget(self.totals_widget)
+        
+        splitter.addWidget(table_container)
 
         splitter.setSizes([300, 700])
         content_layout.addWidget(splitter)
