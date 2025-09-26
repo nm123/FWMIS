@@ -8,7 +8,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 from reportlab.platypus.flowables import Image
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 from scripts.Utilities.annexure_utils import get_annexure_details
 
 def export_annexure_to_pdf(annexure_ids: List[Optional[int]], file_path: str, include_lc_minutes: bool = False):

@@ -68,7 +68,7 @@ class EditCaseLogic:
 
         # Set loss recovery
         if len(self.case_data) > 24 and self.case_data[24]:
-            # loss_recovery_combo no longer exists - handled by recovery progress system
+            self.dialog.loss_recovery_combo.setCurrentText(self.case_data[24])
 
         # Set prevention steps
         if len(self.case_data) > 25 and self.case_data[25]:
@@ -109,6 +109,20 @@ class EditCaseLogic:
     def save_case(self) -> None:
         """Save the case data to database"""
         try:
+            # Validate that transaction_no is not None or empty
+            if not hasattr(self, 'transaction_no') or self.transaction_no is None:
+                QMessageBox.critical(
+                    self.dialog, "Invalid Case Data",
+                    "Case transaction number is missing. Cannot save case."
+                )
+                return
+
+            if not isinstance(self.transaction_no, str) or self.transaction_no.strip() == "":
+                QMessageBox.critical(
+                    self.dialog, "Invalid Case Data",
+                    "Case transaction number is empty. Cannot save case."
+                )
+                return
             bas_payment_no = self.dialog.bas_payment_no_edit.text().strip()
             persal_no = self.dialog.persal_no_edit.text().strip()
             amount_text = self.dialog.amount_edit.text().strip()
@@ -194,7 +208,7 @@ class EditCaseLogic:
             list_text = self.dialog.list_combo.currentText()
             criminal_charges_text = self.dialog.criminal_charges_combo.currentText()
             disciplinary_text = self.dialog.disciplinary_combo.currentText()
-            # loss_recovery_text is now handled by the recovery progress system
+            loss_recovery_text = self.dialog.loss_recovery_combo.currentText()
 
             # New: Determine assessment_status and lc_status based on selected_list
             assessment_status: str
@@ -299,7 +313,7 @@ class EditCaseLogic:
                 "is_finalized": is_finalized,
                 "criminal_charges": criminal_charges_text,
                 "disciplinary_process": disciplinary_text,
-                "loss_recovery": "N/A",  # Now handled by recovery progress system
+                "loss_recovery": loss_recovery_text,
                 "prevention_steps": self.dialog.prevention_steps_edit.toPlainText().strip(),
                 "fy_id": existing_fy_id,
                 "period_id": existing_period_id,

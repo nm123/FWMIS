@@ -1,0 +1,51 @@
+Transaction_No|Amount|Vendor_Name|Date|Category|Description
+04d,.2f,International Imports,2025-08-07,Office Supplies,Test transaction 1 for office supplies
+04d,.2f,International Imports,2025-09-07,Utilities,Test transaction 2 for utilities
+04d,.2f,Domestic Exports Ltd,2025-05-29,Office Supplies,Test transaction 3 for office supplies
+04d,.2f,City Services Inc,2025-09-04,Consulting Fees,Test transaction 4 for consulting fees
+04d,.2f,XYZ Corporation,2025-08-30,Training Costs,Test transaction 5 for training costs
+04d,.2f,Metro Construction,2025-09-10,Professional Services,Test transaction 6 for professional services
+04d,.2f,Elite Contractors,2025-06-27,Office Supplies,Test transaction 7 for office supplies
+04d,.2f,Regional Traders,2025-06-18,Construction Materials,Test transaction 8 for construction materials
+04d,.2f,Local Manufacturing Co,2025-09-26,Consulting Fees,Test transaction 9 for consulting fees
+04d,.2f,ABC Supplies Ltd,2025-09-03,Insurance,Test transaction 10 for insurance
+04d,.2f,Premier Services,2025-05-23,Construction Materials,Test transaction 11 for construction materials
+04d,.2f,Premier Services,2025-06-06,IT Equipment,Test transaction 12 for it equipment
+04d,.2f,Elite Contractors,2025-06-19,Maintenance Services,Test transaction 13 for maintenance services
+04d,.2f,City Services Inc,2025-09-05,Training Costs,Test transaction 14 for training costs
+04d,.2f,International Imports,2025-05-26,Maintenance Services,Test transaction 15 for maintenance services
+04d,.2f,Domestic Exports Ltd,2025-05-22,Consulting Fees,Test transaction 16 for consulting fees
+04d,.2f,Metro Construction,2025-07-18,Construction Materials,Test transaction 17 for construction materials
+04d,.2f,ABC Supplies Ltd,2025-08-21,IT Equipment,Test transaction 18 for it equipment
+04d,.2f,Domestic Exports Ltd,2025-05-04,Office Supplies,Test transaction 19 for office supplies
+04d,.2f,Elite Contractors,2025-04-20,Construction Materials,Test transaction 20 for construction materials
+04d,.2f,XYZ Corporation,2025-06-30,Insurance,Test transaction 21 for insurance
+04d,.2f,ABC Supplies Ltd,2025-07-12,Training Costs,Test transaction 22 for training costs
+04d,.2f,Regional Traders,2025-07-25,Travel Expenses,Test transaction 23 for travel expenses
+04d,.2f,Regional Traders,2025-08-10,Professional Services,Test transaction 24 for professional services
+04d,.2f,XYZ Corporation,2025-06-23,Insurance,Test transaction 25 for insurance
+04d,.2f,XYZ Corporation,2025-07-04,Consulting Fees,Test transaction 26 for consulting fees
+04d,.2f,National Distributors,2025-04-15,Insurance,Test transaction 27 for insurance
+04d,.2f,Premier Services,2025-09-11,Consulting Fees,Test transaction 28 for consulting fees
+04d,.2f,XYZ Corporation,2025-09-19,Consulting Fees,Test transaction 29 for consulting fees
+04d,.2f,ABC Supplies Ltd,2025-08-13,Training Costs,Test transaction 30 for training costs
+04d,.2f,Regional Traders,2025-07-03,Maintenance Services,Test transaction 31 for maintenance services
+04d,.2f,Metro Construction,2025-07-02,Construction Materials,Test transaction 32 for construction materials
+04d,.2f,Regional Traders,2025-05-13,Construction Materials,Test transaction 33 for construction materials
+04d,.2f,City Services Inc,2025-05-06,Travel Expenses,Test transaction 34 for travel expenses
+04d,.2f,ABC Supplies Ltd,2025-08-30,Office Supplies,Test transaction 35 for office supplies
+04d,.2f,National Distributors,2025-07-20,Maintenance Services,Test transaction 36 for maintenance services
+04d,.2f,International Imports,2025-05-22,Training Costs,Test transaction 37 for training costs
+04d,.2f,City Services Inc,2025-08-05,IT Equipment,Test transaction 38 for it equipment
+04d,.2f,International Imports,2025-04-10,Office Supplies,Test transaction 39 for office supplies
+04d,.2f,City Services Inc,2025-05-25,Training Costs,Test transaction 40 for training costs
+04d,.2f,International Imports,2025-07-25,Office Supplies,Test transaction 41 for office supplies
+04d,.2f,XYZ Corporation,2025-07-20,Consulting Fees,Test transaction 42 for consulting fees
+04d,.2f,Global Tech Solutions,2025-06-20,Professional Services,Test transaction 43 for professional services
+04d,.2f,XYZ Corporation,2025-06-06,Consulting Fees,Test transaction 44 for consulting fees
+04d,.2f,Domestic Exports Ltd,2025-07-13,Utilities,Test transaction 45 for utilities
+04d,.2f,Metro Construction,2025-08-02,Insurance,Test transaction 46 for insurance
+04d,.2f,Global Tech Solutions,2025-04-01,Professional Services,Test transaction 47 for professional services
+04d,.2f,International Imports,2025-08-19,IT Equipment,Test transaction 48 for it equipment
+04d,.2f,Premier Services,2025-09-14,Office Supplies,Test transaction 49 for office supplies
+04d,.2f,Global Tech Solutions,2025-06-27,Construction Materials,Test transaction 50 for construction materials

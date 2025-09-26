@@ -322,6 +322,27 @@ class FWManagementApp(QMainWindow):
         optimization_action.setToolTip("Configure performance optimizations for large datasets")
         admin_menu.addAction(optimization_action)
 
+        # Add separator before system management
+        admin_menu.addSeparator()
+
+        # Database Archiving Management
+        archiving_action = QAction("🗄️ Database Archiving", self)
+        archiving_action.triggered.connect(self.open_database_archiving)
+        archiving_action.setToolTip("Manage database archiving for performance optimization")
+        admin_menu.addAction(archiving_action)
+
+        # Automated Testing Management
+        testing_action = QAction("🧪 Automated Testing", self)
+        testing_action.triggered.connect(self.open_automated_testing)
+        testing_action.setToolTip("Run automated tests and manage CI/CD integration")
+        admin_menu.addAction(testing_action)
+
+        # Test Verification Management
+        verification_action = QAction("🔍 Test Verification", self)
+        verification_action.triggered.connect(self.run_daily_test_verification)
+        verification_action.setToolTip("Run daily test verification to check coverage and integration")
+        admin_menu.addAction(verification_action)
+
         # Add separator before dangerous operations
         admin_menu.addSeparator()
 
@@ -509,6 +530,189 @@ class FWManagementApp(QMainWindow):
         except Exception as e:
             QMessageBox.critical(
                 self, "Error", f"Failed to open Performance Optimization dialog: {str(e)}"
+            )
+
+    def open_database_archiving(self):
+        """Open the database archiving management dialog"""
+        try:
+            from scripts.ui.dialogs.database_archiving_dialog import show_database_archiving_dialog
+            show_database_archiving_dialog(self)
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Database Archiving dialog: {str(e)}"
+            )
+
+    def open_automated_testing(self):
+        """Open the automated testing and CI/CD integration dialog"""
+        try:
+            from scripts.ui.dialogs.automated_testing_dialog import show_automated_testing_dialog
+            show_automated_testing_dialog(self)
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Automated Testing dialog: {str(e)}"
+            )
+
+    def run_daily_test_verification(self):
+        """Run the daily test verification script"""
+        try:
+            import subprocess
+            import sys
+            from pathlib import Path
+
+            # Build verification command
+            project_root = Path(__file__).parent.parent  # FWMIS directory
+            script_path = project_root / "daily_test_verification.py"
+
+            if not script_path.exists():
+                QMessageBox.warning(
+                    self, "Script Not Found",
+                    f"Daily verification script not found at:\n{script_path}\n\n"
+                    "Please ensure daily_test_verification.py exists in the project root."
+                )
+                return
+
+            # Run the verification script
+            command = [sys.executable, str(script_path)]
+            working_dir = str(project_root)
+
+            # Show progress dialog
+            from PyQt5.QtWidgets import QProgressDialog
+            progress = QProgressDialog("Running Test Verification...", "Cancel", 0, 0, self)
+            progress.setWindowModality(2)  # Qt.WindowModal
+            progress.setAutoClose(False)
+            progress.setAutoReset(False)
+            progress.show()
+
+            try:
+                # Run the verification
+                result = subprocess.run(
+                    command,
+                    cwd=working_dir,
+                    capture_output=True,
+                    text=True,
+                    timeout=120  # 2 minute timeout
+                )
+
+                progress.close()
+
+                # Show results
+                from PyQt5.QtWidgets import QTextEdit, QVBoxLayout, QDialog, QDialogButtonBox
+
+                result_dialog = QDialog(self)
+                result_dialog.setWindowTitle("Test Verification Results")
+                result_dialog.setModal(True)
+                result_dialog.resize(900, 700)
+                result_dialog.setMinimumSize(800, 600)
+
+                layout = QVBoxLayout(result_dialog)
+
+                # Title
+                title_label = QLabel("🔍 Daily Test Verification Results")
+                title_font = title_label.font()
+                title_font.setPointSize(12)
+                title_font.setBold(True)
+                title_label.setFont(title_font)
+                layout.addWidget(title_label)
+
+                # Results text area
+                results_text = QTextEdit()
+                results_text.setPlainText(result.stdout)
+                if result.stderr:
+                    results_text.append("\n" + "="*50 + "\nSTDERR OUTPUT:\n" + "="*50)
+                    results_text.append(result.stderr)
+                results_text.setReadOnly(True)
+                results_text.setFontFamily("Courier New")
+                layout.addWidget(results_text)
+
+                # Status summary
+                summary_text = f"\nExit Code: {result.returncode}\n"
+                if result.returncode == 0:
+                    summary_text += "✅ VERIFICATION PASSED - All tests properly integrated!"
+                else:
+                    summary_text += "❌ VERIFICATION FAILED - Issues need attention!"
+
+                status_label = QLabel(summary_text)
+                if result.returncode == 0:
+                    status_label.setStyleSheet("QLabel { color: green; font-weight: bold; }")
+                else:
+                    status_label.setStyleSheet("QLabel { color: red; font-weight: bold; }")
+                layout.addWidget(status_label)
+
+                # Buttons
+                button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+                if result.returncode != 0:
+                    # Add auto-fix button if there are issues
+                    auto_fix_btn = button_box.addButton("🔧 Auto-Fix Issues", QDialogButtonBox.ActionRole)
+                    auto_fix_btn.clicked.connect(lambda: self.run_verification_auto_fix(result_dialog))
+
+                button_box.accepted.connect(result_dialog.accept)
+                layout.addWidget(button_box)
+
+                result_dialog.exec_()
+
+            except subprocess.TimeoutExpired:
+                progress.close()
+                QMessageBox.warning(
+                    self, "Timeout",
+                    "Test verification timed out after 2 minutes.\n\n"
+                    "The verification process may be taking too long or may be stuck."
+                )
+            except Exception as run_error:
+                progress.close()
+                QMessageBox.critical(
+                    self, "Execution Error",
+                    f"Failed to run test verification:\n{str(run_error)}"
+                )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to run daily test verification: {str(e)}"
+            )
+
+    def run_verification_auto_fix(self, parent_dialog):
+        """Run the verification auto-fix"""
+        try:
+            import subprocess
+            import sys
+            from pathlib import Path
+
+            project_root = Path(__file__).parent.parent  # FWMIS directory
+            script_path = project_root / "daily_test_verification.py"
+
+            command = [sys.executable, str(script_path), "--auto-fix"]
+            working_dir = str(project_root)
+
+            # Run auto-fix
+            result = subprocess.run(
+                command,
+                cwd=working_dir,
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+
+            # Show auto-fix results
+            from PyQt5.QtWidgets import QMessageBox
+
+            if result.returncode == 0:
+                QMessageBox.information(
+                    parent_dialog, "Auto-Fix Completed",
+                    "✅ Auto-fix completed successfully!\n\n"
+                    "Common issues have been resolved.\n"
+                    "Please re-run the verification to confirm."
+                )
+            else:
+                QMessageBox.warning(
+                    parent_dialog, "Auto-Fix Issues",
+                    "❌ Auto-fix encountered issues:\n\n" +
+                    result.stdout + "\n" + result.stderr + "\n\n" +
+                    "Please check the output for details."
+                )
+
+        except Exception as e:
+            QMessageBox.critical(
+                parent_dialog, "Auto-Fix Error",
+                f"Failed to run auto-fix: {str(e)}"
             )
 
     def manage_write_off_delegations(self):

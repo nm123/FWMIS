@@ -17,7 +17,7 @@ from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.ui_theme import apply_theme
 from scripts.Utilities.utils import format_currency_amount
 
-from .edit_case_handlers import (browse_evidence, browse_minutes,
+from scripts.ui.dialogs.edit_case.edit_case_handlers import (browse_evidence, browse_minutes,
                                  browse_source_doc, on_cancel_clicked,
                                  on_save_clicked, on_status_changed,
                                  select_responsibility,

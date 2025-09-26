@@ -271,6 +271,14 @@ class AddCaseLogic:
             self.dialog.transaction_no = generate_transaction_no(self.dialog.fy)
             self.dialog.trans_no_edit.setText(self.dialog.transaction_no)
 
+            # Validate that transaction_no was generated successfully
+            if not self.dialog.transaction_no or self.dialog.transaction_no.strip() == "":
+                QMessageBox.critical(
+                    self.dialog, "Transaction Number Error",
+                    "Failed to generate a valid transaction number. Please try again."
+                )
+                return
+
             # Get case data
             case = get_case_data(self.dialog)
 

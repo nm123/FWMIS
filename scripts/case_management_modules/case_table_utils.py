@@ -105,7 +105,7 @@ def populate_case_table(
 
         # Case No (with suffix stripping for display)
         display_value = transaction_no
-        if list_name != "All Cases":
+        if display_value and list_name != "All Cases":
             while any(
                 display_value.endswith(s) for s in ["-LS", "-WOR", "-REC", "-WO"]
             ):

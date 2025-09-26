@@ -11,6 +11,9 @@ openpyxl>=3.0.0  # Excel processing (already used)
 # polars>=0.20.0  # Faster alternative to pandas (uncomment if needed)
 # numba>=0.56.0  # JIT compilation for CPU-bound tasks (uncomment if needed)
 
+# PDF processing (replacing deprecated PyPDF2)
+pypdf>=3.0.0  # Modern PDF processing library
+
 # Development and testing
 pytest>=6.0.0  # For running performance tests
 pytest-benchmark>=3.4.0  # For performance benchmarking

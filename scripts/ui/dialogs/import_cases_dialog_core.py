@@ -9,9 +9,9 @@ from scripts.Utilities.import_cases_utils import validate_responsibility
 class ImportUndisclosedCasesDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("🎯 FWMIS - Import Undisclosed Cases from BAS Report")
+        self.setWindowTitle("FWMIS - Import Undisclosed Cases from BAS Report")
         self.setFixedSize(1450, 900)
-        self.setWindowIconText("📊")
+        self.setWindowIconText("Import")
 
         # Initialize parser and data
         self.parser = BASParser()

@@ -1,0 +1,1 @@
+Transaction_No|Amount|Vendor_Name|Date|Category|Description

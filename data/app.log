@@ -4629,3 +4629,717 @@ PERFORMANCE RECOMMENDATIONS:
   5. Use SQL aggregations instead of Python loops
   6. Consider PyPy for 2-7x speed improvements
 2025-09-25 16:23:50,474 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 10:53:49,831 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 10:53:49,833 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 10:53:49,834 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 10:53:49,834 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 10:53:49,835 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 10:53:49,836 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 10:53:49,842 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 10:53:49,855 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 10:53:49,865 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 10:53:49,865 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 10:53:49,866 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 10:53:49,867 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 10:53:49,867 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 10:53:49,868 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 10:53:49,868 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 10:53:49,869 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 10:53:49,869 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 10:53:49,870 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 10:53:49,870 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=72.8MB
+2025-09-26 10:53:49,876 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 10:53:49
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.5 GB
+  Memory Usage: 94.0%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 10:53:49,878 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 13:40:47,505 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 13:40:47,507 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 13:40:47,507 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 13:40:47,508 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 13:40:47,508 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 13:40:47,508 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 13:40:47,514 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 13:40:47,521 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 13:40:47,524 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 13:40:47,525 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 13:40:47,525 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 13:40:47,525 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 13:40:47,525 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 13:40:47,526 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 13:40:47,526 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 13:40:47,526 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 13:40:47,527 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 13:40:47,527 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 13:40:47,528 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.3MB
+2025-09-26 13:40:47,541 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 13:40:47
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.9 GB
+  Memory Usage: 88.5%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 13:40:47,543 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 13:45:52,519 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 13:45:52,520 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 13:45:52,521 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 13:45:52,521 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 13:45:52,522 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 13:45:52,522 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 13:45:52,532 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 13:45:52,544 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 13:45:52,547 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 13:45:52,548 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 13:45:52,548 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 13:45:52,549 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 13:45:52,549 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 13:45:52,550 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 13:45:52,550 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 13:45:52,551 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 13:45:52,552 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 13:45:52,553 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 13:45:52,555 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.5MB
+2025-09-26 13:45:52,605 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 13:45:52
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.5 GB
+  Memory Usage: 93.9%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 13:45:52,611 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 13:53:35,171 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 13:53:35,172 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 13:53:35,173 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 13:53:35,173 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 13:53:35,173 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 13:53:35,173 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 13:53:35,179 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 13:53:35,188 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 13:53:35,190 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 13:53:35,191 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 13:53:35,191 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 13:53:35,191 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 13:53:35,192 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 13:53:35,192 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 13:53:35,192 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 13:53:35,192 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 13:53:35,193 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 13:53:35,193 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 13:53:35,193 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.3MB
+2025-09-26 13:53:35,199 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 13:53:35
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.8 GB
+  Memory Usage: 90.1%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 13:53:35,201 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 14:11:53,726 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 14:11:53,727 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 14:11:53,728 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 14:11:53,728 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 14:11:53,728 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 14:11:53,728 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 14:11:53,734 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 14:11:53,740 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 14:11:53,742 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 14:11:53,743 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 14:11:53,743 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 14:11:53,743 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 14:11:53,744 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 14:11:53,744 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 14:11:53,744 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 14:11:53,745 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 14:11:53,745 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 14:11:53,745 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 14:11:53,746 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.6MB
+2025-09-26 14:11:53,756 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 14:11:53
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.7 GB
+  Memory Usage: 90.7%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 14:11:53,759 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 14:30:49,682 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 14:30:49,683 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 14:30:49,684 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 14:30:49,684 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 14:30:49,684 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 14:30:49,684 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 14:30:49,689 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 14:30:49,699 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 14:30:49,710 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 14:30:49,710 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 14:30:49,711 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 14:30:49,711 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 14:30:49,711 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 14:30:49,712 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 14:30:49,712 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 14:30:49,712 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 14:30:49,713 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 14:30:49,713 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 14:30:49,713 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.3MB
+2025-09-26 14:30:49,727 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 14:30:49
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.7 GB
+  Memory Usage: 90.2%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 14:30:49,729 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 16:23:17,341 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 16:23:17,342 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 16:23:17,343 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 16:23:17,343 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 16:23:17,343 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 16:23:17,344 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 16:23:17,350 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 16:23:17,361 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 16:23:17,365 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 16:23:17,366 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 16:23:17,366 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 16:23:17,367 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 16:23:17,367 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 16:23:17,368 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 16:23:17,368 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 16:23:17,369 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 16:23:17,369 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 16:23:17,370 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 16:23:17,371 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.3MB
+2025-09-26 16:23:17,388 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 16:23:17
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.7 GB
+  Memory Usage: 91.1%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 16:23:17,390 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 16:30:13,303 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 16:30:13,304 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 16:30:13,305 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 16:30:13,305 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 16:30:13,306 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 16:30:13,306 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 16:30:13,312 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 16:30:13,320 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 16:30:13,323 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 16:30:13,324 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 16:30:13,324 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 16:30:13,324 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 16:30:13,325 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 16:30:13,325 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 16:30:13,326 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 16:30:13,326 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 16:30:13,327 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 16:30:13,327 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 16:30:13,328 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.6MB
+2025-09-26 16:30:13,335 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 16:30:13
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.8 GB
+  Memory Usage: 89.9%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 16:30:13,340 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 16:31:43,454 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 16:31:43,454 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 16:31:43,455 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 16:31:43,455 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 16:31:43,455 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 16:31:43,456 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 16:31:43,465 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 16:31:43,472 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 16:31:43,476 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 16:31:43,476 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 16:31:43,476 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 16:31:43,476 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 16:31:43,476 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 16:31:43,477 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 16:31:43,477 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 16:31:43,478 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 16:31:43,478 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 16:31:43,479 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 16:31:43,480 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-26 16:31:43,486 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 16:31:43
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.8 GB
+  Memory Usage: 90.0%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 16:31:43,488 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 16:38:39,884 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 16:38:39,885 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 16:38:39,885 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 16:38:39,886 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 16:38:39,886 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 16:38:39,887 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 16:38:39,897 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 16:38:39,916 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 16:38:39,929 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 16:38:39,930 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 16:38:39,930 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 16:38:39,931 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 16:38:39,931 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 16:38:39,932 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 16:38:39,933 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 16:38:39,933 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 16:38:39,934 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 16:38:39,934 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 16:38:39,936 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-26 16:38:39,947 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 16:38:39
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.8 GB
+  Memory Usage: 89.3%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 16:38:39,954 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 16:50:13,985 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 16:50:13,986 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 16:50:13,986 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 16:50:13,987 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 16:50:13,987 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 16:50:13,987 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 16:50:13,996 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 16:50:14,010 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 16:50:14,014 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 16:50:14,014 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 16:50:14,015 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 16:50:14,015 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 16:50:14,016 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 16:50:14,016 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 16:50:14,016 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 16:50:14,017 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 16:50:14,017 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 16:50:14,017 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 16:50:14,018 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-26 16:50:14,024 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 16:50:14
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.9 GB
+  Memory Usage: 88.5%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 16:50:14,026 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 17:00:37,593 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 17:00:37,594 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 17:00:37,594 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 17:00:37,595 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 17:00:37,595 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 17:00:37,595 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 17:00:37,602 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 17:00:37,614 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 17:00:37,619 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 17:00:37,621 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 17:00:37,622 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 17:00:37,623 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 17:00:37,624 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 17:00:37,625 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 17:00:37,625 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 17:00:37,625 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 17:00:37,626 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 17:00:37,626 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 17:00:37,628 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.9MB
+2025-09-26 17:00:37,636 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 17:00:37
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.8 GB
+  Memory Usage: 89.5%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 17:00:37,639 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 17:14:48,868 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 17:14:48,869 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 17:14:48,870 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 17:14:48,870 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 17:14:48,870 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 17:14:48,871 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 17:14:48,878 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 17:14:48,890 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 17:14:48,894 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 17:14:48,894 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 17:14:48,895 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 17:14:48,896 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 17:14:48,896 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 17:14:48,897 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 17:14:48,897 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 17:14:48,898 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 17:14:48,898 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 17:14:48,899 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 17:14:48,901 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.9MB
+2025-09-26 17:14:48,917 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 17:14:48
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.5 GB
+  Memory Usage: 93.5%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 17:14:48,921 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 17:18:24,981 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 17:18:24,982 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 17:18:24,982 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 17:18:24,982 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 17:18:24,982 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 17:18:24,983 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 17:18:24,989 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 17:18:25,000 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 17:18:25,005 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 17:18:25,006 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 17:18:25,006 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 17:18:25,006 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 17:18:25,007 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 17:18:25,009 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 17:18:25,010 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 17:18:25,012 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 17:18:25,012 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 17:18:25,014 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 17:18:25,016 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-26 17:18:25,022 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 17:18:25
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.7 GB
+  Memory Usage: 91.3%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 17:18:25,024 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 17:32:09,214 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 17:32:09,216 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 17:32:09,216 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 17:32:09,217 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 17:32:09,217 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 17:32:09,217 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 17:32:09,224 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 17:32:09,240 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 17:32:09,244 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 17:32:09,244 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 17:32:09,245 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 17:32:09,245 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 17:32:09,246 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 17:32:09,246 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 17:32:09,246 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 17:32:09,247 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 17:32:09,248 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 17:32:09,249 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 17:32:09,249 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.9MB
+2025-09-26 17:32:09,289 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 17:32:09
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.5 GB
+  Memory Usage: 93.0%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 17:32:09,291 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 17:37:20,654 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 17:37:20,654 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 17:37:20,657 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 17:37:20,657 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 17:37:20,657 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 17:37:20,657 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 17:37:20,664 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 17:37:20,672 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 17:37:20,675 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 17:37:20,681 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 17:37:20,682 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 17:37:20,682 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 17:37:20,683 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 17:37:20,683 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 17:37:20,684 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 17:37:20,684 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 17:37:20,685 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 17:37:20,685 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 17:37:20,686 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.5MB
+2025-09-26 17:37:20,690 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 17:37:20
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.1 GB
+  Memory Usage: 86.2%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 17:37:20,691 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 17:37:42,700 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 17:37:42,701 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 17:37:42,707 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 17:37:42,708 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 17:37:42,709 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 17:37:42,709 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 17:37:42,716 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 17:37:42,728 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 17:37:42,731 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 17:37:42,732 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 17:37:42,732 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 17:37:42,733 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 17:37:42,733 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 17:37:42,734 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 17:37:42,734 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 17:37:42,735 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 17:37:42,739 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 17:37:42,743 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 17:37:42,744 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-26 17:37:42,749 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 17:37:42
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.0 GB
+  Memory Usage: 87.2%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 17:37:42,749 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 18:26:30,454 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-26 18:26:30,455 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-26 18:26:30,455 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-26 18:26:30,455 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-26 18:26:30,456 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-26 18:26:30,456 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-26 18:26:30,465 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-26 18:26:30,481 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-26 18:26:30,486 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-26 18:26:30,487 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-26 18:26:30,488 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-26 18:26:30,488 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-26 18:26:30,489 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-26 18:26:30,489 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-26 18:26:30,489 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-26 18:26:30,490 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-26 18:26:30,490 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-26 18:26:30,491 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-26 18:26:30,491 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-26 18:26:30,507 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-26 18:26:30
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.6 GB
+  Memory Usage: 92.5%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-26 18:26:30,509 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-26 18:27:40,854 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-26 18:27:40,867 | INFO | scripts.core.import_worker | Case inserted
+2025-09-26 18:27:40,873 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-26 18:27:40,873 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-26 18:27:40,882 | INFO | scripts.core.import_worker | Imported case
+2025-09-26 18:27:40,890 | INFO | scripts.core.import_worker | Case inserted
+2025-09-26 18:27:40,901 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-26 18:27:40,904 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-26 18:27:40,928 | INFO | scripts.core.import_worker | Imported case
+2025-09-26 18:27:40,959 | INFO | scripts.core.import_worker | Case inserted
+2025-09-26 18:27:40,982 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-26 18:27:40,984 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-26 18:27:40,993 | INFO | scripts.core.import_worker | Imported case
+2025-09-26 18:27:41,003 | INFO | scripts.core.import_worker | Case inserted
+2025-09-26 18:27:41,013 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-26 18:27:41,015 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-26 18:27:41,029 | INFO | scripts.core.import_worker | Imported case
+2025-09-26 18:27:41,037 | INFO | scripts.core.import_worker | Case inserted
+2025-09-26 18:27:41,044 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-26 18:27:41,047 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-26 18:27:41,063 | INFO | scripts.core.import_worker | Imported case
+2025-09-26 18:27:41,070 | INFO | scripts.core.import_worker | Case inserted
+2025-09-26 18:27:41,074 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-26 18:27:41,076 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-26 18:27:41,089 | INFO | scripts.core.import_worker | Imported case
+2025-09-26 18:27:41,090 | INFO | scripts.core.import_worker | Import completed
+2025-09-26 18:31:05,197 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:31:05,271 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:31:23,399 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:31:23,442 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:31:38,672 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:31:38,737 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:31:55,035 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:31:55,090 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:32:23,655 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:32:23,709 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:33:13,787 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:33:13,837 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:33:13,891 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-26 18:33:33,957 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:33:34,001 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:33:34,041 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-26 18:33:52,328 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:33:52,386 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:33:52,419 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-26 18:34:29,704 | INFO | root | Audit log saved successfully: edit_case
+2025-09-26 18:34:29,755 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-26 18:34:29,812 | INFO | root | Audit log saved successfully: lc_status_change
