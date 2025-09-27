@@ -1,0 +1,444 @@
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    1
+
+                                                      REPORT INTRODUCTORY PAGE
+                                                      ------------------------
+          INSTALLATION ID       : KZN: HEALTH
+          LOCATION ID           : KZN: HEALTH
+          USERID                : MARITZCJ
+          REPORT REQUEST ID     : 00098749
+          SORT CRITERIA         : F R M O S A P I
+          SELECTION CRITERIA    :
+               1. LAST CLOSED MONTH               : 07/2025
+               2. ITEM                            : I
+               3. INFRASTRUCTURE                  : S
+               4. OBJECTIVE                       : O
+               5. RESPONSIBILITY                  : R
+               6. FUND                            : F
+               7. PROJECT                         : P
+               8. ASSETS                          : A
+               9. REGIONAL IDENTIFIER             : M
+
+
+
+
+
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    2
+                                                    01/05/2025 TO 31/05/2025
+
+
+ SELECTION CRITERIA : TYPE                              DETAIL
+                      --------------------------------  --------------------------------
+                      FUND                              ALL
+                      RESPONSIBILITY                    ALL
+                      REGIONAL IDENTIFIER               ALL
+                      OBJECTIVE                         ALL
+                      INFRASTRUCTURE                    ALL
+                      ASSETS                            ALL
+                      PROJECT                           ALL
+                      ITEM                              INT PAID:LOC GOV ON WATER & ELEC
+
+ MATCHING FIELDS    : NONE
+
+ SORT CRITERIA      : F R M O S A P I
+
+ TOTALS             : F0001 R0010 I0009
+
+ PAGE BREAK         : NONE
+
+ LAST CLOSED MONTH  : 07/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+        F 001   EXPENDITURE:VOTED
+        R 007   GAMALAKHE CHC
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000036711 G03570360277849BWATER ACC        00088774 GOVENDERYS   20/05/2025            229.89                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   229.89                    0.00
+ TOTAL  R 007   GAMALAKHE CHC----------------------------------------------------                  229.89                    0.00
+        R 007   MFUNDO ARNOLD LUSHABA CHC
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        GJ 0000002769 INT PAID:LOC GOV ON WATER & ELEC 00171557 62840274     20/05/2025          1,150.14                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 1,150.14                    0.00
+ TOTAL  R 007   MFUNDO ARNOLD LUSHABA CHC----------------------------------------                1,150.14                    0.00
+        R 007   BHOKODISA HEALTH POST (GAMALAKHE
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000036669 G0357043ESKO001ZNTELECTRIC ACC   00088757 GOVENDERYS   20/05/2025             40.53                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    40.53                    0.00
+ TOTAL  R 007   BHOKODISA HEALTH POST (GAMALAKHE---------------------------------                   40.53                    0.00
+        R 007   BRAEMER CLINIC (GAMALAKHE)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000036784 G0357049ESKO001ZNT-ELECTRIC ACC  00169972 GOVENDERYS   23/05/2025             21.78                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    21.78                    0.00
+ TOTAL  R 007   BRAEMER CLINIC (GAMALAKHE)---------------------------------------                   21.78                    0.00
+        R 007   GCILIMA CLINIC (GAMALAKHE)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000036766 G0357050ESKO001ZNTELECTRICITY@GC 00169965 GOVENDERYS   23/05/2025            160.50                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   160.50                    0.00
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    3
+                                                    01/05/2025 TO 31/05/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+ TOTAL  R 007   GCILIMA CLINIC (GAMALAKHE)---------------------------------------                  160.50                    0.00
+        R 007   KHAYELIHLE CLINIC (MA LUSHABA)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        GJ 0000002769 INT PAID:LOC GOV ON WATER & ELEC 00171557 62840274     20/05/2025            112.06                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   112.06                    0.00
+ TOTAL  R 007   KHAYELIHLE CLINIC (MA LUSHABA)  ---------------------------------                  112.06                    0.00
+        R 007   NDELU CLINIC (MA LUSHABA)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        GJ 0000002769 INT PAID:LOC GOV ON WATER & ELEC 00171557 62840274     20/05/2025             43.16                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    43.16                    0.00
+ TOTAL  R 007   NDELU CLINIC (MA LUSHABA)----------------------------------------                   43.16                    0.00
+        R 007   NYANGWINI CLINIC (MA LUSHABA)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        GJ 0000002769 INT PAID:LOC GOV ON WATER & ELEC 00171557 62840274     20/05/2025            129.31                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   129.31                    0.00
+ TOTAL  R 007   NYANGWINI CLINIC (MA LUSHABA)------------------------------------                  129.31                    0.00
+        R 007   PORT EDWARD CLINIC (GAMALAKHE)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000036843 G0357048-ESKO001ZNT-ELECTRC ACC  00169981 GOVENDERYS   23/05/2025            309.85                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   309.85                    0.00
+ TOTAL  R 007   PORT EDWARD CLINIC (GAMALAKHE)  ---------------------------------                  309.85                    0.00
+        R 007   APPELSBOSCH HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033216 G0135655 INTEREST APPELS         00074780 64337545     13/05/2025          2,331.51                    0.00
+        CL 0000048242 G0135678 INTEREST CHARGED APPELS 00182356 64337545     27/05/2025          8,034.59                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                10,366.10                    0.00
+ TOTAL  R 007   APPELSBOSCH HOSPITAL---------------------------------------------               10,366.10                    0.00
+        R 007   NORTHDALE HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000032478 G0233404 MUNICIPAL SERVICE       00081623 64315576     15/05/2025         19,049.89                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                19,049.89                    0.00
+ TOTAL  R 007   NORTHDALE HOSPITAL-----------------------------------------------               19,049.89                    0.00
+        R 007   RICHMOND CHEST HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        GJ 0000002731 TRANSFER INTEREST FRM WATER&ELEC 00139156 MHLUNGUM     20/05/2025          2,333.10                    0.00
+        GJ 0000093070 TRANSF INTEREST FRM WATER & ELEC 00247523 BYRNESBAED   30/05/2025          5,318.82                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 7,651.92                    0.00
+ TOTAL  R 007   RICHMOND CHEST HOSPITAL------------------------------------------                7,651.92                    0.00
+        R 007   BAMBANANI CLINIC (APPELS)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        AP 0005411305 P162957 G0135604 INTEREST CHARG  00024278 JHAGROON     06/05/2025              0.83                    0.00
+        CL 0000033403 G0135653 INTERST CHARGED         00075117 64337545     13/05/2025            202.44                    0.00
+        CL 0000035693 G0135667 INTEREST CHARGED        00084293 64337545     16/05/2025            241.82                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   445.09                    0.00
+ TOTAL  R 007   BAMBANANI CLINIC (APPELS)----------------------------------------                  445.09                    0.00
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    4
+                                                    01/05/2025 TO 31/05/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+        R 007   CRAMOND CLINIC (APPELSBOSCH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        AP 0005411305 P162957 G0135604 INTEREST CHARG  00024278 JHAGROON     06/05/2025            178.50                    0.00
+        CL 0000048242 G0135678 INTEREST CHARGED CRAMON 00182357 64337545     27/05/2025            292.60                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   471.10                    0.00
+ TOTAL  R 007   CRAMOND CLINIC (APPELSBOSCH)-------------------------------------                  471.10                    0.00
+        R 007   EFAYE CLINIC (APPELSBOSCH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000048230 G0135677 INTEREST CHARGED        00182382 64337545     27/05/2025            388.14                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   388.14                    0.00
+ TOTAL  R 007   EFAYE CLINIC (APPELSBOSCH)---------------------------------------                  388.14                    0.00
+        R 007   EMTULWA CLINIC (APPELS)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        AP 0005411305 P162957 G0135604 INTEREST CHARG  00024278 JHAGROON     06/05/2025            230.48                    0.00
+        CL 0000048242 G0135678 INTERST CHARGED EMTULWA 00182359 64337545     27/05/2025            453.96                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   684.44                    0.00
+ TOTAL  R 007   EMTULWA CLINIC (APPELS)------------------------------------------                  684.44                    0.00
+        R 007   GCUMISA CLINIC (APPELS)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        AP 0005411305 P162957 G0135604 INTEREST CHARG  00024278 JHAGROON     06/05/2025            138.62                    0.00
+        CL 0000033381 G0135636 INTEREST CHARGED        00075065 64337545     13/05/2025            443.66                    0.00
+        CL 0000048242 G0135678 INTERST CHARGED GCUMISA 00182360 64337545     27/05/2025            304.69                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   886.97                    0.00
+ TOTAL  R 007   GCUMISA CLINIC (APPELS)------------------------------------------                  886.97                    0.00
+        R 007   MAMBEDWINI CLINIC (APPELS)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        AP 0005411305 P162957 G0135604 INTEREST CHARG  00024278 JHAGROON     06/05/2025            176.54                    0.00
+        CL 0000048242 G0135678 INTERST CHARGED MAMBEDW 00182361 64337545     27/05/2025            197.08                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   373.62                    0.00
+ TOTAL  R 007   MAMBEDWINI CLINIC (APPELS)---------------------------------------                  373.62                    0.00
+        R 007   MAYIZEKHANYE CLINIC (APPEL)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        AP 0005411305 P162957 G0135604 INTEREST CHARG  00024278 JHAGROON     06/05/2025          7,552.89                    0.00
+        CL 0000047153 G0135670 INTEREST CHARGED        00139296 22303618     22/05/2025            239.57                    0.00
+        CL 0000048242 G0135678 INTEREST CHARGED MAYIZE 00182358 64337545     27/05/2025            155.26                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 7,947.72                    0.00
+ TOTAL  R 007   MAYIZEKHANYE CLINIC (APPEL)--------------------------------------                7,947.72                    0.00
+        R 007   LADYSMITH HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000007208 G0437530 05/25 INTEREST          00025270 NZAMATF      06/05/2025            131.10                    0.00
+        CL 0000007447 G0437529 05/25 INTEREST          00025404 NZAMATF      06/05/2025             34.18                    0.00
+        CL 0000013862 G0437514 WATER/SEWERE/INT 05/24  00038774 NZAMATF      07/05/2025             68.86                    0.00
+        CL 0000014001 G0438352 ENERGY GATEWAY03/25     00039097 NZAMATF      07/05/2025            113.19                    0.00
+        CL 0000025143 G0437527 03/25 INTEREST          00065680 NZAMATF      12/05/2025             79.80                    0.00
+        CL 0000025236 G0437528 WATER&SEWER&INTER 05/25 00065692 NZAMATF      12/05/2025             65.05                    0.00
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    5
+                                                    01/05/2025 TO 31/05/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+        F 001   EXPENDITURE:VOTED
+        R 007   LADYSMITH HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC
+        CL 0000049926 G0438771 01/25 INTEREST          00187940 NZAMATF      30/05/2025             29.54                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   521.72                    0.00
+ TOTAL  R 007   LADYSMITH HOSPITAL-----------------------------------------------                  521.72                    0.00
+        R 007   CHRIST THE KING HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000047526 G0276299 GENERAL WASTE REMOVAL   00172045 64020886     26/05/2025            100.74                    0.00
+        CL 0000047863 G0275851 WATER                   00172047 64020886     26/05/2025            284.54                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   385.28                    0.00
+ TOTAL  R 007   CHRIST THE KING HOSPITAL-----------------------------------------                  385.28                    0.00
+        R 007   EMS ETHEKWINI
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000035750 H0122265 MUNICIPAL SERVICES      00084596 61466000     16/05/2025            107.68                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   107.68                    0.00
+ TOTAL  R 007   EMS ETHEKWINI----------------------------------------------------                  107.68                    0.00
+        R 007   ADDINGTON HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        GJ 0000070405 TRANSF OF EXPND FROM ELECTR TO W 00169434 MATHENJWAGS  23/05/2025         87,148.71                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                87,148.71                    0.00
+ TOTAL  R 007   ADDINGTON HOSPITAL-----------------------------------------------               87,148.71                    0.00
+        R 007   DR PIXLEY KA ISAKA SEME MEM HOSP
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000030046 G 341846 DPK14/25 WATER & SANITA 00066356 64513050     12/05/2025          5,496.39                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 5,496.39                    0.00
+ TOTAL  R 007   DR PIXLEY KA ISAKA SEME MEM HOSP---------------------------------                5,496.39                    0.00
+        R 007   KWAZULU NATAL CHILDREN HOSP
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000031983 G0417393 MUNICIPAL SERVICES      00072339 61466000     12/05/2025            292.95                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   292.95                    0.00
+ TOTAL  R 007   KWAZULU NATAL CHILDREN HOSP--------------------------------------                  292.95                    0.00
+        R 007   PRINCE MSHIYENI MEMORIAL HOSP
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033625 G0428198 WATER,SOLIS WASTE       00076047 POTGIETERV   13/05/2025            814.28                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   814.28                    0.00
+ TOTAL  R 007   PRINCE MSHIYENI MEMORIAL HOSP------------------------------------                  814.28                    0.00
+        R 007   WENTWORTH HOSPITAL
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000031293 H0105426 INTEREST                00069639 REDDYJMA     12/05/2025         36,812.44                    0.00
+        CL 0000031280 H0105425 INT                     00069655 REDDYJMA     12/05/2025        100,193.46                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                               137,005.90                    0.00
+ TOTAL  R 007   WENTWORTH HOSPITAL-----------------------------------------------              137,005.90                    0.00
+        R 007   HLENGISIZWE CHC
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    6
+                                                    01/05/2025 TO 31/05/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+        CL 0000047928 G 451236ETHEKWINI ELETRIC-HLE04  00171640 62836374     26/05/2025            844.79                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   844.79                    0.00
+ TOTAL  R 007   HLENGISIZWE CHC--------------------------------------------------                  844.79                    0.00
+        R 007   DANGANYANI (K1) CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000034596 G0428189 WATER & SOLID WASTE     00080472 63050838     14/05/2025             53.83                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    53.83                    0.00
+ TOTAL  R 007   DANGANYANI (K1) CLINIC (PMMH)------------------------------------                   53.83                    0.00
+        R 007   EKUPHILENI (UMLAZI L) CLINIC (PM
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000034250 G0429003 MUNICIPAL ACCOUNTS      00079524 63050838     14/05/2025             18.56                    0.00
+        CL 0000034116 G0428951 MUNICIPAL ACCOUNT       00079597 63050838     14/05/2025             40.33                    0.00
+        CL 0000034190 G0428197 WATER BILL              00079696 63050838     14/05/2025             12.20                    0.00
+        CL 0000034844 G0428966 WATER                   00085478 63050838     19/05/2025             25.35                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    96.44                    0.00
+ TOTAL  R 007   EKUPHILENI (UMLAZI L) CLINIC (PM---------------------------------                   96.44                    0.00
+        R 007   FOLWENI (K3)CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000034818 G0429019 ELECTRICITY             00085476 63050838     19/05/2025            131.34                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   131.34                    0.00
+ TOTAL  R 007   FOLWENI (K3)CLINIC (PMMH)----------------------------------------                  131.34                    0.00
+        R 007   FREDVILLE (K3) CLINIC (HLENG)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000028659 G450782 ELECTRICITY/ INTERES     00061901 64689301     09/05/2025            398.48                    0.00
+        CL 0000028788 G450887 METRO BILL/ INT          00062493 64689301     09/05/2025          2,252.04                    0.00
+        CL 0000047356 G451110 ETHEKWINI -FRED20/03/25  00171509 62836374     26/05/2025          5,125.29                    0.00
+        CL 0000050102 G451128 MUNICIPAL BILL/INT       00187675 62836374     30/05/2025            190.08                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 7,965.89                    0.00
+ TOTAL  R 007   FREDVILLE (K3) CLINIC (HLENG)------------------------------------                7,965.89                    0.00
+        R 007   KWAMAKHUTHA CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033590 G0428755 WATER                   00075893 POTGIETERV   13/05/2025            808.76                    0.00
+        CL 0000034651 G0429021 WATER                   00085548 63050838     19/05/2025          1,559.54                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 2,368.30                    0.00
+ TOTAL  R 007   KWAMAKHUTHA CLINIC (PMMH)----------------------------------------                2,368.30                    0.00
+        R 007   MAGABHENI CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000034609 G0429004 WATER & SANITATION      00080470 63050838     14/05/2025             69.66                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    69.66                    0.00
+ TOTAL  R 007   MAGABHENI CLINIC (PMMH)------------------------------------------                   69.66                    0.00
+        R 007   MPUMALANGA CLINIC (HLENG)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033175 G450892 ETHEKWINI MUNIC BILL     00074893 64689301     13/05/2025            804.18                    0.00
+        CL 0000033435 G451288 EMETRO BILL/ INTEREST    00075375 64689301     13/05/2025            486.29                    0.00
+        CL 0000033643 G451209 METRO BILL/INT           00076214 64689301     13/05/2025             88.50                    0.00
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    7
+                                                    01/05/2025 TO 31/05/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+        F 001   EXPENDITURE:VOTED
+        R 007   MPUMALANGA CLINIC (HLENG)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC
+        CL 0000047006 G451105ETHEKWINI ELECT-MPU-04    00184253 62836374     28/05/2025            651.31                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 2,030.28                    0.00
+ TOTAL  R 007   MPUMALANGA CLINIC (HLENG)----------------------------------------                2,030.28                    0.00
+        R 007   MSUNDUZI BRIDGE CLINIC (HLENG)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000029256 G451279 METRO BILL               00066144 62836374     12/05/2025            146.03                    0.00
+        CL 0000031618 G450894 METRO BILL/INTEREST      00071465 62836374     12/05/2025            369.91                    0.00
+        CL 0000046958 G451238 ETHEKWINI ELECT-MSU-04   00187524 62836374     30/05/2025            491.26                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 1,007.20                    0.00
+ TOTAL  R 007   MSUNDUZI BRIDGE CLINIC (HLENG)  ---------------------------------                1,007.20                    0.00
+        R 007   NKWALI CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033613 G0427448 WATER & SOLID WASTE     00076070 POTGIETERV   13/05/2025             68.40                    0.00
+        CL 0000034144 G0428955 MUNICIPAL ACCOUNTS      00079620 63050838     14/05/2025            198.33                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   266.73                    0.00
+ TOTAL  R 007   NKWALI CLINIC (PMMH)---------------------------------------------                  266.73                    0.00
+        R 007   NSIMBINI CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033182 G0428964 WASTE REMOVAL           00078998 63050838     14/05/2025             71.40                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    71.40                    0.00
+ TOTAL  R 007   NSIMBINI CLINIC (PMMH)-------------------------------------------                   71.40                    0.00
+        R 007   NTSHONGWENI CLINIC (HLENG)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000029284 G450875ESKOM ELECTRICITY BILL    00066126 62836374     12/05/2025            266.02                    0.00
+        CL 0000031720 G450786ESKOM ELECTRIC BILL/ INT  00071506 62836374     12/05/2025            452.59                    0.00
+        CL 0000033204 G450784 ETHEKWININI MUN WATER BI 00074816 64689301     13/05/2025             31.42                    0.00
+        CL 0000047387 G451241ETHEKWINI -NTSH-03&04-25  00171675 62836374     26/05/2025             77.17                    0.00
+        CL 0000050168 G451126 MUNICIPAL BILL/ INT PAID 00187903 62836374     30/05/2025             61.82                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   889.02                    0.00
+ TOTAL  R 007   NTSHONGWENI CLINIC (HLENG)---------------------------------------                  889.02                    0.00
+        R 007   ODIDINI CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033600 G0428704 WATER  SANITATION       00076014 63050838     13/05/2025             15.10                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    15.10                    0.00
+ TOTAL  R 007   ODIDINI CLINIC (PMMH)--------------------------------------------                   15.10                    0.00
+        R 007   OSIZWENI (UMLAZI Q) CLINIC (PMMH
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000035060 G0428970 WATER&ELECTRICITY       00085470 63050838     19/05/2025            296.41                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   296.41                    0.00
+ TOTAL  R 007   OSIZWENI (UMLAZI Q) CLINIC (PMMH---------------------------------                  296.41                    0.00
+        R 007   PEACEVALE CLINIC (HLENGISIZWE)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    8
+                                                    01/05/2025 TO 31/05/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+        CL 0000028955 G450888 METRO BILL               00062934 64689301     09/05/2025            227.11                    0.00
+        CL 0000047376 G451237ETHEKWINI -PEA-03&04-25   00171650 62836374     26/05/2025             31.36                    0.00
+        CL 0000050193 G451127 METO BILL WATER&SANITA   00187897 62836374     30/05/2025             28.24                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   286.71                    0.00
+ TOTAL  R 007   PEACEVALE CLINIC (HLENGISIZWE)  ---------------------------------                  286.71                    0.00
+        R 007   SHONGWENI DAM CLINIC (HLEN)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000029162 G451287ETHEKWINI METRO WATR&ELE  00063254 64689301     09/05/2025            203.99                    0.00
+        CL 0000031661 G450891 METRO BILL/ INTEREST     00071491 62836374     12/05/2025            408.47                    0.00
+        CL 0000047960 G451239 ETHEKWINI WATER-SHO-     00171669 62836374     26/05/2025            532.60                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 1,145.06                    0.00
+ TOTAL  R 007   SHONGWENI DAM CLINIC (HLEN)--------------------------------------                1,145.06                    0.00
+        R 007   UMBUMBULU CENTRAL CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033664 G0429005 WTER, SOLID WASTE       00076010 POTGIETERV   13/05/2025            505.01                    0.00
+        CL 0000034833 G0428971 WATER                   00085480 63050838     19/05/2025            704.15                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 1,209.16                    0.00
+ TOTAL  R 007   UMBUMBULU CENTRAL CLINIC (PMMH) ---------------------------------                1,209.16                    0.00
+        R 007   UMLAZI D CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000034164 G0428952 WATER AND SANITATION    00079673 63050838     14/05/2025            912.87                    0.00
+        CL 0000035022 G0428973 ELECTRICITY             00085474 63050838     19/05/2025          1,363.37                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 2,276.24                    0.00
+ TOTAL  R 007   UMLAZI D CLINIC (PMMH)-------------------------------------------                2,276.24                    0.00
+        R 007   UMLAZI K CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033739 G0428705 WATER,SEWEGE,ELECTRIC   00076352 63050838     13/05/2025             16.24                    0.00
+        CL 0000034107 G0429011 USAGE OF ELECTRICITY    00079683 63050838     14/05/2025            363.42                    0.00
+        CL 0000034655 G0429020 WATER & ELECTRICITY     00085482 63050838     19/05/2025          1,163.80                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 1,543.46                    0.00
+ TOTAL  R 007   UMLAZI K CLINIC (PMMH)-------------------------------------------                1,543.46                    0.00
+        R 007   UMLAZI U21 CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033443 G0428953 WATER                   00075519 63050838     13/05/2025            891.72                    0.00
+        CL 0000033640 G0428706 WATER,SEWER,INTREREST   00076036 POTGIETERV   13/05/2025            590.33                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                 1,482.05                    0.00
+ TOTAL  R 007   UMLAZI U21 CLINIC (PMMH)-----------------------------------------                1,482.05                    0.00
+        R 007   UMNINI CLINIC (PMMH)
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000033696 G0429001 WATER                   00076158 POTGIETERV   13/05/2025             11.34                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                    11.34                    0.00
+ TOTAL  R 007   UMNINI CLINIC (PMMH)---------------------------------------------                   11.34                    0.00
+        R 007   UMZOMUHLE (UMLAZI H) CLINIC (PMM
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC                                     0.00                    0.00
+        CL 0000030664 G0428190 WATER                   00068127 63050838     12/05/2025             24.97                    0.00
+
+                                                                BAS                                              DATE: 02/09/2025
+MARITZCJ                                                    KZN: HEALTH                                          TIME: 14:21:55
+RP0066BS                                                   DETAIL REPORT                                         PAGE:    9
+                                                    01/05/2025 TO 31/05/2025
+
+
+        TYPE
+        LEVEL   DESCRIPTION                                                                          DEBIT                  CREDIT
+        -----   ------------------------------------------------------------------  ----------------------  ----------------------
+
+        F 001   EXPENDITURE:VOTED
+        R 007   UMZOMUHLE (UMLAZI H) CLINIC (PMM
+        I 005                   INT PAID:LOC GOV ON WATER & ELEC
+        CL 0000030948 G0428741 WATER,SEWAGE,ELECTRICIT 00069177 POTGIETERV   12/05/2025             33.94                    0.00
+        CL 0000034086 G0428962 WATER,SEWAGE&ELECTRICIT 00079553 63050838     14/05/2025             43.14                    0.00
+ TOTAL  I 005                   INT PAID:LOC GOV ON WATER & ELEC                                   102.05                    0.00
+ TOTAL  R 007   UMZOMUHLE (UMLAZI H) CLINIC (PMM---------------------------------                  102.05                    0.00
+ TOTAL  F 001   EXPENDITURE:VOTED------------------------------------------------              306,397.58                    0.00
+
+
+
+
+                                                 **** END OF REPORT RP066BS ****

@@ -103,6 +103,20 @@ def populate_case_table(
         bas_payment_no = case_data[7] if len(case_data) > 7 else None
         bas_journal_no = case_data[8] if len(case_data) > 8 else None
 
+        # Get is_finalized status for To-Do logic
+        is_finalized = False
+        try:
+            conn_temp = sqlite3.connect(DB_PATH)
+            cursor_temp = conn_temp.cursor()
+            cursor_temp.execute("SELECT is_finalized FROM cases WHERE transaction_no = ?", (transaction_no,))
+            result = cursor_temp.fetchone()
+            if result:
+                is_finalized = bool(result[0])
+            conn_temp.close()
+        except Exception as e:
+            print(f"Error getting finalized status for {transaction_no}: {e}")
+            is_finalized = False
+
         # Case No (with suffix stripping for display)
         display_value = transaction_no
         if display_value and list_name != "All Cases":
@@ -168,7 +182,9 @@ def populate_case_table(
 
         # To-Do (view-specific logic)
         if list_name == "Checklist":
-            if assessment_status in ["Alleged", "Under Assessment"]:
+            if is_finalized:
+                todo_value = "No - Case is finalised"
+            elif assessment_status in ["Alleged", "Under Assessment"]:
                 todo_value = "Yes - Assessment Outstanding"
             elif assessment_status == "Valid":
                 todo_value = "No - Case is finalised"
@@ -265,9 +281,11 @@ def calculate_display_amount(original_amount, suffixes, list_name, transaction_n
             remaining = original_amount - amount_paid
             return max(0.0, remaining)  # Don't show negative amounts
         
-        # For Recovered list, show amount recovered so far
+        # For Recovered list, show amount recovered so far (or original amount if no installments)
         if list_name == "Recovered":
-            return get_total_installments_paid(transaction_no)
+            amount_paid = get_total_installments_paid(transaction_no)
+            # If no installments, show original amount (fully recovered without installments)
+            return amount_paid if amount_paid > 0 else original_amount
         
         # For Lead Schedule, show remaining balance if in recovery
         if list_name == "Lead Schedule" and "-RIP" in suffixes:

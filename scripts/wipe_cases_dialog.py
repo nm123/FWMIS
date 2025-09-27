@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QFont, QIcon, QWheelEvent
@@ -341,6 +342,11 @@ class WipeCasesDialog(QDialog):
             print(f"DEBUG: ===== WIPE OPERATION START =====")
             print(f"DEBUG: Wiping FY {fy_text} (ID: {fy_id})")
 
+            # Log to file for debugging
+            with open("wipe_debug.log", "a") as f:
+                f.write(f"\\n=== WIPE OPERATION START {datetime.now()} ===\\n")
+                f.write(f"Wiping FY {fy_text} (ID: {fy_id})\\n")
+
             # Verify what financial year this ID corresponds to
             cursor.execute(
                 "SELECT start_year, end_year, status FROM financial_years WHERE id = ?",
@@ -406,6 +412,50 @@ class WipeCasesDialog(QDialog):
                 print(f"DEBUG: No orphaned cases found")
                 cleaned_count = 0
 
+            # Check installments before deletion
+            cursor.execute("SELECT COUNT(*) FROM installments")
+            total_installments_before = cursor.fetchone()[0]
+            print(f"DEBUG: Total installments before cleanup: {total_installments_before}")
+
+            with open("wipe_debug.log", "a") as f:
+                f.write(f"Total installments before cleanup: {total_installments_before}\\n")
+
+            # Also delete related data that depends on cases BEFORE deleting cases
+            # Delete installments for cases in this financial year
+            cursor.execute(
+                """
+                DELETE FROM installments
+                WHERE case_id IN (SELECT id FROM cases WHERE fy_id = ?)
+            """,
+                (fy_id,),
+            )
+            installments_deleted = cursor.rowcount
+            print(f"DEBUG: Deleted {installments_deleted} installments for FY {fy_id}")
+
+            with open("wipe_debug.log", "a") as f:
+                f.write(f"Deleted {installments_deleted} installments for FY {fy_id}\\n")
+
+            # Also clean up any orphaned installments (installments for non-existent cases)
+            cursor.execute(
+                """
+                DELETE FROM installments
+                WHERE case_id NOT IN (SELECT id FROM cases)
+            """
+            )
+            orphaned_installments_deleted = cursor.rowcount
+            print(f"DEBUG: Deleted {orphaned_installments_deleted} orphaned installments")
+
+            with open("wipe_debug.log", "a") as f:
+                f.write(f"Deleted {orphaned_installments_deleted} orphaned installments\\n")
+
+            # Check installments after deletion
+            cursor.execute("SELECT COUNT(*) FROM installments")
+            total_installments_after = cursor.fetchone()[0]
+            print(f"DEBUG: Total installments after cleanup: {total_installments_after}")
+
+            with open("wipe_debug.log", "a") as f:
+                f.write(f"Total installments after cleanup: {total_installments_after}\\n")
+
             # Delete all cases for this financial year
             cursor.execute("DELETE FROM cases WHERE fy_id = ?", (fy_id,))
             cases_deleted = cursor.rowcount
@@ -416,7 +466,6 @@ class WipeCasesDialog(QDialog):
             after_count = cursor.fetchone()[0]
             print(f"DEBUG: Cases remaining in FY {fy_id}: {after_count}")
 
-            # Also delete related data that depends on cases
             # Delete case attachments/documents
             cursor.execute(
                 """
@@ -502,12 +551,14 @@ class WipeCasesDialog(QDialog):
             print(f"DEBUG: ===== WIPE OPERATION COMPLETED =====")
 
             total_cleaned = cases_deleted + cleaned_count
+            total_installments = installments_deleted + orphaned_installments_deleted
             QMessageBox.information(
                 self,
                 "Success",
                 f"Successfully cleaned up the database!\n\n"
                 f"• Deleted {cases_deleted} case(s) from {fy_text}\n"
                 f"• Cleaned up {cleaned_count} orphaned case(s)\n"
+                f"• Deleted {total_installments} installment(s)\n"
                 f"• Cleaned up {cleaned_periods_count} orphaned period(s)\n\n"
                 f"Total: {total_cleaned} case(s) removed\n\n"
                 "Case numbering will restart from 00001.",

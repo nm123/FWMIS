@@ -16,8 +16,8 @@ from scripts.Utilities.pdf_exporter import export_annexure_to_pdf
 class AnnexurePreparationDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Prepare Write-Off Annexures")
-        self.setMinimumSize(1000, 700)
+        self.setWindowTitle("Write-Off Annexure Management")
+        self.setMinimumSize(1400, 800)  # Wider to accommodate side-by-side layout
         
         # Data storage
         self.all_cases = []
@@ -35,16 +35,17 @@ class AnnexurePreparationDialog(QDialog):
         layout = QVBoxLayout()
         
         # Header
-        header_label = QLabel("Write-Off Annexure Preparation")
+        header_label = QLabel("Write-Off Annexure Management")
         header_label.setFont(QFont("Arial", 16, QFont.Bold))
         header_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(header_label)
-        
+
         # Instructions
         instructions = QLabel(
-            "Select cases to include in annexures. Cases are automatically grouped by delegation:\n"
-            "- CFO Cases: ≤ current delegation limit\n"
-            "- HOD Cases: > current delegation limit"
+            "Select specific cases to include in annexures. Cases are grouped by delegation level:\n"
+            "• CFO Cases: ≤ current delegation limit (approved by CFO)\n"
+            "• HOD Cases: > current delegation limit (approved by HOD)\n\n"
+            "Check individual cases to include them in the annexure, or use Select All/None buttons."
         )
         instructions.setWordWrap(True)
         instructions.setStyleSheet("QLabel { color: #666; margin: 10px; }")
@@ -115,18 +116,19 @@ class AnnexurePreparationDialog(QDialog):
         table.setAlternatingRowColors(True)
         table.setSortingEnabled(True)
         
-        # Set column headers
-        headers = ["Case No", "Responsibility", "Amount", "Description", "LC Minutes"]
+        # Set column headers - add Include column for checkboxes
+        headers = ["Include", "Case No", "Responsibility", "Amount", "Description", "LC Minutes"]
         table.setColumnCount(len(headers))
         table.setHorizontalHeaderLabels(headers)
-        
+
         # Configure table
         header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Case No
-        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Responsibility
-        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Amount
-        header.setSectionResizeMode(3, QHeaderView.Stretch)  # Description
-        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)  # LC Minutes
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Include checkbox
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Case No
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Responsibility
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Amount
+        header.setSectionResizeMode(4, QHeaderView.Stretch)  # Description
+        header.setSectionResizeMode(5, QHeaderView.ResizeToContents)  # LC Minutes
         
         layout.addWidget(table)
         
@@ -183,27 +185,45 @@ class AnnexurePreparationDialog(QDialog):
         table.setRowCount(len(cases))
         
         for row, case in enumerate(cases):
+            # Include checkbox - default to selected
+            checkbox = QCheckBox()
+            checkbox.setChecked(True)  # Default to selected
+            checkbox.stateChanged.connect(
+                lambda state, r=row, t=table: self.update_selection(t, r, state == Qt.Checked)
+            )
+            table.setCellWidget(row, 0, checkbox)
+
             # Case No
             case_no_item = QTableWidgetItem(case['transaction_no'])
             case_no_item.setData(Qt.UserRole, case['id'])  # Store case ID
-            table.setItem(row, 0, case_no_item)
-            
+            table.setItem(row, 1, case_no_item)
+
             # Responsibility
-            table.setItem(row, 1, QTableWidgetItem(case['responsibility_name']))
-            
+            table.setItem(row, 2, QTableWidgetItem(case['responsibility_name']))
+
             # Amount
             amount_item = QTableWidgetItem(f"R {case['amount']:,.2f}")
             amount_item.setData(Qt.UserRole, case['amount'])
-            table.setItem(row, 2, amount_item)
-            
+            table.setItem(row, 3, amount_item)
+
             # Description
             desc_item = QTableWidgetItem(case['description'])
-            table.setItem(row, 3, desc_item)
-            
+            table.setItem(row, 4, desc_item)
+
             # LC Minutes status
             lc_minutes = self.get_lc_minutes_status(case['evidence_paths'])
             lc_item = QTableWidgetItem(lc_minutes)
-            table.setItem(row, 4, lc_item)
+            table.setItem(row, 5, lc_item)
+
+            # Store checkbox reference for select all functionality
+            if table == self.cfo_table:
+                if not hasattr(self, 'cfo_checkboxes'):
+                    self.cfo_checkboxes = []
+                self.cfo_checkboxes.append(checkbox)
+            elif table == self.hod_table:
+                if not hasattr(self, 'hod_checkboxes'):
+                    self.hod_checkboxes = []
+                self.hod_checkboxes.append(checkbox)
             
     def get_lc_minutes_status(self, evidence_paths):
         """Check if LC minutes are available."""
@@ -220,35 +240,68 @@ class AnnexurePreparationDialog(QDialog):
             
     def select_all_cases(self, role, selected):
         """Select or deselect all cases for a role."""
-        table = self.cfo_table if role == "cfo" else self.hod_table
-        
-        for row in range(table.rowCount()):
-            table.selectRow(row)
-            
-        self.update_selection_counts()
+        checkboxes = self.cfo_checkboxes if role == "cfo" else self.hod_checkboxes
+        for checkbox in checkboxes:
+            checkbox.setChecked(selected)
+        self.update_generate_button()
         
     def update_selection_counts(self):
         """Update the selection counts and enable/disable buttons."""
         # Get selected CFO cases
         self.selected_cfo_cases = []
         for row in range(self.cfo_table.rowCount()):
-            if self.cfo_table.item(row, 0).isSelected():
-                case_id = self.cfo_table.item(row, 0).data(Qt.UserRole)
+            checkbox = self.cfo_table.cellWidget(row, 0)
+            if checkbox and checkbox.isChecked():
+                case_id = self.cfo_table.item(row, 1).data(Qt.UserRole)  # Case No column is now index 1
                 self.selected_cfo_cases.append(case_id)
-                
+
         # Get selected HOD cases
         self.selected_hod_cases = []
         for row in range(self.hod_table.rowCount()):
-            if self.hod_table.item(row, 0).isSelected():
-                case_id = self.hod_table.item(row, 0).data(Qt.UserRole)
+            checkbox = self.hod_table.cellWidget(row, 0)
+            if checkbox and checkbox.isChecked():
+                case_id = self.hod_table.item(row, 1).data(Qt.UserRole)  # Case No column is now index 1
                 self.selected_hod_cases.append(case_id)
-                
+
         # Update generate button state
         has_selections = len(self.selected_cfo_cases) > 0 or len(self.selected_hod_cases) > 0
         self.generate_btn.setEnabled(has_selections)
+
+    def update_selection(self, table, row, checked):
+        """Update selection when individual checkbox changes."""
+        self.update_generate_button()
+
+    def update_generate_button(self):
+        """Update the generate button state based on selections."""
+        # Count selected CFO cases
+        cfo_selected = sum(1 for cb in getattr(self, 'cfo_checkboxes', []) if cb.isChecked())
+        hod_selected = sum(1 for cb in getattr(self, 'hod_checkboxes', []) if cb.isChecked())
+
+        has_selections = cfo_selected > 0 or hod_selected > 0
+        self.generate_btn.setEnabled(has_selections)
+
+        # Update summary labels with selection counts
+        if hasattr(self, 'cfo_summary_label'):
+            delegation = get_current_delegation()
+            cfo_limit = delegation['cfo_limit'] if delegation else 50000
+            total_cfo = len(getattr(self, 'cfo_cases', []))
+            self.cfo_summary_label.setText(
+                f"Cases ≤ R {cfo_limit:,.2f} (CFO Approval)\n"
+                f"Total: {total_cfo} cases, Selected: {cfo_selected}"
+            )
+
+        if hasattr(self, 'hod_summary_label'):
+            total_hod = len(getattr(self, 'hod_cases', []))
+            self.hod_summary_label.setText(
+                f"Cases > R {cfo_limit:,.2f} (HOD Approval)\n"
+                f"Total: {total_hod} cases, Selected: {hod_selected}"
+            )
         
     def generate_annexures(self):
         """Generate annexures for selected cases."""
+        # Update selection counts first
+        self.update_selection_counts()
+
         if not self.selected_cfo_cases and not self.selected_hod_cases:
             QMessageBox.warning(self, "No Selection", "Please select cases to include in annexures.")
             return
@@ -317,26 +370,40 @@ class AnnexurePreparationDialog(QDialog):
             
         # Ask user for PDF options
         from PyQt5.QtWidgets import QInputDialog
-        include_minutes, ok = QInputDialog.getItem(
-            self, "PDF Options", "Include LC Minutes in PDF?",
-            ["Annexure Only", "Annexure + LC Minutes"], 0, False
+        export_option, ok = QInputDialog.getItem(
+            self, "PDF Export Options", "Choose export format:",
+            ["Basic Annexure (Excel-style)", "Standard Annexure (with LC Minutes)", "Detailed Annexure (indexed evidence)"], 0, False
         )
-        
+
         if not ok:
             return
-            
+
         # Get save location
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save PDF File", "write_off_annexures.pdf", 
+            self, "Save PDF File", "write_off_annexures.pdf",
             "PDF Files (*.pdf)"
         )
-        
+
         if not file_path:
             return
-            
+
         try:
-            include_lc_minutes = include_minutes == "Annexure + LC Minutes"
-            export_annexure_to_pdf([self.cfo_annexure_id, self.hod_annexure_id], file_path, include_lc_minutes)
+            if export_option == "Basic Annexure (Excel-style)":
+                include_lc_minutes = False
+                detailed_export = False
+            elif export_option == "Standard Annexure (with LC Minutes)":
+                include_lc_minutes = True
+                detailed_export = False
+            else:  # Detailed Annexure
+                include_lc_minutes = True
+                detailed_export = True
+
+            export_annexure_to_pdf(
+                [self.cfo_annexure_id, self.hod_annexure_id],
+                file_path,
+                include_lc_minutes,
+                detailed_export
+            )
             QMessageBox.information(self, "Success", f"PDF file saved: {file_path}")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to export PDF: {str(e)}")

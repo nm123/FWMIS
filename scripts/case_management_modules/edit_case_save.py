@@ -113,13 +113,15 @@ def save_case_components(dialog_instance):
             return
         # Validate Loss Control fields
         loss_control_status = dialog_instance.lc_status_combo.currentText()
+
         # Check recovery evidence based on status
         recovery_evidence_text = (
             dialog_instance.recovery_evidence_rip_edit.text().strip()
             if loss_control_status == "Recovery in Progress" and hasattr(dialog_instance, "recovery_evidence_rip_edit")
             else dialog_instance.recovery_evidence_edit.text().strip()
         )
-        
+
+        # Require evidence if status requires it
         if (
             loss_control_status in ["Recovered", "Recovery in Progress"]
             and not recovery_evidence_text
@@ -333,6 +335,11 @@ def save_case_components(dialog_instance):
             "prevention_steps": dialog_instance.prevention_steps_edit.toPlainText().strip(),
             "fy_id": existing_fy_id,
             "period_id": existing_period_id,
+            "lc_committee_date": (
+                dialog_instance.lc_committee_date_edit.date().toString("yyyy-MM-dd")
+                if hasattr(dialog_instance, 'lc_committee_date_edit') and dialog_instance.lc_committee_date_edit.isVisible()
+                else None
+            ),
         }
 
         # Handle file operations - create case-specific folder structure
@@ -519,8 +526,8 @@ def save_case_components(dialog_instance):
                         date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
                         bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
                         base_transaction_no = ?, evidence_paths = ?, assessment_status = ?, lc_status = ?, criminal_charges = ?, disciplinary_process = ?,
-                        loss_recovery = ?, prevention_steps = ?, debtor_name = ?, debt_number = ?, total_recovered_amount = ?, 
-                        latest_installment_amount = ?, latest_installment_date = ?
+                        loss_recovery = ?, prevention_steps = ?, debtor_name = ?, debt_number = ?, total_recovered_amount = ?,
+                        latest_installment_amount = ?, latest_installment_date = ?, lc_committee_date = ?
                     WHERE id = ?
                 """,
                 (
@@ -549,6 +556,7 @@ def save_case_components(dialog_instance):
                     case.get("total_recovered_amount", 0.0),
                     case.get("latest_installment_amount", 0.0),
                     case.get("latest_installment_date", ""),
+                    case.get("lc_committee_date"),
                     dialog_instance.case_id,
                 ),
             )

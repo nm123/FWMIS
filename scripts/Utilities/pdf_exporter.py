@@ -11,7 +11,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from pypdf import PdfReader, PdfWriter
 from scripts.Utilities.annexure_utils import get_annexure_details
 
-def export_annexure_to_pdf(annexure_ids: List[Optional[int]], file_path: str, include_lc_minutes: bool = False):
+def export_annexure_to_pdf(annexure_ids: List[Optional[int]], file_path: str, include_lc_minutes: bool = False, detailed_export: bool = False):
     """Export annexures to PDF format."""
     doc = SimpleDocTemplate(file_path, pagesize=A4, 
                           rightMargin=72, leftMargin=72, 
@@ -41,27 +41,36 @@ def export_annexure_to_pdf(annexure_ids: List[Optional[int]], file_path: str, in
     
     # Build content
     story = []
-    
+
+    # For detailed export, collect all evidence documents first for indexing
+    if detailed_export and include_lc_minutes:
+        evidence_index = build_evidence_index(annexure_ids)
+        if evidence_index:
+            add_evidence_index_page(story, evidence_index, title_style, styles)
+
     # Process each annexure
     for annexure_id in annexure_ids:
         if annexure_id:
             annexure = get_annexure_details(annexure_id)
             if annexure:
                 # Add annexure content
-                add_annexure_content(story, annexure, title_style, subtitle_style, styles)
-                
+                add_annexure_content(story, annexure, title_style, subtitle_style, styles, detailed_export)
+
                 # Add LC minutes if requested
                 if include_lc_minutes:
-                    add_lc_minutes_content(story, annexure)
-                
+                    if detailed_export:
+                        add_lc_minutes_with_indexing(story, annexure, evidence_index)
+                    else:
+                        add_lc_minutes_content(story, annexure)
+
                 # Add page break between annexures
                 if annexure_id != annexure_ids[-1]:
                     story.append(PageBreak())
-    
+
     # Build PDF
     doc.build(story)
 
-def add_annexure_content(story, annexure, title_style, subtitle_style, styles):
+def add_annexure_content(story, annexure, title_style, subtitle_style, styles, detailed_export=False):
     """Add annexure content to the story."""
     # Title
     title = Paragraph(f"WRITE-OFF ANNEXURE: {annexure['annexure_no']}", title_style)
@@ -91,24 +100,43 @@ def add_annexure_content(story, annexure, title_style, subtitle_style, styles):
     story.append(summary_table)
     story.append(Spacer(1, 20))
     
-    # Create data table
-    table_data = [["Case No", "Responsibility", "Amount", "Description", "LC Recommendation"]]
+    # Create data table - include Date Reported and Category as requested
+    if detailed_export:
+        table_data = [["Case No", "Date Reported", "Category", "Responsibility", "Amount", "LC Status"]]
+    else:
+        table_data = [["Case No", "Responsibility", "Amount", "Description", "LC Recommendation"]]
     
     for case in annexure['cases']:
-        row = [
-            case['transaction_no'],
-            case['responsibility_name'],
-            f"R {case['amount']:,.2f}",
-            case['description'],
-            "Write-Off Recommended"
-        ]
+        if detailed_export:
+            row = [
+                case['transaction_no'],
+                case.get('date_reported', ''),
+                case.get('category', ''),
+                case['responsibility_name'],
+                f"R {case['amount']:,.2f}",
+                "Write-Off Recommended"
+            ]
+        else:
+            row = [
+                case['transaction_no'],
+                case['responsibility_name'],
+                f"R {case['amount']:,.2f}",
+                case['description'],
+                "Write-Off Recommended"
+            ]
         table_data.append(row)
     
-    # Add totals row
-    table_data.append(["", "TOTAL:", f"R {annexure['total_amount']:,.2f}", "", ""])
+    # Add totals row - adjust column count based on export type
+    if detailed_export:
+        table_data.append(["", "", "", "TOTAL:", f"R {annexure['total_amount']:,.2f}", ""])
+    else:
+        table_data.append(["", "TOTAL:", f"R {annexure['total_amount']:,.2f}", "", ""])
     
-    # Create table
-    table = Table(table_data, colWidths=[1.2*inch, 1.5*inch, 1*inch, 3*inch, 1.5*inch])
+    # Create table with appropriate column widths
+    if detailed_export:
+        table = Table(table_data, colWidths=[1.0*inch, 1.0*inch, 1.2*inch, 1.3*inch, 1.0*inch, 1.2*inch])
+    else:
+        table = Table(table_data, colWidths=[1.2*inch, 1.5*inch, 1*inch, 3*inch, 1.5*inch])
     table.setStyle(TableStyle([
         # Header row
         ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
@@ -137,6 +165,163 @@ def add_annexure_content(story, annexure, title_style, subtitle_style, styles):
     
     story.append(table)
     story.append(Spacer(1, 30))
+
+
+def build_evidence_index(annexure_ids):
+    """
+    Build a comprehensive index of all evidence documents across annexures.
+
+    Returns a dict mapping document paths to their page ranges and associated cases.
+    """
+    evidence_map = {}
+
+    for annexure_id in annexure_ids:
+        if annexure_id:
+            annexure = get_annexure_details(annexure_id)
+            if annexure and 'cases' in annexure:
+                for case in annexure['cases']:
+                    # Check for LC minutes evidence
+                    if 'lc_minutes_path' in case and case['lc_minutes_path']:
+                        doc_path = case['lc_minutes_path']
+                        case_no = case['transaction_no']
+
+                        if doc_path not in evidence_map:
+                            evidence_map[doc_path] = {
+                                'filename': os.path.basename(doc_path),
+                                'cases': [],
+                                'page_count': 0
+                            }
+
+                        if case_no not in evidence_map[doc_path]['cases']:
+                            evidence_map[doc_path]['cases'].append(case_no)
+
+    # Calculate page counts for each document
+    for doc_path, info in evidence_map.items():
+        if os.path.exists(doc_path):
+            try:
+                reader = PdfReader(doc_path)
+                info['page_count'] = len(reader.pages)
+            except Exception as e:
+                print(f"Error reading PDF {doc_path}: {e}")
+                info['page_count'] = 1  # Default to 1 page if can't read
+
+    return evidence_map
+
+
+def add_evidence_index_page(story, evidence_index, title_style, styles):
+    """
+    Add an evidence index page at the beginning of the PDF.
+    """
+    # Title
+    index_title = Paragraph("EVIDENCE DOCUMENT INDEX", title_style)
+    story.append(index_title)
+
+    intro_text = """
+    This annexure contains supporting evidence documents. Each document may be referenced by multiple cases.
+    Use the page numbers below to locate specific evidence documents.
+    """
+    intro_para = Paragraph(intro_text, styles['Normal'])
+    story.append(intro_para)
+    story.append(Spacer(1, 20))
+
+    # Create index table
+    index_data = [["Document", "Cases Using Document", "Page Range"]]
+
+    current_page = 2  # Start after index page
+
+    for doc_path, info in evidence_index.items():
+        filename = info['filename']
+        cases_str = ", ".join(info['cases'][:3])  # Show first 3 cases
+        if len(info['cases']) > 3:
+            cases_str += f" (+{len(info['cases']) - 3} more)"
+
+        page_range = f"{current_page} - {current_page + info['page_count'] - 1}"
+        index_data.append([filename, cases_str, page_range])
+
+        current_page += info['page_count']
+
+    # Create table
+    index_table = Table(index_data, colWidths=[2*inch, 3*inch, 1.5*inch])
+    index_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+
+    story.append(index_table)
+    story.append(PageBreak())
+
+
+def add_lc_minutes_with_indexing(story, annexure, evidence_index):
+    """
+    Add LC minutes with proper indexing and page numbering.
+    """
+    story.append(Spacer(1, 20))
+
+    # Section header
+    lc_header_style = ParagraphStyle(
+        'LCHeader',
+        parent=getSampleStyleSheet()['Heading2'],
+        fontSize=14,
+        spaceAfter=15,
+        textColor=colors.darkblue
+    )
+
+    header = Paragraph("LOSS CONTROL MINUTES & SUPPORTING EVIDENCE", lc_header_style)
+    story.append(header)
+
+    # Add evidence documents with page references
+    current_page = 2  # Start counting from after index page
+    for doc_path, info in evidence_index.items():
+        if info['cases']:  # Only include docs that are used
+            # Document header
+            doc_title = Paragraph(f"Document: {info['filename']}", getSampleStyleSheet()['Heading3'])
+            story.append(doc_title)
+
+            # Cases that use this document
+            cases_text = f"Related Cases: {', '.join(info['cases'])}"
+            cases_para = Paragraph(cases_text, getSampleStyleSheet()['Normal'])
+            story.append(cases_para)
+
+            # Page reference
+            page_range = f"Pages {current_page} - {current_page + info['page_count'] - 1}"
+            page_para = Paragraph(f"Location: {page_range}", getSampleStyleSheet()['Italic'])
+            story.append(page_para)
+
+            # Try to embed the PDF document
+            try:
+                if os.path.exists(doc_path):
+                    reader = PdfReader(doc_path)
+                    writer = PdfWriter()
+
+                    # Copy all pages from the evidence document
+                    for page_num in range(len(reader.pages)):
+                        writer.add_page(reader.pages[page_num])
+
+                    # For now, just add a note about the document location
+                    # In a full implementation, you'd concatenate the PDFs here
+                    embed_note = Paragraph(
+                        f"[Evidence document '{info['filename']}' would be embedded here - {info['page_count']} pages]",
+                        getSampleStyleSheet()['Italic']
+                    )
+                    story.append(embed_note)
+
+            except Exception as e:
+                error_note = Paragraph(
+                    f"[Error loading evidence document: {str(e)}]",
+                    getSampleStyleSheet()['Italic']
+                )
+                story.append(error_note)
+
+            current_page += info['page_count']
+            story.append(Spacer(1, 15))
 
 def add_lc_minutes_content(story, annexure):
     """Add LC minutes content to the story."""

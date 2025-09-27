@@ -154,6 +154,16 @@ def load_case_data_components(dialog_instance):
         dialog_instance.lc_status_combo.setCurrentText(lc_status_value)
         dialog_instance.lc_status = lc_status_value
 
+    # Set LC Committee Date
+    if hasattr(dialog_instance, 'lc_committee_date_edit') and dialog_instance.lc_committee_date:
+        try:
+            from PyQt5.QtCore import QDate
+            date_obj = QDate.fromString(dialog_instance.lc_committee_date, "yyyy-MM-dd")
+            if date_obj.isValid():
+                dialog_instance.lc_committee_date_edit.setDate(date_obj)
+        except Exception as e:
+            print(f"Error loading LC committee date: {e}")
+
     # Set list and status display after conditional updates using shared logic with ViewCasesDialog
     # Use workflow_utils for consistent display logic
     workflow_status = dialog_instance.workflow_status_cache

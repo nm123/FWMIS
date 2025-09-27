@@ -19,121 +19,98 @@ from scripts.Utilities.pdf_exporter import export_annexure_to_pdf
 class WriteOffManagementDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Write-Off Submission Management")
-        self.setFixedSize(1000, 700)
+        self.setWindowTitle("Write-Off Annexure Log")
+        self.setFixedSize(1200, 800)
         self.fy = get_financial_year()
         self.setup_ui()
-        self.load_submissions()
         self.load_annexures()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
 
-        # Create tab widget
-        self.tab_widget = QTabWidget()
-        
-        # Submissions Tab
-        submissions_tab = QWidget()
-        submissions_layout = QVBoxLayout(submissions_tab)
-        
-        submissions_group = QGroupBox("Write-Off Submissions")
-        submissions_group_layout = QVBoxLayout(submissions_group)
+        # FY Filter
+        filter_layout = QHBoxLayout()
+        filter_layout.addWidget(QLabel("Financial Year:"))
 
-        self.submissions_table = QTableWidget()
-        self.submissions_table.setColumnCount(7)
-        self.submissions_table.setHorizontalHeaderLabels(
+        self.fy_filter_combo = QComboBox()
+        self.fy_filter_combo.setFixedWidth(200)
+        self.load_fy_filter()
+        self.fy_filter_combo.currentTextChanged.connect(self.load_annexures)
+        filter_layout.addWidget(self.fy_filter_combo)
+
+        filter_layout.addStretch()
+        layout.addLayout(filter_layout)
+
+        # Create tab widget (removed - now single view)
+        # self.tab_widget = QTabWidget()
+
+        # Annexures content directly in main layout
+        annexures_group = QGroupBox("Write-Off Annexures")
+        annexures_group_layout = QVBoxLayout(annexures_group)
+
+        self.annexures_table = QTableWidget()
+        self.annexures_table.setColumnCount(8)
+        self.annexures_table.setHorizontalHeaderLabels(
             [
-                "Submission ID",
+                "Annexure ID",
                 "Created Date",
                 "Status",
                 "Cases",
                 "Total Amount",
                 "Actions",
                 "Details",
+                "Export",
             ]
         )
 
         # Set column widths
-        header = self.submissions_table.horizontalHeader()
+        header = self.annexures_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
-        self.submissions_table.setColumnWidth(0, 150)  # Submission ID
-        self.submissions_table.setColumnWidth(1, 120)  # Created Date
-        self.submissions_table.setColumnWidth(2, 100)  # Status
-        self.submissions_table.setColumnWidth(3, 80)  # Cases
-        self.submissions_table.setColumnWidth(4, 120)  # Total Amount
-        self.submissions_table.setColumnWidth(5, 200)  # Actions
-        self.submissions_table.setColumnWidth(6, 200)  # Details
-
-        submissions_group_layout.addWidget(self.submissions_table)
-        submissions_layout.addWidget(submissions_group)
-        
-        # Submissions action buttons
-        submissions_btn_layout = QHBoxLayout()
-        refresh_submissions_btn = QPushButton("Refresh Submissions")
-        refresh_submissions_btn.clicked.connect(self.load_submissions)
-        submissions_btn_layout.addWidget(refresh_submissions_btn)
-        submissions_btn_layout.addStretch()
-        submissions_layout.addLayout(submissions_btn_layout)
-        
-        self.tab_widget.addTab(submissions_tab, "Write-Off Submissions")
-        
-        # Annexures Tab
-        annexures_tab = QWidget()
-        annexures_layout = QVBoxLayout(annexures_tab)
-        
-        annexures_group = QGroupBox("Write-Off Annexures")
-        annexures_group_layout = QVBoxLayout(annexures_group)
-
-        self.annexures_table = QTableWidget()
-        self.annexures_table.setColumnCount(6)
-        self.annexures_table.setHorizontalHeaderLabels(
-            [
-                "Annexure No",
-                "Role",
-                "Created Date",
-                "Cases",
-                "Total Amount",
-                "Actions",
-            ]
-        )
-
-        # Set column widths
-        annexures_header = self.annexures_table.horizontalHeader()
-        annexures_header.setSectionResizeMode(QHeaderView.Interactive)
-        self.annexures_table.setColumnWidth(0, 150)  # Annexure No
-        self.annexures_table.setColumnWidth(1, 100)  # Role
-        self.annexures_table.setColumnWidth(2, 120)  # Created Date
+        self.annexures_table.setColumnWidth(0, 120)  # Annexure ID
+        self.annexures_table.setColumnWidth(1, 120)  # Created Date
+        self.annexures_table.setColumnWidth(2, 100)  # Status
         self.annexures_table.setColumnWidth(3, 80)  # Cases
         self.annexures_table.setColumnWidth(4, 120)  # Total Amount
-        self.annexures_table.setColumnWidth(5, 300)  # Actions
+        self.annexures_table.setColumnWidth(5, 200)  # Actions
+        self.annexures_table.setColumnWidth(6, 150)  # Details
+        self.annexures_table.setColumnWidth(7, 150)  # Export
 
         annexures_group_layout.addWidget(self.annexures_table)
-        annexures_layout.addWidget(annexures_group)
-        
+        layout.addWidget(annexures_group)
+
         # Annexures action buttons
         annexures_btn_layout = QHBoxLayout()
         refresh_annexures_btn = QPushButton("Refresh Annexures")
         refresh_annexures_btn.clicked.connect(self.load_annexures)
         annexures_btn_layout.addWidget(refresh_annexures_btn)
         annexures_btn_layout.addStretch()
-        annexures_layout.addLayout(annexures_btn_layout)
-        
-        self.tab_widget.addTab(annexures_tab, "Write-Off Annexures")
-        
-        layout.addWidget(self.tab_widget)
+        layout.addLayout(annexures_btn_layout)
 
-        # Main Action Buttons
-        button_layout = QHBoxLayout()
-        refresh_all_btn = QPushButton("Refresh All")
-        refresh_all_btn.clicked.connect(self.refresh_all)
+    def load_fy_filter(self):
+        """Load financial years into the filter combo."""
+        try:
+            from scripts.Utilities.financial_utils import get_all_financial_years
+            financial_years = get_all_financial_years()
 
-        close_btn = QPushButton("Close")
-        close_btn.clicked.connect(self.accept)
+            self.fy_filter_combo.clear()
+            self.fy_filter_combo.addItem("All Years", None)
 
-        button_layout.addWidget(refresh_all_btn)
-        button_layout.addStretch()
-        button_layout.addWidget(close_btn)
-        layout.addLayout(button_layout)
+            for fy_id, fy_string, is_open in financial_years:
+                display_text = f"{fy_string}"
+                if is_open:
+                    display_text += " (Current)"
+                self.fy_filter_combo.addItem(display_text, fy_id)
+
+            # Default to current FY
+            current_fy = get_financial_year()
+            for i in range(self.fy_filter_combo.count()):
+                if self.fy_filter_combo.itemData(i) and f"{current_fy.split('-')[0]}-{current_fy.split('-')[1]}" in self.fy_filter_combo.itemText(i):
+                    self.fy_filter_combo.setCurrentIndex(i)
+                    break
+
+        except Exception as e:
+            print(f"Error loading FY filter: {e}")
+            self.fy_filter_combo.addItem("All Years", None)
 
     def load_submissions(self):
         """Load write-off submissions from database"""
@@ -477,9 +454,13 @@ class WriteOffManagementDialog(QDialog):
             conn.close()
 
     def load_annexures(self):
-        """Load write-off annexures from database"""
+        """Load write-off annexures from database with FY filtering"""
         try:
-            annexures = get_all_annexures()
+            # Get selected FY filter
+            selected_fy_id = self.fy_filter_combo.currentData()
+
+            # Get annexures (modify get_all_annexures to accept FY filter)
+            annexures = get_all_annexures(fy_id=selected_fy_id)
             self.annexures_table.setRowCount(len(annexures))
 
             for row, annexure in enumerate(annexures):
@@ -516,6 +497,46 @@ class WriteOffManagementDialog(QDialog):
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        # Approve button
+        approve_btn = QPushButton("Approve")
+        approve_btn.clicked.connect(lambda: self.approve_annexure(annexure_id, annexure_no))
+        approve_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #38a169;
+                color: white;
+                border: 1px solid #38a169;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 12px;
+                font-weight: 500;
+                min-width: 70px;
+            }
+            QPushButton:hover {
+                background-color: #2f855a;
+            }
+        """)
+        layout.addWidget(approve_btn)
+
+        # Decline button
+        decline_btn = QPushButton("Decline")
+        decline_btn.clicked.connect(lambda: self.decline_annexure(annexure_id, annexure_no))
+        decline_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #e53e3e;
+                color: white;
+                border: 1px solid #e53e3e;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 12px;
+                font-weight: 500;
+                min-width: 70px;
+            }
+            QPushButton:hover {
+                background-color: #c53030;
+            }
+        """)
+        layout.addWidget(decline_btn)
+
         # View button
         view_btn = QPushButton("View")
         view_btn.clicked.connect(lambda: self.view_annexure_details(annexure_id))
@@ -536,68 +557,123 @@ class WriteOffManagementDialog(QDialog):
         """)
         layout.addWidget(view_btn)
 
-        # Export Excel button
-        excel_btn = QPushButton("Excel")
-        excel_btn.clicked.connect(lambda: self.export_annexure_excel(annexure_id, annexure_no))
-        excel_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #38a169;
-                color: white;
-                border: 1px solid #38a169;
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-size: 12px;
-                font-weight: 500;
-                min-width: 60px;
-            }
-            QPushButton:hover {
-                background-color: #2f855a;
-            }
-        """)
-        layout.addWidget(excel_btn)
-
-        # Export PDF button
-        pdf_btn = QPushButton("PDF")
-        pdf_btn.clicked.connect(lambda: self.export_annexure_pdf(annexure_id, annexure_no))
-        pdf_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #d69e2e;
-                color: white;
-                border: 1px solid #d69e2e;
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-size: 12px;
-                font-weight: 500;
-                min-width: 60px;
-            }
-            QPushButton:hover {
-                background-color: #b7791f;
-            }
-        """)
-        layout.addWidget(pdf_btn)
-
-        # Delete button
-        delete_btn = QPushButton("Delete")
-        delete_btn.clicked.connect(lambda: self.delete_annexure(annexure_id, annexure_no))
-        delete_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #e53e3e;
-                color: white;
-                border: 1px solid #e53e3e;
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-size: 12px;
-                font-weight: 500;
-                min-width: 60px;
-            }
-            QPushButton:hover {
-                background-color: #c53030;
-            }
-        """)
-        layout.addWidget(delete_btn)
-
         layout.addStretch()
         return widget
+
+    def approve_annexure(self, annexure_id, annexure_no):
+        """Approve an annexure - mark all cases as Written Off"""
+        reply = QMessageBox.question(
+            self,
+            "Approve Annexure",
+            f"Are you sure you want to approve annexure {annexure_no}?\n\n"
+            "This will mark ALL cases in this annexure as 'Written Off' and they will be finalized.\n\n"
+            "This action cannot be undone.",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+
+        if reply == QMessageBox.Yes:
+            try:
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+
+                # Update all cases in the annexure to Written Off status
+                cursor.execute("""
+                    UPDATE cases
+                    SET lc_status = 'Written Off',
+                        suffixes = REPLACE(suffixes, '-WOR', '-WO'),
+                        is_finalized = 1,
+                        finalized_date = ?,
+                        finalization_reason = ?
+                    WHERE id IN (
+                        SELECT case_id FROM annexure_cases WHERE annexure_id = ?
+                    )
+                """, (
+                    datetime.now().strftime("%Y-%m-%d"),
+                    "Approved for write-off by CFO/HOD",
+                    annexure_id
+                ))
+
+                conn.commit()
+
+                # Log the approval
+                save_audit_log(
+                    "annexure_approved",
+                    {
+                        "timestamp": datetime.now().isoformat(),
+                        "annexure_id": annexure_id,
+                        "annexure_no": annexure_no,
+                    },
+                    self.fy,
+                )
+
+                QMessageBox.information(
+                    self, "Success",
+                    f"Annexure {annexure_no} has been approved.\n\n"
+                    "All cases have been marked as 'Written Off' and finalized."
+                )
+
+                # Refresh the annexures list
+                self.load_annexures()
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to approve annexure: {str(e)}")
+            finally:
+                conn.close()
+
+    def decline_annexure(self, annexure_id, annexure_no):
+        """Decline an annexure - return all cases to Write-Off Recommended"""
+        reply = QMessageBox.question(
+            self,
+            "Decline Annexure",
+            f"Are you sure you want to decline annexure {annexure_no}?\n\n"
+            "This will return ALL cases in this annexure to 'Write-Off Recommended' status.\n\n"
+            "The Loss Control Committee will need to reconsider these cases.",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+
+        if reply == QMessageBox.Yes:
+            try:
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+
+                # Update all cases in the annexure back to Write-Off Recommended
+                cursor.execute("""
+                    UPDATE cases
+                    SET lc_status = 'Write-Off Recommended',
+                        is_finalized = 0,
+                        finalized_date = NULL,
+                        finalization_reason = NULL
+                    WHERE id IN (
+                        SELECT case_id FROM annexure_cases WHERE annexure_id = ?
+                    )
+                """, (annexure_id,))
+
+                conn.commit()
+
+                # Log the decline
+                save_audit_log(
+                    "annexure_declined",
+                    {
+                        "timestamp": datetime.now().isoformat(),
+                        "annexure_id": annexure_id,
+                        "annexure_no": annexure_no,
+                    },
+                    self.fy,
+                )
+
+                QMessageBox.information(
+                    self, "Success",
+                    f"Annexure {annexure_no} has been declined.\n\n"
+                    "All cases have been returned to 'Write-Off Recommended' status."
+                )
+
+                # Refresh the annexures list
+                self.load_annexures()
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to decline annexure: {str(e)}")
+            finally:
+                conn.close()
 
     def view_annexure_details(self, annexure_id):
         """View detailed information about an annexure"""

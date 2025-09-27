@@ -230,21 +230,30 @@ def get_current_financial_year_id() -> Optional[int]:
         print(f"Error getting current financial year: {e}")
         return None
 
-def get_all_annexures() -> List[Dict]:
-    """Get all annexures with summary information."""
+def get_all_annexures(fy_id: Optional[int] = None) -> List[Dict]:
+    """Get all annexures with summary information, optionally filtered by FY."""
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+
+            # Build query with optional FY filter
+            query = """
                 SELECT a.id, a.annexure_no, a.role, a.financial_year_id, a.created_at,
                        COUNT(ac.case_id) as case_count,
                        COALESCE(SUM(c.amount), 0) as total_amount
                 FROM annexures a
                 LEFT JOIN annexure_cases ac ON a.id = ac.annexure_id
                 LEFT JOIN cases c ON ac.case_id = c.id
-                GROUP BY a.id
-                ORDER BY a.created_at DESC
-            """)
+            """
+
+            params = []
+            if fy_id is not None:
+                query += " WHERE a.financial_year_id = ?"
+                params.append(fy_id)
+
+            query += " GROUP BY a.id ORDER BY a.created_at DESC"
+
+            cursor.execute(query, params)
             
             annexures = []
             for row in cursor.fetchall():

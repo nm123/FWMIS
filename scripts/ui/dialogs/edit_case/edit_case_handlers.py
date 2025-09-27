@@ -352,8 +352,25 @@ def on_assessment_status_changed(dialog, new_status):
 def on_lc_status_changed(dialog, new_lc_status):
     # Handle loss control status change
     print(f"LC status changed to: {new_lc_status}")
+
     # Update instance variable for instant grid update
     dialog.lc_status = new_lc_status
+
+    # Handle workflow status changes - update suffixes and database
+    from scripts.Utilities.workflow_utils import handle_loss_control_status_change
+    success = handle_loss_control_status_change(
+        dialog.case_id,
+        dialog.base_transaction_no,
+        new_lc_status
+    )
+
+    if not success:
+        print(f"Warning: Failed to update workflow for LC status change to {new_lc_status}")
+        # Still update UI even if workflow update failed
+        update_list_status_display(dialog)
+        update_lc_fields_visibility(dialog, new_lc_status)
+        return
+
     # Update grid instantly
     update_list_status_display(dialog)
     # Update field visibility dynamically
@@ -507,7 +524,13 @@ def update_lc_fields_visibility(dialog, lc_status):
         lc_status (str): The current LC status.
     """
     print(f"LC fields updated for status: {lc_status}")
-    
+
+    # Update LC Committee Date visibility - show when LC status is set
+    if hasattr(dialog, 'lc_committee_date_label') and hasattr(dialog, 'lc_committee_date_edit'):
+        lc_date_visible = bool(lc_status and lc_status.strip())
+        dialog.lc_committee_date_label.setVisible(lc_date_visible)
+        dialog.lc_committee_date_edit.setVisible(lc_date_visible)
+
     # Update recovery group visibility based on LC status
     if hasattr(dialog, "recovery_group"):
         if lc_status == "Recovery in Progress":
@@ -676,16 +699,33 @@ def add_new_installment(dialog):
             QMessageBox.warning(dialog, "Validation Error", "Please select an installment date.")
             return
 
+        # Validate that recovery evidence is uploaded (latest Debt Inquiry report required)
+        recovery_evidence_text = (
+            dialog.recovery_evidence_rip_edit.text().strip()
+            if hasattr(dialog, "recovery_evidence_rip_edit") and dialog.recovery_evidence_rip_edit.isVisible()
+            else dialog.recovery_evidence_edit.text().strip()
+        )
+
+        if not recovery_evidence_text:
+            QMessageBox.warning(
+                dialog,
+                "Recovery Evidence Required",
+                "Latest Debt Inquiry report must be uploaded before adding an installment.\n\n"
+                "This ensures all recovery activities are properly documented with current evidence.\n\n"
+                "Please upload the latest Debt Inquiry report and try again."
+            )
+            return
+
         # Get current recovery data
         current_amount_paid = get_current_amount_paid(dialog)
         original_amount = get_original_amount(dialog)
-        
+
         # Check if installment would exceed original amount
         new_total = current_amount_paid + installment_amount
         if new_total > original_amount:
             QMessageBox.warning(
-                dialog, 
-                "Validation Error", 
+                dialog,
+                "Validation Error",
                 f"Installment would exceed original amount.\n"
                 f"Original: R {original_amount:.2f}\n"
                 f"Already paid: R {current_amount_paid:.2f}\n"
@@ -706,7 +746,7 @@ def add_new_installment(dialog):
             if new_total >= original_amount:
                 finalize_recovery(dialog)
             
-            QMessageBox.information(dialog, "Success", f"Installment of R {installment_amount:.2f} added successfully!")
+            QMessageBox.information(dialog, "Success", f"Installment of R {installment_amount:.2f} added successfully with evidence documentation!")
         else:
             QMessageBox.critical(dialog, "Error", "Failed to save installment. Please try again.")
             
@@ -847,21 +887,40 @@ def save_installment_to_database(dialog, amount, date):
 def finalize_recovery(dialog):
     """Finalize recovery when fully paid"""
     try:
+        # Check if recovery evidence is uploaded before finalizing
+        recovery_evidence_path = (
+            dialog.recovery_evidence_rip_edit.text().strip()
+            if hasattr(dialog, "recovery_evidence_rip_edit") and dialog.recovery_evidence_rip_edit.text().strip()
+            else dialog.recovery_evidence_edit.text().strip()
+        )
+
+        if not recovery_evidence_path:
+            QMessageBox.warning(
+                dialog,
+                "Recovery Evidence Required",
+                "Recovery has been completed, but recovery evidence must be uploaded before finalizing the case.\n\n"
+                "Please upload recovery evidence and save the case to complete the finalization.",
+            )
+            # Don't finalize yet - let user upload evidence and save manually
+            return
+
         # Update case status to Recovered
         dialog.lc_status_combo.setCurrentText("Recovered")
-        
+
         # Update list status
         dialog.update_list_status_grid("Recovered", "Recovered")
         dialog.update_list_status_grid("Recovery in Progress", "N/A")
-        
+
         # Update workflow - this will add -REC suffix and remove -RIP suffix
+        # Skip evidence check since we already validated it above
         from scripts.Utilities.workflow_utils import handle_loss_control_status_change
         success = handle_loss_control_status_change(
             dialog.case_id,
             dialog.base_transaction_no,
-            "Recovered"
+            "Recovered",
+            skip_evidence_check=True
         )
-        
+
         if success:
             # Update the dialog's suffixes to reflect the change
             # dialog.suffixes is already a list, so we work with it directly

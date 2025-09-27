@@ -1,13 +1,13 @@
 === FWMIS PERFORMANCE REPORT ===
-Generated: 2025-09-24 09:26:24
+Generated: 2025-09-27 23:56:22
 
 SYSTEM INFORMATION:
   CPU Cores: 12
   Total Memory: 7.6 GB
-  Available Memory: 0.9 GB
-  Memory Usage: 88.2%
+  Available Memory: 1.1 GB
+  Memory Usage: 86.0%
 
-DATABASE SIZE: 0.4 MB
+DATABASE SIZE: 3.9 MB
 
 PERFORMANCE RECOMMENDATIONS:
   1. Use streaming for large file imports

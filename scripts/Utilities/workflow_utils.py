@@ -8,7 +8,7 @@ from scripts.Utilities.financial_utils import get_financial_year
 
 
 def handle_loss_control_status_change(
-    case_id, base_transaction_no, loss_control_status, user_id=None
+    case_id, base_transaction_no, loss_control_status, user_id=None, skip_evidence_check=False
 ):
     """
     Handle Loss Control status changes in the single-case model.
@@ -17,13 +17,14 @@ def handle_loss_control_status_change(
     - "Recovered": Case gets -REC suffix, finalized, appears in Recovered list
     - "Write-Off Recommended": Case gets -WOR suffix, appears in Write-Off Recommended list
 
-    Both statuses require evidence uploads and LC minutes.
+    Both statuses require evidence uploads and LC minutes (unless skip_evidence_check=True).
 
     Args:
         case_id: Database ID of the case
         base_transaction_no: Base transaction number (without suffixes)
         loss_control_status: New Loss Control status ("Recovered" or "Write-Off Recommended")
         user_id: User making the change (optional)
+        skip_evidence_check: Skip evidence validation (for automatic recovery completion)
 
     Returns:
         bool: Success status
@@ -66,21 +67,23 @@ def handle_loss_control_status_change(
             )
             return False
 
-        # Check if evidence is uploaded for LC status changes
-        cursor.execute("SELECT evidence_paths FROM cases WHERE id = ?", (case_id,))
-        evidence_data = cursor.fetchone()
-        if evidence_data and evidence_data[0]:
-            try:
-                evidence_dict = json.loads(evidence_data[0])
-                if not evidence_dict or not any(evidence_dict.values()):
-                    print(f"ERROR: Evidence must be uploaded before changing LC status")
+        # Check if evidence is uploaded for LC status changes (only for final statuses)
+        # Skip evidence check if explicitly requested (for automatic recovery completion)
+        if not skip_evidence_check and loss_control_status in ["Recovered", "Write Off Recommended", "Write-Off Recommended"]:
+            cursor.execute("SELECT evidence_paths FROM cases WHERE id = ?", (case_id,))
+            evidence_data = cursor.fetchone()
+            if evidence_data and evidence_data[0]:
+                try:
+                    evidence_dict = json.loads(evidence_data[0])
+                    if not evidence_dict or not any(evidence_dict.values()):
+                        print(f"ERROR: Evidence must be uploaded before changing LC status to {loss_control_status}")
+                        return False
+                except json.JSONDecodeError:
+                    print(f"ERROR: Invalid evidence data format")
                     return False
-            except json.JSONDecodeError:
-                print(f"ERROR: Invalid evidence data format")
+            else:
+                print(f"ERROR: Evidence must be uploaded before changing LC status to {loss_control_status}")
                 return False
-        else:
-            print(f"ERROR: Evidence must be uploaded before changing LC status")
-            return False
 
         # Parse current suffixes
         suffixes = current_suffixes.split(",") if current_suffixes else []
@@ -94,14 +97,14 @@ def handle_loss_control_status_change(
             # Remove conflicting suffixes
             suffixes = [s for s in suffixes if s not in ["-REC", "-WOR", "-WO"]]
             is_finalized = False
-            
+
         elif loss_control_status == "Recovered":
             new_lc_status = "Recovered"
             # Add -REC suffix if not present
             if "-REC" not in suffixes:
                 suffixes.append("-REC")
-            # Remove conflicting suffixes
-            suffixes = [s for s in suffixes if s not in ["-RIP", "-WOR", "-WO"]]
+            # Remove conflicting suffixes including -LS (no longer in Lead Schedule)
+            suffixes = [s for s in suffixes if s not in ["-RIP", "-WOR", "-WO", "-LS"]]
             is_finalized = True
             finalization_reason = "Case recovered by Loss Control Committee"
 
@@ -112,6 +115,13 @@ def handle_loss_control_status_change(
                 suffixes.append("-WOR")
             # Remove conflicting suffixes
             suffixes = [s for s in suffixes if s not in ["-RIP", "-REC", "-WO"]]
+            is_finalized = False
+
+        elif loss_control_status == "Awaiting LC determination":
+            # This is the initial status, no suffix changes needed
+            new_lc_status = "Awaiting LC determination"
+            # Keep existing suffixes but remove any conflicting final status suffixes
+            suffixes = [s for s in suffixes if s not in ["-REC", "-WOR", "-WO", "-RIP"]]
             is_finalized = False
 
         else:

@@ -257,17 +257,17 @@ class FWManagementApp(QMainWindow):
         cases_menu.addSeparator()  # Add separator
 
         # Write-off management
-        prepare_annexures_action = QAction("Prepare Write-Off Annexures", self)
-        prepare_annexures_action.triggered.connect(self.prepare_write_off_annexures)
-        cases_menu.addAction(prepare_annexures_action)
+        write_off_annexure_action = QAction("Write-Off Annexure Management", self)
+        write_off_annexure_action.triggered.connect(self.open_write_off_annexures)
+        cases_menu.addAction(write_off_annexure_action)
 
-        create_write_off_action = QAction("Create Write-Off Submission", self)
-        create_write_off_action.triggered.connect(self.create_write_off_submission)
-        cases_menu.addAction(create_write_off_action)
+        write_off_log_action = QAction("Write-Off Annexure Log", self)
+        write_off_log_action.triggered.connect(self.open_write_off_management)
+        cases_menu.addAction(write_off_log_action)
 
-        manage_write_off_action = QAction("Manage Write-Off Submissions", self)
-        manage_write_off_action.triggered.connect(self.manage_write_off_submissions)
-        cases_menu.addAction(manage_write_off_action)
+        finalization_dashboard_action = QAction("Finalization Dashboard", self)
+        finalization_dashboard_action.triggered.connect(self.open_finalization_dashboard)
+        cases_menu.addAction(finalization_dashboard_action)
 
         # To-Do List as standalone main menu
         todo_menu = menubar.addMenu("To-Do List")
@@ -513,7 +513,7 @@ class FWManagementApp(QMainWindow):
                 self, "Error", f"Failed to open Write-Off Submission dialog: {str(e)}"
             )
 
-    def manage_write_off_submissions(self):
+    def open_write_off_management(self):
         """Manage existing write-off submissions"""
         try:
             dialog = WriteOffManagementDialog(self)
@@ -521,6 +521,17 @@ class FWManagementApp(QMainWindow):
         except Exception as e:
             QMessageBox.critical(
                 self, "Error", f"Failed to open Write-Off Management dialog: {str(e)}"
+            )
+
+    def open_finalization_dashboard(self):
+        """Open the finalization dashboard dialog"""
+        try:
+            from scripts.ui.dialogs.finalization_dashboard_dialog import FinalizationDashboardDialog
+            dialog = FinalizationDashboardDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to open Finalization Dashboard: {str(e)}"
             )
 
     def open_optimization_management(self):
@@ -725,7 +736,7 @@ class FWManagementApp(QMainWindow):
                 self, "Error", f"Failed to open Write-Off Delegations dialog: {str(e)}"
             )
 
-    def prepare_write_off_annexures(self):
+    def open_write_off_annexures(self):
         """Open the annexure preparation dialog"""
         try:
             dialog = AnnexurePreparationDialog(self)

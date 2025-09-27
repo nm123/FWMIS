@@ -5343,3 +5343,1317 @@ PERFORMANCE RECOMMENDATIONS:
 2025-09-26 18:34:29,704 | INFO | root | Audit log saved successfully: edit_case
 2025-09-26 18:34:29,755 | INFO | root | Audit log saved successfully: assessment_status_change
 2025-09-26 18:34:29,812 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 18:14:50,424 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 18:14:50,425 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 18:14:50,425 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 18:14:50,426 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 18:14:50,426 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 18:14:50,426 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 18:14:50,432 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 18:14:50,441 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 18:14:50,445 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 18:14:50,445 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 18:14:50,446 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 18:14:50,446 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 18:14:50,447 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 18:14:50,447 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 18:14:50,447 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 18:14:50,448 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 18:14:50,449 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 18:14:50,450 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 18:14:50,452 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=74.1MB
+2025-09-27 18:14:50,473 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 18:14:50
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.8 GB
+  Memory Usage: 89.4%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 18:14:50,475 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 18:16:53,073 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 18:16:53,074 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 18:16:53,074 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 18:16:53,074 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 18:16:53,075 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 18:16:53,075 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 18:16:53,080 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 18:16:53,096 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 18:16:53,109 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 18:16:53,110 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 18:16:53,111 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 18:16:53,111 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 18:16:53,111 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 18:16:53,112 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 18:16:53,112 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 18:16:53,113 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 18:16:53,113 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 18:16:53,114 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 18:16:53,115 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-27 18:16:53,147 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 18:16:53
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.8 GB
+  Memory Usage: 89.7%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 18:16:53,155 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 18:21:34,766 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 18:21:34,774 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:34,779 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:34,779 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:34,793 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:34,803 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:34,811 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:34,812 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:34,825 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:34,836 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:34,841 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:34,841 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:34,847 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:34,860 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:34,863 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:34,864 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:34,871 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:34,877 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:34,881 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:34,881 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:34,897 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:34,913 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:34,925 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:34,927 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:34,948 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:34,962 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:34,969 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:34,971 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:34,981 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:34,995 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,004 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,005 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,014 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,029 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,039 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,041 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,046 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,059 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,062 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,063 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,075 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,085 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,093 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,094 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,107 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,113 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,125 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,126 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,140 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,146 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,158 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,159 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,164 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,176 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,180 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,181 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,191 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,199 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,208 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,209 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,214 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,226 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,231 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,232 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,244 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,259 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:21:35,262 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:21:35,263 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:21:35,276 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:21:35,277 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 18:22:11,438 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 18:22:11,444 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,448 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,449 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,457 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,472 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,483 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,484 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,495 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,501 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,509 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,509 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,514 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,525 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,531 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,532 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,541 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,547 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,550 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,551 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,562 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,576 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,583 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,584 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,596 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,603 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,612 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,613 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,618 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,631 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,643 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,644 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,649 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,664 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,667 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,668 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,678 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,684 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,695 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,695 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,701 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,713 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,718 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,719 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,729 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,736 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,746 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,747 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,757 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,767 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,781 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,782 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,797 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,811 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,816 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,816 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,828 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,834 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,845 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,846 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,861 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,867 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,878 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,878 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,884 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,898 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,902 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,904 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,915 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,928 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,932 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,933 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,945 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,956 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,965 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,965 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:11,978 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:11,985 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:11,998 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:11,999 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,013 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,024 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,031 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,031 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,045 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,056 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,066 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,067 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,081 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,094 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,098 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,099 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,114 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,124 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,128 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,129 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,137 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,150 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,161 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,161 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,168 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,182 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,192 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,194 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,201 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,215 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,223 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,225 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,235 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,247 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,255 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,257 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,266 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,280 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,284 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,285 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,300 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,314 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,323 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,324 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,333 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,351 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,363 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,363 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,377 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,390 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,399 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,400 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,410 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,420 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,426 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,427 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,439 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,448 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,460 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,461 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,474 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,483 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,490 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,491 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,501 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,512 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,521 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,522 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,529 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,545 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,564 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,572 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,580 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,634 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,642 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,643 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,650 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,659 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,667 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,668 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,684 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,694 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,698 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,698 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,707 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,715 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,725 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,725 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,739 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,748 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,757 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,757 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,765 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,778 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,782 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,783 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,800 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,813 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,817 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,818 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,832 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,845 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,850 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,850 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,862 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,871 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,878 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,879 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,887 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,898 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,906 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,907 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,921 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,928 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,932 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,933 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,939 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,951 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,956 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,957 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,968 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:12,978 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:12,982 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:12,982 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:12,998 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,011 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,015 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,016 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,025 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,039 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,046 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,047 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,056 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,073 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,082 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,083 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,094 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,102 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,107 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,108 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,121 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,130 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,136 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,137 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,151 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,180 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,196 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,197 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,214 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,230 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,238 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,241 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,262 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,278 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,288 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,291 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,316 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,334 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,349 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,350 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,361 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,379 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,399 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,400 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,428 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,459 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,472 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,473 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,481 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,492 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,509 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,510 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,525 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,543 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,550 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,551 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,560 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,567 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,572 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,574 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,588 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,602 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,611 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,614 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,622 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,636 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,641 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,642 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,655 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,666 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,674 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,676 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,683 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,696 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,707 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,708 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,724 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,734 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,742 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,743 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,750 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,762 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,770 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,771 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,782 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,795 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,807 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,809 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,821 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,831 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,839 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,840 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,849 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,859 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,864 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,865 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,872 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,884 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,888 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,889 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,901 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,909 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,919 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,919 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,931 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,944 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,949 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,949 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,961 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,967 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:13,978 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:13,979 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:13,987 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:13,999 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,008 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,012 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,025 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,037 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,049 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,049 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,057 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,070 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,074 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,075 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,080 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,087 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,096 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,097 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,105 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,111 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,115 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,116 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,122 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,130 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,140 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,141 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,156 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,163 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,172 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,173 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,189 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,196 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,205 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,206 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,214 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,227 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,231 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,232 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,244 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,250 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,258 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,259 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,271 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,281 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,288 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,289 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,296 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,320 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,337 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,339 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,357 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,369 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,379 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,380 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,390 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,406 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,413 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,413 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,429 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,440 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,448 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,448 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,461 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,471 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,477 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,479 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,488 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,497 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,503 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,505 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,513 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,524 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,529 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,531 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,541 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,551 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 18:22:14,559 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 18:22:14,559 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 18:22:14,572 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 18:22:14,573 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 18:25:13,206 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 18:25:13,239 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 19:46:33,406 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 19:46:33,407 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 19:46:33,407 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 19:46:33,407 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 19:46:33,408 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 19:46:33,408 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 19:46:33,411 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 19:46:33,426 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 19:46:33,429 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 19:46:33,429 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 19:46:33,430 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 19:46:33,430 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 19:46:33,430 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 19:46:33,430 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 19:46:33,431 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 19:46:33,431 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 19:46:33,431 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 19:46:33,432 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 19:46:33,432 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-27 19:46:33,437 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 19:46:33
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.0 GB
+  Memory Usage: 87.2%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 19:46:33,438 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 19:46:56,349 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 19:49:08,345 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 19:49:08,351 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:49:08,357 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:49:08,358 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:49:08,364 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:49:08,370 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:49:08,384 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:49:08,385 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:49:08,409 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:49:08,441 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:49:08,463 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:49:08,464 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:49:08,479 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:49:08,485 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:49:08,496 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:49:08,497 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:49:08,511 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:49:08,520 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:49:08,537 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:49:08,538 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:49:08,550 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:49:08,566 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:49:08,575 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:49:08,576 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:49:08,593 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:49:08,595 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 19:50:46,635 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 19:50:46,667 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 19:51:55,589 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 19:51:55,598 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:51:55,602 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:51:55,603 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:51:55,604 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:51:55,624 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:51:55,638 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:51:55,639 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:51:55,640 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:51:55,652 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:51:55,667 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:51:55,668 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:51:55,673 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:51:55,685 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:51:55,691 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:51:55,692 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:51:55,693 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:51:55,709 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:51:55,715 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:51:55,715 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:51:55,716 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:51:55,724 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:51:55,731 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:51:55,732 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:51:55,734 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:51:55,735 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 19:52:40,388 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 19:52:40,430 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 19:54:17,516 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 19:54:17,522 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:54:17,526 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:54:17,526 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:54:17,537 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:54:17,542 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:54:17,548 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:54:17,550 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:54:17,563 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:54:17,579 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:54:17,591 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:54:17,592 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:54:17,604 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:54:17,610 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:54:17,620 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:54:17,621 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:54:17,629 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:54:17,636 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:54:17,639 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:54:17,640 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:54:17,650 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:54:17,659 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 19:54:17,670 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 19:54:17,673 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 19:54:17,685 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 19:54:17,688 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 20:03:54,946 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 20:03:54,952 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:03:54,957 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:03:54,958 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:03:54,962 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:03:54,967 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:03:54,973 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:03:54,973 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:03:54,978 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:03:54,984 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:03:54,997 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:03:54,999 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:03:55,008 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:03:55,030 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:03:55,045 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:03:55,046 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:03:55,057 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:03:55,067 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:03:55,072 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:03:55,073 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:03:55,078 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:03:55,084 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:03:55,092 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:03:55,093 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:03:55,101 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:03:55,102 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 20:24:34,743 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 20:24:34,744 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 20:24:34,744 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 20:24:34,744 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 20:24:34,745 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 20:24:34,745 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 20:24:34,753 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 20:24:34,762 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 20:24:34,765 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 20:24:34,765 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 20:24:34,766 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 20:24:34,766 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 20:24:34,767 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 20:24:34,767 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 20:24:34,767 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 20:24:34,767 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 20:24:34,768 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 20:24:34,768 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 20:24:34,768 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=74.7MB
+2025-09-27 20:24:34,780 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 20:24:34
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.9 GB
+  Memory Usage: 88.6%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 20:24:34,782 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 20:26:14,717 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 20:26:14,722 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:26:14,728 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:26:14,728 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:26:14,733 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:26:14,739 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:26:14,744 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:26:14,745 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:26:14,750 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:26:14,765 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:26:14,771 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:26:14,774 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:26:14,785 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:26:14,799 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:26:14,810 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:26:14,812 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:26:14,819 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:26:14,834 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:26:14,839 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:26:14,839 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:26:14,849 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:26:14,854 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 20:26:14,861 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 20:26:14,862 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 20:26:14,871 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 20:26:14,872 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 20:29:55,632 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:29:55,657 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:31:12,778 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:31:43,703 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:31:43,760 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:31:43,792 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:34:13,139 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:34:13,167 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:42:50,473 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 20:42:50,473 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 20:42:50,474 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 20:42:50,474 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 20:42:50,474 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 20:42:50,475 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 20:42:50,480 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 20:42:50,487 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 20:42:50,489 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 20:42:50,490 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 20:42:50,491 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 20:42:50,493 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 20:42:50,494 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 20:42:50,495 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 20:42:50,495 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 20:42:50,496 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 20:42:50,496 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 20:42:50,497 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 20:42:50,497 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-27 20:42:50,503 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 20:42:50
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.0 GB
+  Memory Usage: 86.9%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 20:42:50,506 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 20:44:14,777 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:44:23,488 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:44:23,539 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:44:23,565 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:45:41,573 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:45:41,599 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:46:34,928 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:46:34,972 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:47:05,619 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:47:13,361 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:47:13,392 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:47:13,424 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:48:25,401 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:48:25,434 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:49:25,347 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:49:30,992 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:49:31,017 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:49:31,054 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:50:47,853 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:50:47,893 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:50:47,911 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:51:57,710 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:51:57,746 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 20:51:57,766 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:52:54,331 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 20:59:43,890 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 20:59:43,933 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:00:02,353 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:00:11,967 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:00:12,005 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:00:12,045 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:21:15,207 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 21:21:15,207 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 21:21:15,208 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 21:21:15,208 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 21:21:15,209 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 21:21:15,209 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 21:21:15,215 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 21:21:15,225 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 21:21:15,228 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 21:21:15,228 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 21:21:15,229 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 21:21:15,229 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 21:21:15,230 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 21:21:15,231 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 21:21:15,231 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 21:21:15,232 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 21:21:15,232 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 21:21:15,233 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 21:21:15,234 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-27 21:21:15,249 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 21:21:15
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.2 GB
+  Memory Usage: 84.3%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 21:21:15,251 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 21:22:18,118 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:22:18,161 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:22:18,198 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:23:57,335 | INFO | scripts.core.import_worker | ImportWorker starting
+2025-09-27 21:23:57,342 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 21:23:57,346 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 21:23:57,346 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 21:23:57,353 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 21:23:57,359 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 21:23:57,363 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 21:23:57,365 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 21:23:57,378 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 21:23:57,395 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 21:23:57,408 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 21:23:57,409 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 21:23:57,422 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 21:23:57,437 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 21:23:57,441 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 21:23:57,441 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 21:23:57,446 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 21:23:57,458 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 21:23:57,463 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 21:23:57,464 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 21:23:57,470 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 21:23:57,476 | INFO | scripts.core.import_worker | Case inserted
+2025-09-27 21:23:57,479 | INFO | scripts.core.import_worker | Copied BAS file
+2025-09-27 21:23:57,480 | INFO | scripts.core.import_worker | Successfully committed case
+2025-09-27 21:23:57,489 | INFO | scripts.core.import_worker | Imported case
+2025-09-27 21:23:57,490 | INFO | scripts.core.import_worker | Import completed
+2025-09-27 21:24:51,031 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:24:51,062 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:25:16,921 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:25:21,523 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:25:21,550 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:25:21,579 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:26:28,887 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:26:28,929 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:26:28,962 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:32:17,432 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 21:32:17,432 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 21:32:17,432 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 21:32:17,433 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 21:32:17,433 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 21:32:17,433 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 21:32:17,439 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 21:32:17,445 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 21:32:17,447 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 21:32:17,448 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 21:32:17,448 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 21:32:17,448 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 21:32:17,448 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 21:32:17,449 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 21:32:17,449 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 21:32:17,449 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 21:32:17,449 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 21:32:17,449 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 21:32:17,450 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-27 21:32:17,454 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 21:32:17
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.0 GB
+  Memory Usage: 86.8%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 21:32:17,456 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 21:33:08,219 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:33:08,284 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:33:08,323 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:41:33,993 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 21:41:33,993 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 21:41:33,993 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 21:41:33,994 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 21:41:33,994 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 21:41:33,994 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 21:41:34,001 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 21:41:34,010 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 21:41:34,018 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 21:41:34,018 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 21:41:34,019 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 21:41:34,019 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 21:41:34,020 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 21:41:34,020 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 21:41:34,021 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 21:41:34,021 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 21:41:34,021 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 21:41:34,022 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 21:41:34,022 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-27 21:41:34,033 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 21:41:34
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.1 GB
+  Memory Usage: 85.4%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 21:41:34,034 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 21:42:22,703 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:42:22,736 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:42:22,773 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 21:49:28,608 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 21:49:28,609 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 21:49:28,609 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 21:49:28,609 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 21:49:28,610 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 21:49:28,610 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 21:49:28,615 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 21:49:28,623 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 21:49:28,626 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 21:49:28,626 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 21:49:28,627 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 21:49:28,627 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 21:49:28,627 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 21:49:28,628 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 21:49:28,628 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 21:49:28,628 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 21:49:28,629 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 21:49:28,629 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 21:49:28,629 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-27 21:49:28,634 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 21:49:28
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.7 GB
+  Memory Usage: 90.4%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 21:49:28,635 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 21:51:08,188 | INFO | root | Audit log saved successfully: edit_case
+2025-09-27 21:51:08,237 | INFO | root | Audit log saved successfully: assessment_status_change
+2025-09-27 21:51:08,294 | INFO | root | Audit log saved successfully: lc_status_change
+2025-09-27 23:38:54,909 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 23:38:54,910 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 23:38:54,910 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 23:38:54,910 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 23:38:54,911 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 23:38:54,911 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 23:38:54,919 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 23:38:54,933 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 23:38:54,936 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 23:38:54,937 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 23:38:54,937 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 23:38:54,938 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 23:38:54,938 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 23:38:54,938 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 23:38:54,939 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 23:38:54,939 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 23:38:54,940 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 23:38:54,940 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 23:38:54,941 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-27 23:38:54,956 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 23:38:54
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.7 GB
+  Memory Usage: 91.0%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 23:38:54,958 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 23:39:53,083 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 23:39:53,083 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 23:39:53,084 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 23:39:53,084 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 23:39:53,085 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 23:39:53,085 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 23:39:53,091 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 23:39:53,100 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 23:39:53,103 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 23:39:53,103 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 23:39:53,103 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 23:39:53,104 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 23:39:53,104 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 23:39:53,104 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 23:39:53,104 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 23:39:53,104 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 23:39:53,104 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 23:39:53,105 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 23:39:53,105 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.6MB
+2025-09-27 23:39:53,111 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 23:39:53
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.6 GB
+  Memory Usage: 92.7%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 23:39:53,112 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 23:42:10,590 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 23:42:10,591 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 23:42:10,592 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 23:42:10,593 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 23:42:10,593 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 23:42:10,595 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 23:42:10,613 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 23:42:10,635 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 23:42:10,638 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 23:42:10,639 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 23:42:10,639 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 23:42:10,640 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 23:42:10,640 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 23:42:10,640 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 23:42:10,640 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 23:42:10,641 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 23:42:10,641 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 23:42:10,642 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 23:42:10,643 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-27 23:42:10,664 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 23:42:10
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.6 GB
+  Memory Usage: 92.2%
+
+DATABASE SIZE: 3.9 MB
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 23:42:10,672 | INFO | scripts.Utilities.performance_profiler | Performance report saved to data/performance_report.txt
+2025-09-27 23:43:17,383 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 23:43:17,384 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 23:43:17,384 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 23:43:17,384 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 23:43:17,385 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 23:43:17,385 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 23:43:17,390 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 23:43:17,397 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 23:43:17,399 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 23:43:17,400 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 23:43:17,400 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 23:43:17,400 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 23:43:17,401 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 23:43:17,401 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 23:43:17,401 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 23:43:17,402 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 23:43:17,402 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 23:43:17,402 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 23:43:17,403 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-27 23:43:17,408 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 23:43:17
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.7 GB
+  Memory Usage: 91.2%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 23:43:17,412 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 23:50:19,554 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 23:50:19,555 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 23:50:19,556 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 23:50:19,556 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 23:50:19,557 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 23:50:19,558 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 23:50:19,563 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 23:50:19,577 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 23:50:19,580 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 23:50:19,580 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 23:50:19,581 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 23:50:19,581 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 23:50:19,581 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 23:50:19,582 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 23:50:19,582 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 23:50:19,582 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 23:50:19,582 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 23:50:19,583 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 23:50:19,584 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-27 23:50:19,594 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 23:50:19
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.9 GB
+  Memory Usage: 87.9%
+
+DATABASE SIZE: 3.9 MB
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 23:50:19,596 | INFO | scripts.Utilities.performance_profiler | Performance report saved to data/performance_report.txt
+2025-09-27 23:51:09,425 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 23:51:09,426 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 23:51:09,426 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 23:51:09,427 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 23:51:09,427 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 23:51:09,427 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 23:51:09,432 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 23:51:09,441 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 23:51:09,443 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 23:51:09,443 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 23:51:09,444 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 23:51:09,444 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 23:51:09,444 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 23:51:09,445 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 23:51:09,445 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 23:51:09,445 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 23:51:09,445 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 23:51:09,446 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 23:51:09,446 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-27 23:51:09,451 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 23:51:09
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.2 GB
+  Memory Usage: 84.5%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 23:51:09,452 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-27 23:56:22,451 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-27 23:56:22,452 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-27 23:56:22,453 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-27 23:56:22,453 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-27 23:56:22,453 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-27 23:56:22,454 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-27 23:56:22,459 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-27 23:56:22,467 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-27 23:56:22,474 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-27 23:56:22,474 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-27 23:56:22,474 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-27 23:56:22,475 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-27 23:56:22,475 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-27 23:56:22,475 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-27 23:56:22,476 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-27 23:56:22,476 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-27 23:56:22,476 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-27 23:56:22,477 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-27 23:56:22,477 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.8MB
+2025-09-27 23:56:22,481 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-27 23:56:22
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 1.1 GB
+  Memory Usage: 86.0%
+
+DATABASE SIZE: 3.9 MB
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-27 23:56:22,483 | INFO | scripts.Utilities.performance_profiler | Performance report saved to data/performance_report.txt
+2025-09-28 00:01:52,056 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-28 00:01:52,057 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-28 00:01:52,057 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-28 00:01:52,058 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-28 00:01:52,058 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-28 00:01:52,058 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-28 00:01:52,063 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-28 00:01:52,071 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-28 00:01:52,074 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-28 00:01:52,074 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-28 00:01:52,075 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-28 00:01:52,076 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-28 00:01:52,077 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-28 00:01:52,077 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-28 00:01:52,079 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-28 00:01:52,079 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-28 00:01:52,080 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-28 00:01:52,081 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-28 00:01:52,082 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-28 00:01:52,088 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-28 00:01:52
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.9 GB
+  Memory Usage: 88.3%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-28 00:01:52,094 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'

@@ -100,6 +100,10 @@ def initialize_case_data(dialog_instance, case_data, selected_list):
         dialog_instance.is_finalized = (
             case_data[26] if len(case_data) > 26 and case_data[26] else False
         )
+        # LC Committee Date (new field, at the end)
+        dialog_instance.lc_committee_date = (
+            case_data[-1] if len(case_data) > 55 and case_data[-1] else None
+        )
 
     # Cache workflow status
     try:

@@ -98,6 +98,23 @@ def validate_case_data(dialog_instance) -> bool:
         )
         return False
 
+    # Check if there are incomplete installment details (critical validation)
+    unsaved_installment_amount = dialog_instance.new_installment_amount_edit.text().strip()
+
+    # If there's an amount entered, the user tried to add an installment but didn't complete the process
+    if unsaved_installment_amount:
+        QMessageBox.warning(
+            dialog_instance,
+            "Incomplete Installment",
+            "You have entered an installment amount but did not add it to the case.\n\n"
+            "Installments must be properly added using the 'Add Installment' button with supporting evidence.\n\n"
+            "Please either:\n"
+            "• Upload evidence and click 'Add Installment', or\n"
+            "• Clear the installment fields to save other changes.\n\n"
+            "The case cannot be saved with incomplete installment data.",
+        )
+        return False
+
     # Validate Loss Control fields
     loss_control_status = dialog_instance.lc_status_combo.currentText()
     if (
