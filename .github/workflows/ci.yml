@@ -61,7 +61,7 @@ jobs:
         mypy scripts/ --ignore-missing-imports --no-strict-optional || true
 
     - name: Upload security report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-report
@@ -119,13 +119,13 @@ jobs:
       continue-on-error: true
 
     - name: Upload coverage reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report-${{ matrix.python-version }}
         path: coverage.xml
 
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: benchmark-results
@@ -162,7 +162,7 @@ jobs:
         zip -r fwmis-${{ github.sha }}.zip dist/ scripts/ requirements_optimized.txt README.md
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: fwmis-build
         path: |
@@ -238,7 +238,7 @@ jobs:
         pdoc --html --output-dir docs/api scripts/
 
     - name: Upload documentation
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: documentation
         path: docs/
