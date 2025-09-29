@@ -29,7 +29,7 @@ safety==2.3.5
 
 # Build Tools
 pyinstaller==6.3.0
-setuptools==69.0.3
+setuptools==80.9.0
 wheel==0.42.0
 
 # Optional: High-performance alternatives (uncomment if needed)
