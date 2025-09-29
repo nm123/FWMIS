@@ -10,15 +10,16 @@ This module provides comprehensive database archiving functionality including:
 - Automated archiving policies
 """
 
-import os
-import sqlite3
-import json
-import shutil
-import time
 import hashlib
+import json
+import os
+import shutil
+import sqlite3
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
 from scripts.Utilities.config import DB_PATH
 
 
@@ -36,7 +37,7 @@ class DatabaseArchiver:
             "archive_finalized_only": True,
             "retention_years": 7,
             "auto_archive_threshold": 50000,
-            "compression_enabled": True
+            "compression_enabled": True,
         }
 
     def get_database_stats(self) -> Dict:
@@ -49,39 +50,46 @@ class DatabaseArchiver:
 
             # Overall statistics
             cursor.execute("SELECT COUNT(*) FROM cases")
-            stats['total_cases'] = cursor.fetchone()[0]
+            stats["total_cases"] = cursor.fetchone()[0]
 
             # Cases by financial year
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT printf('%d-%d', fy.start_year, fy.end_year) as fy_year, COUNT(c.id)
                 FROM cases c
                 JOIN financial_years fy ON c.fy_id = fy.id
                 GROUP BY fy_year
                 ORDER BY fy.start_year, fy.end_year
-            """)
-            stats['cases_by_fy'] = dict(cursor.fetchall())
+            """
+            )
+            stats["cases_by_fy"] = dict(cursor.fetchall())
 
             # Cases by status
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT assessment_status, COUNT(*)
                 FROM cases
                 GROUP BY assessment_status
-            """)
-            stats['cases_by_status'] = dict(cursor.fetchall())
+            """
+            )
+            stats["cases_by_status"] = dict(cursor.fetchall())
 
             # Finalized cases by financial year
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT printf('%d-%d', fy.start_year, fy.end_year) as fy_year, COUNT(c.id)
                 FROM cases c
                 JOIN financial_years fy ON c.fy_id = fy.id
                 WHERE c.is_finalized = 1
                 GROUP BY fy_year
                 ORDER BY fy.start_year, fy.end_year
-            """)
-            stats['finalized_by_fy'] = dict(cursor.fetchall())
+            """
+            )
+            stats["finalized_by_fy"] = dict(cursor.fetchall())
 
             # Cases by age (years since identification)
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT
                     CASE
                         WHEN julianday('now') - julianday(date_identified) < 365 THEN 'current_year'
@@ -93,23 +101,28 @@ class DatabaseArchiver:
                 FROM cases
                 WHERE date_identified IS NOT NULL
                 GROUP BY age_group
-            """)
-            stats['cases_by_age'] = dict(cursor.fetchall())
+            """
+            )
+            stats["cases_by_age"] = dict(cursor.fetchall())
 
             # Database size
-            stats['db_size_mb'] = self.db_path.stat().st_size / (1024 * 1024)
+            stats["db_size_mb"] = self.db_path.stat().st_size / (1024 * 1024)
 
             # Archive statistics
             archive_files = list(self.archive_dir.glob("*.archive"))
-            stats['archive_count'] = len(archive_files)
-            stats['total_archive_size_mb'] = sum(f.stat().st_size for f in archive_files) / (1024 * 1024)
+            stats["archive_count"] = len(archive_files)
+            stats["total_archive_size_mb"] = sum(
+                f.stat().st_size for f in archive_files
+            ) / (1024 * 1024)
 
             return stats
 
         finally:
             conn.close()
 
-    def create_archive(self, fy_year: str, archive_type: str = "auto") -> Tuple[bool, str]:
+    def create_archive(
+        self, fy_year: str, archive_type: str = "auto"
+    ) -> Tuple[bool, str]:
         """
         Create an archive for a specific financial year
 
@@ -129,12 +142,18 @@ class DatabaseArchiver:
             # Verify financial year exists and get its ID
             # fy_year comes in as "start_year-end_year" format (e.g., "2022-2023")
             try:
-                start_year, end_year = fy_year.split('-')
+                start_year, end_year = fy_year.split("-")
                 start_year, end_year = int(start_year), int(end_year)
             except ValueError:
-                return False, f"Invalid financial year format: {fy_year}. Expected format: start_year-end_year (e.g., 2022-2023)"
+                return (
+                    False,
+                    f"Invalid financial year format: {fy_year}. Expected format: start_year-end_year (e.g., 2022-2023)",
+                )
 
-            cursor.execute("SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?", (start_year, end_year))
+            cursor.execute(
+                "SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?",
+                (start_year, end_year),
+            )
             fy_result = cursor.fetchone()
             if not fy_result:
                 return False, f"Financial year {fy_year} not found in database"
@@ -142,10 +161,13 @@ class DatabaseArchiver:
             fy_id = fy_result[0]
 
             # Get cases to archive (only finalized cases for safety)
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT COUNT(*) FROM cases
                 WHERE fy_id = ? AND is_finalized = 1
-            """, (fy_id,))
+            """,
+                (fy_id,),
+            )
             case_count = cursor.fetchone()[0]
 
             if case_count == 0:
@@ -165,13 +187,16 @@ class DatabaseArchiver:
                 "archive_type": archive_type,
                 "case_count": case_count,
                 "database_version": "1.0",
-                "compression": self.config["compression_enabled"]
+                "compression": self.config["compression_enabled"],
             }
 
             # Export cases to archive
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT * FROM cases WHERE fy_id = ? AND is_finalized = 1
-            """, (fy_id,))
+            """,
+                (fy_id,),
+            )
             cases_data = cursor.fetchall()
 
             # Get column names
@@ -181,11 +206,11 @@ class DatabaseArchiver:
             archive_data = {
                 "metadata": archive_metadata,
                 "columns": columns,
-                "cases": cases_data
+                "cases": cases_data,
             }
 
             # Write archive file
-            with open(archive_file, 'w', encoding='utf-8') as f:
+            with open(archive_file, "w", encoding="utf-8") as f:
                 json.dump(archive_data, f, indent=2, default=str)
 
             print(f"💾 Archive created: {archive_file}")
@@ -194,17 +219,16 @@ class DatabaseArchiver:
             archive_size_mb = archive_file.stat().st_size / (1024 * 1024)
 
             # Create checksum for integrity verification
-            with open(archive_file, 'rb') as f:
+            with open(archive_file, "rb") as f:
                 checksum = hashlib.sha256(f.read()).hexdigest()
 
             # Update metadata with size and checksum
-            archive_metadata.update({
-                "file_size_mb": round(archive_size_mb, 2),
-                "checksum_sha256": checksum
-            })
+            archive_metadata.update(
+                {"file_size_mb": round(archive_size_mb, 2), "checksum_sha256": checksum}
+            )
 
             # Rewrite metadata
-            with open(archive_file, 'r+', encoding='utf-8') as f:
+            with open(archive_file, "r+", encoding="utf-8") as f:
                 data = json.load(f)
                 data["metadata"] = archive_metadata
                 f.seek(0)
@@ -214,7 +238,9 @@ class DatabaseArchiver:
             # Optionally remove archived cases from main database
             if archive_type in ["manual", "emergency"]:  # Only for explicit archiving
                 print(f"🗑️  Removing {case_count} cases from main database...")
-                cursor.execute("DELETE FROM cases WHERE fy_id = ? AND is_finalized = 1", (fy_id,))
+                cursor.execute(
+                    "DELETE FROM cases WHERE fy_id = ? AND is_finalized = 1", (fy_id,)
+                )
                 deleted_count = cursor.rowcount
                 conn.commit()
                 print(f"✅ Removed {deleted_count} cases from main database")
@@ -247,7 +273,7 @@ class DatabaseArchiver:
 
         for archive_file in self.archive_dir.glob("*.archive"):
             try:
-                with open(archive_file, 'r', encoding='utf-8') as f:
+                with open(archive_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
                 metadata = data.get("metadata", {})
@@ -258,12 +284,14 @@ class DatabaseArchiver:
 
             except Exception as e:
                 # Handle corrupted archive files
-                archives.append({
-                    "archive_id": archive_file.stem,
-                    "error": f"Corrupted archive: {e}",
-                    "file_path": str(archive_file),
-                    "file_size_mb": archive_file.stat().st_size / (1024 * 1024)
-                })
+                archives.append(
+                    {
+                        "archive_id": archive_file.stem,
+                        "error": f"Corrupted archive: {e}",
+                        "file_path": str(archive_file),
+                        "file_size_mb": archive_file.stat().st_size / (1024 * 1024),
+                    }
+                )
 
         # Sort by creation date (newest first)
         archives.sort(key=lambda x: x.get("created_at", ""), reverse=True)
@@ -292,7 +320,7 @@ class DatabaseArchiver:
 
         try:
             # Read archive data
-            with open(archive_file, 'r', encoding='utf-8') as f:
+            with open(archive_file, "r", encoding="utf-8") as f:
                 archive_data = json.load(f)
 
             metadata = archive_data.get("metadata", {})
@@ -308,14 +336,20 @@ class DatabaseArchiver:
             fy_year = metadata.get("financial_year")
             if fy_year:
                 try:
-                    start_year, end_year = fy_year.split('-')
+                    start_year, end_year = fy_year.split("-")
                     start_year, end_year = int(start_year), int(end_year)
                 except ValueError:
                     return False, f"Invalid financial year format in archive: {fy_year}"
 
-                cursor.execute("SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?", (start_year, end_year))
+                cursor.execute(
+                    "SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?",
+                    (start_year, end_year),
+                )
                 if not cursor.fetchone():
-                    cursor.execute("INSERT INTO financial_years (start_year, end_year, status, active_period) VALUES (?, ?, 'closed', 0)", (start_year, end_year))
+                    cursor.execute(
+                        "INSERT INTO financial_years (start_year, end_year, status, active_period) VALUES (?, ?, 'closed', 0)",
+                        (start_year, end_year),
+                    )
                     print(f"✅ Created financial year: {fy_year}")
 
             # Insert cases (skip if they already exist)
@@ -357,7 +391,9 @@ class DatabaseArchiver:
         finally:
             conn.close()
 
-    def delete_archive(self, archive_id: str, confirm: bool = False) -> Tuple[bool, str]:
+    def delete_archive(
+        self, archive_id: str, confirm: bool = False
+    ) -> Tuple[bool, str]:
         """
         Permanently delete an archive
 
@@ -378,14 +414,17 @@ class DatabaseArchiver:
 
         try:
             # Get archive info before deletion
-            with open(archive_file, 'r', encoding='utf-8') as f:
+            with open(archive_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 case_count = data.get("metadata", {}).get("case_count", 0)
 
             # Delete the file
             archive_file.unlink()
 
-            return True, f"✅ Archive {archive_id} deleted successfully ({case_count} cases)"
+            return (
+                True,
+                f"✅ Archive {archive_id} deleted successfully ({case_count} cases)",
+            )
 
         except Exception as e:
             return False, f"Archive deletion failed: {e}"
@@ -395,8 +434,8 @@ class DatabaseArchiver:
         recommendations = []
         stats = self.get_database_stats()
 
-        total_cases = stats.get('total_cases', 0)
-        finalized_cases = sum(stats.get('finalized_by_fy', {}).values())
+        total_cases = stats.get("total_cases", 0)
+        finalized_cases = sum(stats.get("finalized_by_fy", {}).values())
 
         # Check total case count
         if total_cases > self.config["auto_archive_threshold"]:
@@ -417,8 +456,7 @@ class DatabaseArchiver:
             finalization_rate = finalized_cases / total_cases
             if finalization_rate > 0.8:
                 recommendations.append(
-                    ".1%"
-                    "Excellent finalization rate - good candidates for archiving."
+                    ".1%" "Excellent finalization rate - good candidates for archiving."
                 )
             elif finalization_rate < 0.2:
                 recommendations.append(
@@ -427,8 +465,8 @@ class DatabaseArchiver:
                 )
 
         # Check cases by financial year
-        cases_by_fy = stats.get('cases_by_fy', {})
-        finalized_by_fy = stats.get('finalized_by_fy', {})
+        cases_by_fy = stats.get("cases_by_fy", {})
+        finalized_by_fy = stats.get("finalized_by_fy", {})
 
         current_year = datetime.now().year
         current_fy = f"{current_year}-{current_year + 1}"
@@ -444,11 +482,15 @@ class DatabaseArchiver:
                 )
 
         # Check archive storage
-        archive_count = stats.get('archive_count', 0)
+        archive_count = stats.get("archive_count", 0)
         if archive_count == 0:
-            recommendations.append("ℹ️  INFO: No archives exist yet. Consider setting up regular archiving.")
+            recommendations.append(
+                "ℹ️  INFO: No archives exist yet. Consider setting up regular archiving."
+            )
         elif archive_count > 10:
-            recommendations.append(f"ℹ️  INFO: {archive_count} archives exist. Consider archive consolidation.")
+            recommendations.append(
+                f"ℹ️  INFO: {archive_count} archives exist. Consider archive consolidation."
+            )
 
         return recommendations
 
@@ -457,16 +499,18 @@ class DatabaseArchiver:
         actions = []
         stats = self.get_database_stats()
 
-        total_cases = stats.get('total_cases', 0)
+        total_cases = stats.get("total_cases", 0)
 
         if total_cases > self.config["auto_archive_threshold"]:
             # Find oldest fully finalized financial year to archive
-            finalized_by_fy = stats.get('finalized_by_fy', {})
-            cases_by_fy = stats.get('cases_by_fy', {})
+            finalized_by_fy = stats.get("finalized_by_fy", {})
+            cases_by_fy = stats.get("cases_by_fy", {})
 
             for fy_year in sorted(finalized_by_fy.keys()):
-                if (finalized_by_fy[fy_year] == cases_by_fy.get(fy_year, 0) and
-                    cases_by_fy[fy_year] > self.config["max_cases_per_archive"] // 2):
+                if (
+                    finalized_by_fy[fy_year] == cases_by_fy.get(fy_year, 0)
+                    and cases_by_fy[fy_year] > self.config["max_cases_per_archive"] // 2
+                ):
 
                     actions.append(fy_year)
                     break  # Only auto-archive one FY at a time
@@ -480,13 +524,23 @@ def archive_database_cli():
 
     parser = argparse.ArgumentParser(description="FWMIS Database Archiving System")
     parser.add_argument("--stats", action="store_true", help="Show database statistics")
-    parser.add_argument("--recommendations", action="store_true", help="Show archiving recommendations")
-    parser.add_argument("--list-archives", action="store_true", help="List all archives")
-    parser.add_argument("--create-archive", help="Create archive for financial year (e.g., '2022-2023')")
+    parser.add_argument(
+        "--recommendations", action="store_true", help="Show archiving recommendations"
+    )
+    parser.add_argument(
+        "--list-archives", action="store_true", help="List all archives"
+    )
+    parser.add_argument(
+        "--create-archive", help="Create archive for financial year (e.g., '2022-2023')"
+    )
     parser.add_argument("--restore-archive", help="Restore archive by ID")
     parser.add_argument("--delete-archive", help="Delete archive by ID")
-    parser.add_argument("--confirm-delete", action="store_true", help="Confirm archive deletion")
-    parser.add_argument("--auto-check", action="store_true", help="Check if auto-archiving should run")
+    parser.add_argument(
+        "--confirm-delete", action="store_true", help="Confirm archive deletion"
+    )
+    parser.add_argument(
+        "--auto-check", action="store_true", help="Check if auto-archiving should run"
+    )
 
     args = parser.parse_args()
 
@@ -519,8 +573,10 @@ def archive_database_cli():
         else:
             for archive in archives:
                 status = "✅ OK" if "error" not in archive else f"❌ {archive['error']}"
-                print(f"  {archive['archive_id']}: {archive.get('case_count', 'N/A')} cases, "
-                      f"{archive.get('file_size_mb', 0):.1f} MB - {status}")
+                print(
+                    f"  {archive['archive_id']}: {archive.get('case_count', 'N/A')} cases, "
+                    f"{archive.get('file_size_mb', 0):.1f} MB - {status}"
+                )
         print()
 
     if args.create_archive:
@@ -563,8 +619,17 @@ def archive_database_cli():
             print("  No auto-archiving needed at this time.")
         print()
 
-    if not any([args.stats, args.recommendations, args.list_archives, args.create_archive,
-                args.restore_archive, args.delete_archive, args.auto_check]):
+    if not any(
+        [
+            args.stats,
+            args.recommendations,
+            args.list_archives,
+            args.create_archive,
+            args.restore_archive,
+            args.delete_archive,
+            args.auto_check,
+        ]
+    ):
         parser.print_help()
 
 

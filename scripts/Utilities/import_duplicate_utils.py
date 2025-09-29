@@ -1,8 +1,10 @@
 import sqlite3
 
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import (get_current_open_financial_year,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    get_current_open_financial_year,
+    get_financial_year,
+)
 
 
 def find_duplicates(transaction, category_name):

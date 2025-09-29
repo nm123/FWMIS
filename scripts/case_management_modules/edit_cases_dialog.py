@@ -3,28 +3,48 @@ from collections import defaultdict
 
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
-from PyQt5.QtWidgets import (QComboBox, QDialog, QHBoxLayout, QHeaderView,
-                             QLabel, QLineEdit, QMessageBox, QPushButton,
-                             QSplitter, QTableWidget, QTableWidgetItem,
-                             QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-                             QWidget)
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+from scripts.ui.dialogs.edit_case import EditCaseDialog
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.case_data_refresh_utils import refresh_cases
 from scripts.Utilities.case_filter_utils import (
-    get_responsibilities_with_cases, search_case_by_number)
+    get_responsibilities_with_cases,
+    search_case_by_number,
+)
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import (get_all_financial_years,
-                                               get_current_open_financial_year,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    get_all_financial_years,
+    get_current_open_financial_year,
+    get_financial_year,
+)
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.ui_theme import create_professional_button
 from scripts.Utilities.utils import format_currency_amount
 
-from scripts.ui.dialogs.edit_case import EditCaseDialog
-
-from .case_table_utils import (create_table_button, populate_case_table,
-                               setup_case_table_columns, create_totals_widget)
+from .case_table_utils import (
+    create_table_button,
+    create_totals_widget,
+    populate_case_table,
+    setup_case_table_columns,
+)
 
 
 class NoWheelComboBox(QComboBox):
@@ -227,14 +247,14 @@ class EditCasesDialog(QDialog):
         table_container = QWidget()
         table_layout = QVBoxLayout(table_container)
         table_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         # Add the table
         table_layout.addWidget(self.case_table)
-        
+
         # Add totals widget
         self.totals_widget = create_totals_widget("Checklist")
         table_layout.addWidget(self.totals_widget)
-        
+
         splitter.addWidget(table_container)
         print("DEBUG: table_container with totals added to splitter")
 

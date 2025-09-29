@@ -4,19 +4,39 @@ from functools import partial
 
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
-from PyQt5.QtWidgets import (QComboBox, QDialog, QFormLayout, QGroupBox,
-                             QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-                             QMessageBox, QPushButton, QScrollArea, QSplitter,
-                             QTableWidget, QTableWidgetItem, QTextEdit,
-                             QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-                             QWidget)
-from scripts.case_management_modules.case_table_utils import \
-    setup_case_table_columns, create_totals_widget
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+from scripts.case_management_modules.case_table_utils import (
+    create_totals_widget,
+    setup_case_table_columns,
+)
 from scripts.case_management_modules.view_cases_logic import ViewCasesLogic
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import (get_all_financial_years,
-                                               get_current_open_financial_year,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    get_all_financial_years,
+    get_current_open_financial_year,
+    get_financial_year,
+)
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
@@ -207,14 +227,14 @@ class ViewCasesDialog(QDialog):
         table_container = QWidget()
         table_layout = QVBoxLayout(table_container)
         table_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         # Add the table
         table_layout.addWidget(self.case_table)
-        
+
         # Add totals widget - start with a clean widget
         self.totals_widget = create_totals_widget("Checklist")
         table_layout.addWidget(self.totals_widget)
-        
+
         splitter.addWidget(table_container)
 
         splitter.setSizes([300, 700])

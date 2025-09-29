@@ -2,9 +2,18 @@ import sqlite3
 from collections import defaultdict
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
-                             QMessageBox, QPushButton, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.config import DB_PATH
 
 
@@ -54,7 +63,7 @@ class ResponsibilitySelectionDialog(QDialog):
 
             # Load all responsibilities to build the complete tree
             cursor.execute(
-                "SELECT id, name, parent_id, is_posting_level FROM responsibilities ORDER BY name"
+                "SELECT id, name, parent_id, is_posting_level, sort_order FROM responsibilities ORDER BY name"
             )
             self.responsibilities = [
                 {
@@ -62,6 +71,7 @@ class ResponsibilitySelectionDialog(QDialog):
                     "name": row[1],
                     "parent_id": row[2],
                     "is_posting_level": row[3],
+                    "sort_order": row[4],
                 }
                 for row in cursor.fetchall()
             ]
@@ -80,7 +90,7 @@ class ResponsibilitySelectionDialog(QDialog):
             parent_map[resp["parent_id"]].append(resp)
 
         def add_items(parent_item, parent_id):
-            for resp in sorted(parent_map[parent_id], key=lambda x: x["name"]):
+            for resp in sorted(parent_map[parent_id], key=lambda x: (x.get("sort_order", 999), x["name"])):
                 item = QTreeWidgetItem([resp["name"]])
                 item.setData(0, Qt.UserRole, resp["id"])
                 item.setData(
@@ -159,7 +169,7 @@ class ResponsibilitySelectionDialog(QDialog):
             parent_map[resp["parent_id"]].append(resp)
 
         def add_filtered_items(parent_item, parent_id):
-            for resp in sorted(parent_map[parent_id], key=lambda x: x["name"]):
+            for resp in sorted(parent_map[parent_id], key=lambda x: (x.get("sort_order", 999), x["name"])):
                 item = QTreeWidgetItem([resp["name"]])
                 item.setData(0, Qt.UserRole, resp["id"])
                 item.setData(1, Qt.UserRole, resp["is_posting_level"])

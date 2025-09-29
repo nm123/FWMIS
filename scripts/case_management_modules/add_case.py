@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QDialog
+
 from scripts.case_management_modules.add_case_logic import AddCaseLogic
 from scripts.ui.components.add_case_ui import AssessmentDialog, setup_add_ui
 
@@ -16,8 +17,9 @@ class AddNewCaseDialog(QDialog):
         setup_add_ui(self)
 
     def select_responsibility(self):
-        from scripts.case_management_modules.responsibility_selection import \
-            ResponsibilitySelectionDialog
+        from scripts.case_management_modules.responsibility_selection import (
+            ResponsibilitySelectionDialog,
+        )
 
         dialog = ResponsibilitySelectionDialog(self)
         if dialog.exec_():

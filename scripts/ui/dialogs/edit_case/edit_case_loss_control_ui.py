@@ -3,9 +3,17 @@ Loss control UI setup for EditCaseDialog.
 Handles loss control status, recovery evidence, and minutes components.
 """
 
-from PyQt5.QtWidgets import (QFormLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QLineEdit, QPushButton, QDateEdit)
 from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import (
+    QDateEdit,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+)
+
 from scripts.ui.components.custom_widgets import NoWheelComboBox
 
 
@@ -23,7 +31,12 @@ def setup_loss_control_ui_components(dialog_instance):
     # Loss Control Status (moved from Assessment group)
     dialog_instance.lc_status_combo = NoWheelComboBox()
     dialog_instance.lc_status_combo.addItems(
-        ["Awaiting LC determination", "Recovery in Progress", "Recovered", "Write-Off Recommended"]
+        [
+            "Awaiting LC determination",
+            "Recovery in Progress",
+            "Recovered",
+            "Write-Off Recommended",
+        ]
     )
     if dialog_instance.lc_status:
         dialog_instance.lc_status_combo.setCurrentText(dialog_instance.lc_status)
@@ -34,7 +47,9 @@ def setup_loss_control_ui_components(dialog_instance):
     dialog_instance.lc_committee_date_edit = QDateEdit()
     dialog_instance.lc_committee_date_edit.setCalendarPopup(True)
     dialog_instance.lc_committee_date_edit.setDate(QDate.currentDate())
-    loss_control_layout.addRow(dialog_instance.lc_committee_date_label, dialog_instance.lc_committee_date_edit)
+    loss_control_layout.addRow(
+        dialog_instance.lc_committee_date_label, dialog_instance.lc_committee_date_edit
+    )
 
     # Hide LC Committee Date by default; show when LC status is set
     dialog_instance.lc_committee_date_label.setVisible(False)

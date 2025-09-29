@@ -1,10 +1,19 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QFormLayout, QHBoxLayout, QLineEdit,
-                             QMessageBox, QPushButton, QTextEdit, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QFormLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.email_utils import (load_email_templates,
-                                           save_email_templates)
+from scripts.Utilities.email_utils import load_email_templates, save_email_templates
 
 
 class ManageEmailTemplatesDialog(QDialog):

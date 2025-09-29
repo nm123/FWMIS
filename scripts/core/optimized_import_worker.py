@@ -3,34 +3,52 @@ Optimized Import Worker with memory-efficient components.
 Integrates streaming processing, batch operations, and performance monitoring.
 """
 
+import logging
 import os
 import shutil
-import logging
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from PyQt5.QtCore import QThread, pyqtSignal
+
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.db_utils import get_db_connection
-from scripts.Utilities.financial_utils import (create_year_folder,
-                                               generate_transaction_no,
-                                               get_financial_year)
-from scripts.Utilities.responsibility_utils import load_posting_responsibilities
-from scripts.Utilities.optimized_import_utils import (
-    OptimizedBASParser, BatchDatabaseInserter, memory_efficient_db_connection,
-    create_performance_indexes, optimize_database_settings, memory_usage_monitor
+from scripts.Utilities.financial_utils import (
+    create_year_folder,
+    generate_transaction_no,
+    get_financial_year,
 )
+from scripts.Utilities.optimized_import_utils import (
+    BatchDatabaseInserter,
+    OptimizedBASParser,
+    create_performance_indexes,
+    memory_efficient_db_connection,
+    memory_usage_monitor,
+    optimize_database_settings,
+)
+from scripts.Utilities.responsibility_utils import load_posting_responsibilities
+
 # Import performance profiler conditionally to avoid circular imports
 try:
-    from scripts.Utilities.performance_profiler import performance_profiler, memory_profiler
+    from scripts.Utilities.performance_profiler import (
+        memory_profiler,
+        performance_profiler,
+    )
 except ImportError:
     # Fallback if performance profiler is not available
     class DummyProfiler:
-        def take_snapshot(self, label): pass
-        def timer(self, name): return self
-        def __enter__(self): return self
-        def __exit__(self, *args): pass
-    
+        def take_snapshot(self, label):
+            pass
+
+        def timer(self, name):
+            return self
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
     performance_profiler = DummyProfiler()
     memory_profiler = DummyProfiler()
 
@@ -53,7 +71,7 @@ class OptimizedImportWorker(QThread):
         bas_file_path,
         selected_fy=None,
         use_streaming=True,
-        batch_size=None
+        batch_size=None,
     ):
         super().__init__()
         self.transactions = transactions
@@ -65,7 +83,7 @@ class OptimizedImportWorker(QThread):
         self.use_streaming = use_streaming
         self.batch_size = batch_size
         self._cancelled = False
-        
+
         # Initialize optimized components
         self.batch_inserter = BatchDatabaseInserter(batch_size)
         self.parser = OptimizedBASParser()
@@ -80,23 +98,28 @@ class OptimizedImportWorker(QThread):
             # Start performance monitoring
             memory_profiler.take_snapshot("import_start")
             with performance_profiler.timer("total_import"):
-                
+
                 # Apply database optimizations
                 self._apply_database_optimizations()
-                
+
                 # Check memory before starting
                 if not memory_usage_monitor():
                     self.error.emit("Insufficient memory for import operation")
                     return
-                
+
                 # PRE-IMPORT DATABASE INTEGRITY CHECK
                 self._check_database_integrity()
 
                 imported_cases = []
                 total = len(self.transactions)
-                
-                logger.info("OptimizedImportWorker starting", 
-                           extra={"transaction_count": total, "use_streaming": self.use_streaming})
+
+                logger.info(
+                    "OptimizedImportWorker starting",
+                    extra={
+                        "transaction_count": total,
+                        "use_streaming": self.use_streaming,
+                    },
+                )
 
                 if self.use_streaming and total > 1000:
                     # Use streaming processing for large datasets
@@ -105,12 +128,17 @@ class OptimizedImportWorker(QThread):
                     # Use batch processing for smaller datasets
                     imported_cases = self._process_batch_import()
 
-                logger.info("Import completed", 
-                           extra={"imported_count": len(imported_cases), "cancelled": self._cancelled})
-                
+                logger.info(
+                    "Import completed",
+                    extra={
+                        "imported_count": len(imported_cases),
+                        "cancelled": self._cancelled,
+                    },
+                )
+
                 # Final memory snapshot
                 memory_profiler.take_snapshot("import_complete")
-                
+
                 self.progress.emit(100, "Import completed successfully")
                 self.finished.emit(imported_cases)
 
@@ -144,8 +172,10 @@ class OptimizedImportWorker(QThread):
                 orphaned_count = cursor.fetchone()[0]
 
                 if orphaned_count > 0:
-                    logger.warning("Database integrity: cases with invalid fy_id",
-                                 extra={"count": orphaned_count})
+                    logger.warning(
+                        "Database integrity: cases with invalid fy_id",
+                        extra={"count": orphaned_count},
+                    )
 
                 # Check for current FY availability
                 fy = self.selected_fy or get_financial_year()
@@ -171,94 +201,103 @@ class OptimizedImportWorker(QThread):
         """Process import using streaming for memory efficiency."""
         imported_cases = []
         total = len(self.transactions)
-        
+
         logger.info("Starting streaming import process")
-        
+
         # Process transactions in chunks
         chunk_size = self.batch_size or 1000
         for i in range(0, total, chunk_size):
             if self._cancelled:
                 logger.info("Streaming import cancelled by user")
                 break
-                
-            chunk = self.transactions[i:i + chunk_size]
+
+            chunk = self.transactions[i : i + chunk_size]
             chunk_imported = self._process_chunk(chunk, i + 1, total)
             imported_cases.extend(chunk_imported)
-            
+
             # Update progress
             progress = int(((i + len(chunk)) / total) * 100)
-            self.progress.emit(progress, f"Processed {i + len(chunk)} of {total} transactions...")
-            
+            self.progress.emit(
+                progress, f"Processed {i + len(chunk)} of {total} transactions..."
+            )
+
             # Monitor memory usage
             if not memory_usage_monitor():
                 logger.warning("High memory usage detected, reducing chunk size")
                 chunk_size = max(chunk_size // 2, 100)  # Reduce chunk size
-        
+
         return imported_cases
 
     def _process_batch_import(self) -> List[str]:
         """Process import using batch operations."""
         imported_cases = []
         total = len(self.transactions)
-        
+
         logger.info("Starting batch import process")
-        
+
         # Prepare cases for batch insertion
         cases_to_insert = []
-        
+
         for i, transaction in enumerate(self.transactions):
             if self._cancelled:
                 logger.info("Batch import cancelled by user")
                 break
-                
+
             try:
                 self.progress.emit(
                     int((i / total) * 100), f"Preparing case {i+1} of {total}..."
                 )
-                
+
                 # Prepare case data
                 case_data = self._prepare_case_data(transaction)
                 if case_data:
                     cases_to_insert.append(case_data)
-                    
+
             except Exception as e:
-                logger.exception("Error preparing transaction", 
-                               extra={"index": i + 1, "of": total})
+                logger.exception(
+                    "Error preparing transaction", extra={"index": i + 1, "of": total}
+                )
                 continue
-        
+
         # Batch insert all cases
         if cases_to_insert:
             logger.info(f"Batch inserting {len(cases_to_insert)} cases")
             self.progress.emit(90, f"Inserting {len(cases_to_insert)} cases...")
-            
+
             fy_id = self._get_fy_id()
-            inserted_case_numbers = self.batch_inserter.insert_cases_batch(cases_to_insert, fy_id)
+            inserted_case_numbers = self.batch_inserter.insert_cases_batch(
+                cases_to_insert, fy_id
+            )
             imported_cases.extend(inserted_case_numbers)
-            
+
             # Copy BAS files for all cases
             self._copy_bas_files_batch(imported_cases)
-        
+
         return imported_cases
 
-    def _process_chunk(self, chunk: List[Dict], start_index: int, total: int) -> List[str]:
+    def _process_chunk(
+        self, chunk: List[Dict], start_index: int, total: int
+    ) -> List[str]:
         """Process a chunk of transactions."""
         imported_cases = []
-        
+
         for i, transaction in enumerate(chunk):
             if self._cancelled:
                 break
-                
+
             try:
                 case_number = self._import_transaction_optimized(transaction)
                 if case_number:
                     imported_cases.append(case_number)
                     logger.info("Imported case", extra={"case_number": case_number})
-                    
+
             except Exception as e:
-                logger.exception("Error importing transaction", 
-                               extra={"index": start_index + i, "of": total})
+                logger.exception(
+                    "Error importing transaction",
+                    extra={"index": start_index + i, "of": total},
+                )
                 continue
-        
+
         return imported_cases
 
     def _prepare_case_data(self, transaction: Dict) -> Dict:
@@ -267,21 +306,21 @@ class OptimizedImportWorker(QThread):
             fy_id = self._get_fy_id()
             period_id = self._get_period_id(transaction["date"], fy_id)
             resp_id = self._get_responsibility_id(transaction["responsibility"])
-            
+
             if not fy_id or not resp_id:
                 return None
-            
+
             # Use the case number that was already assigned during preview
             case_number = transaction.get("case_number")
             base_transaction_no = transaction.get("base_transaction_no", case_number)
-            
+
             if not case_number:
                 case_number = self._generate_case_number(fy_id)
                 base_transaction_no = case_number
-            
+
             # Prepare case data
             date_str = transaction["date"].strftime("%Y-%m-%d")
-            
+
             # Determine list and status based on transaction type
             if transaction["type"] == "GJ":
                 list_name = "Checklist"
@@ -307,7 +346,7 @@ class OptimizedImportWorker(QThread):
                 bas_journal_date = None
                 bas_payment_no = transaction["number"].lstrip("0") or "0"
                 bas_payment_date = date_str
-            
+
             return {
                 "transaction_no": case_number,
                 "base_transaction_no": base_transaction_no,
@@ -340,7 +379,7 @@ class OptimizedImportWorker(QThread):
                 "bas_journal_no": bas_journal_no,
                 "bas_journal_date": bas_journal_date,
             }
-            
+
         except Exception as e:
             logger.exception("Error preparing case data")
             return None
@@ -350,30 +389,34 @@ class OptimizedImportWorker(QThread):
         try:
             with memory_efficient_db_connection() as conn:
                 cursor = conn.cursor()
-                
+
                 # Get financial year ID
                 fy_id = self._get_fy_id()
                 if not fy_id:
                     raise Exception("Financial Year not found")
-                
+
                 # Get period and responsibility IDs
                 period_id = self._get_period_id(transaction["date"], fy_id)
                 resp_id = self._get_responsibility_id(transaction["responsibility"])
-                
+
                 if not resp_id:
-                    raise Exception(f"Responsibility '{transaction['responsibility']}' not found")
-                
+                    raise Exception(
+                        f"Responsibility '{transaction['responsibility']}' not found"
+                    )
+
                 # Use the case number that was already assigned during preview
                 case_number = transaction.get("case_number")
-                base_transaction_no = transaction.get("base_transaction_no", case_number)
-                
+                base_transaction_no = transaction.get(
+                    "base_transaction_no", case_number
+                )
+
                 if not case_number:
                     case_number = self._generate_case_number(fy_id)
                     base_transaction_no = case_number
-                
+
                 # Prepare case data
                 date_str = transaction["date"].strftime("%Y-%m-%d")
-                
+
                 # Determine list and status based on transaction type
                 if transaction["type"] == "GJ":
                     list_name = "Checklist"
@@ -399,7 +442,7 @@ class OptimizedImportWorker(QThread):
                     bas_journal_date = None
                     bas_payment_no = transaction["number"].lstrip("0") or "0"
                     bas_payment_date = date_str
-                
+
                 # Insert case
                 cursor.execute(
                     """
@@ -413,34 +456,65 @@ class OptimizedImportWorker(QThread):
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
-                        case_number, base_transaction_no, date_str, date_str, date_str,
-                        description, bas_payment_no, bas_payment_date, None, self.category["name"],
-                        resp_id, abs(transaction["amount"]), None, None, None,
-                        status, list_name, None, None, None,
-                        fy_id, period_id, "N/A", "N/A", "N/A",
-                        "N/A", list_name, "[]", None, bas_journal_no, bas_journal_date,
+                        case_number,
+                        base_transaction_no,
+                        date_str,
+                        date_str,
+                        date_str,
+                        description,
+                        bas_payment_no,
+                        bas_payment_date,
+                        None,
+                        self.category["name"],
+                        resp_id,
+                        abs(transaction["amount"]),
+                        None,
+                        None,
+                        None,
+                        status,
+                        list_name,
+                        None,
+                        None,
+                        None,
+                        fy_id,
+                        period_id,
+                        "N/A",
+                        "N/A",
+                        "N/A",
+                        "N/A",
+                        list_name,
+                        "[]",
+                        None,
+                        bas_journal_no,
+                        bas_journal_date,
                     ),
                 )
-                
+
                 case_id = cursor.lastrowid
-                logger.info("Case inserted", extra={"case_number": case_number, "id": case_id})
-                
+                logger.info(
+                    "Case inserted", extra={"case_number": case_number, "id": case_id}
+                )
+
                 # Create case-specific supporting evidence folder
                 fy = self.selected_fy or get_financial_year()
                 year_folder = create_year_folder(fy)
-                supporting_evidence_folder = os.path.join(year_folder, "Supporting Evidence")
-                case_folder = os.path.join(supporting_evidence_folder, f"Case {case_number}")
+                supporting_evidence_folder = os.path.join(
+                    year_folder, "Supporting Evidence"
+                )
+                case_folder = os.path.join(
+                    supporting_evidence_folder, f"Case {case_number}"
+                )
                 os.makedirs(case_folder, exist_ok=True)
-                
+
                 # Copy BAS file if needed
                 if self.bas_file_path:
                     self._copy_bas_file(case_number, transaction["date"], fy_id)
-                
+
                 # Log audit
                 self._log_audit(transaction, case_number)
-                
+
                 return case_number
-                
+
         except Exception as e:
             logger.exception("Error importing transaction")
             return None
@@ -451,7 +525,7 @@ class OptimizedImportWorker(QThread):
         fy_parts = fy.split("-")
         start_year = int(fy_parts[0])
         end_year = int(fy_parts[1])
-        
+
         with memory_efficient_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -464,7 +538,7 @@ class OptimizedImportWorker(QThread):
     def _get_period_id(self, date_obj, fy_id: int) -> int:
         """Get period ID for the given date and financial year."""
         date_str = date_obj.strftime("%Y-%m-%d")
-        
+
         with memory_efficient_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -505,7 +579,7 @@ class OptimizedImportWorker(QThread):
             )
             max_num = cursor.fetchone()[0]
             next_num = (max_num or 0) + 1
-            
+
             fy = self.selected_fy or get_financial_year()
             fy_end_year = int(fy.split("-")[1])
             return f"FW-{fy_end_year}{next_num:05d}"
@@ -516,17 +590,17 @@ class OptimizedImportWorker(QThread):
             fy = self.selected_fy or get_financial_year()
             year_folder = create_year_folder(fy)
             bas_files_folder = os.path.join(year_folder, "Imported BAS Files")
-            
+
             month_str = date_obj.strftime("%Y%m")
             month_folder = os.path.join(bas_files_folder, month_str)
-            
+
             os.makedirs(month_folder, exist_ok=True)
-            
+
             original_filename = os.path.basename(self.bas_file_path)
             bas_file_path = os.path.join(month_folder, original_filename)
-            
+
             shutil.copy2(self.bas_file_path, bas_file_path)
-            
+
             # Update source_document field
             with memory_efficient_db_connection() as conn:
                 cursor = conn.cursor()
@@ -534,9 +608,9 @@ class OptimizedImportWorker(QThread):
                     "UPDATE cases SET source_document = ? WHERE transaction_no = ?",
                     (bas_file_path, case_number),
                 )
-            
+
             logger.info("Copied BAS file", extra={"path": bas_file_path})
-            
+
         except Exception as e:
             logger.exception("Error copying BAS file")
 
@@ -544,28 +618,35 @@ class OptimizedImportWorker(QThread):
         """Copy BAS files for multiple cases in batch."""
         if not self.bas_file_path or not case_numbers:
             return
-            
+
         try:
             fy = self.selected_fy or get_financial_year()
             year_folder = create_year_folder(fy)
             bas_files_folder = os.path.join(year_folder, "Imported BAS Files")
-            
+
             # Create a single copy for all cases in the same month
             # (assuming all transactions are from the same month)
             if case_numbers:
                 # Get date from first transaction
-                first_transaction = next((t for t in self.transactions if t.get("case_number") == case_numbers[0]), None)
+                first_transaction = next(
+                    (
+                        t
+                        for t in self.transactions
+                        if t.get("case_number") == case_numbers[0]
+                    ),
+                    None,
+                )
                 if first_transaction:
                     month_str = first_transaction["date"].strftime("%Y%m")
                     month_folder = os.path.join(bas_files_folder, month_str)
-                    
+
                     os.makedirs(month_folder, exist_ok=True)
-                    
+
                     original_filename = os.path.basename(self.bas_file_path)
                     bas_file_path = os.path.join(month_folder, original_filename)
-                    
+
                     shutil.copy2(self.bas_file_path, bas_file_path)
-                    
+
                     # Update source_document field for all cases
                     with memory_efficient_db_connection() as conn:
                         cursor = conn.cursor()
@@ -575,15 +656,19 @@ class OptimizedImportWorker(QThread):
                             ),
                             [bas_file_path] + case_numbers,
                         )
-                    
-                    logger.info("Copied BAS file for batch", extra={"path": bas_file_path, "cases": len(case_numbers)})
-                    
+
+                    logger.info(
+                        "Copied BAS file for batch",
+                        extra={"path": bas_file_path, "cases": len(case_numbers)},
+                    )
+
         except Exception as e:
             logger.exception("Error copying BAS files in batch")
 
     def _log_audit(self, transaction: Dict, case_number: str):
         """Log audit information for the imported case."""
         try:
+
             def convert_dates(obj):
                 if isinstance(obj, dict):
                     return {k: convert_dates(v) for k, v in obj.items()}
@@ -596,7 +681,7 @@ class OptimizedImportWorker(QThread):
 
             audit_transaction = convert_dates(transaction)
             fy = self.selected_fy or get_financial_year()
-            
+
             save_audit_log(
                 "import_undisclosed_case",
                 {

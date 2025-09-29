@@ -2,12 +2,23 @@ import sqlite3
 
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QFont, QWheelEvent
-from PyQt5.QtWidgets import (QComboBox, QDialog, QFormLayout, QGroupBox,
-                             QHBoxLayout, QLabel, QMessageBox, QPushButton,
-                             QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import (get_all_financial_years,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    get_all_financial_years,
+    get_financial_year,
+)
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 
 

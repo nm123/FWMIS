@@ -3,10 +3,24 @@ import sqlite3
 from datetime import datetime
 
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDialog,
-                             QFormLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QLineEdit, QListWidget, QListWidgetItem,
-                             QMessageBox, QPushButton, QTextEdit, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDateEdit,
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year

@@ -2,11 +2,25 @@ import logging
 import sqlite3
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
-                             QFormLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QLineEdit, QMessageBox, QPushButton, QRadioButton,
-                             QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-                             QWidget)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QRadioButton,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
 from scripts.Utilities.category_utils import load_categories, save_categories
 from scripts.Utilities.config import DB_PATH
 

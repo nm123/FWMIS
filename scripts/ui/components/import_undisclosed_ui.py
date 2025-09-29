@@ -1,16 +1,36 @@
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDialog,
-                             QFileDialog, QFormLayout, QGridLayout, QGroupBox,
-                             QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-                             QMessageBox, QProgressBar, QPushButton, QSplitter,
-                             QTableWidget, QTableWidgetItem, QTextEdit,
-                             QVBoxLayout, QWidget)
-from scripts.Utilities.ui_theme import (apply_theme,
-                                        create_professional_button,
-                                        create_professional_groupbox,
-                                        create_status_label,
-                                        setup_professional_table)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDateEdit,
+    QDialog,
+    QFileDialog,
+    QFormLayout,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+from scripts.Utilities.ui_theme import (
+    apply_theme,
+    create_professional_button,
+    create_professional_groupbox,
+    create_status_label,
+    setup_professional_table,
+)
 
 
 def setup_ui(dialog):

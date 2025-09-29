@@ -4,13 +4,26 @@ Shows case finalization status, aging reports, bottlenecks, and compliance metri
 """
 
 import sqlite3
-from datetime import datetime, timedelta
 from collections import defaultdict
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QGroupBox,
-                             QTableWidget, QTableWidgetItem, QTabWidget, QWidget,
-                             QComboBox, QPushButton, QProgressBar, QSplitter)
+from datetime import datetime, timedelta
+
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QProgressBar,
+    QPushButton,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_all_financial_years
@@ -93,7 +106,9 @@ class FinalizationDashboardDialog(QDialog):
 
         self.status_table = QTableWidget()
         self.status_table.setColumnCount(4)
-        self.status_table.setHorizontalHeaderLabels(["Status", "Count", "Percentage", "Total Amount"])
+        self.status_table.setHorizontalHeaderLabels(
+            ["Status", "Count", "Percentage", "Total Amount"]
+        )
         self.status_table.setAlternatingRowColors(True)
         status_layout.addWidget(self.status_table)
 
@@ -144,7 +159,9 @@ class FinalizationDashboardDialog(QDialog):
 
         self.aging_table = QTableWidget()
         self.aging_table.setColumnCount(4)
-        self.aging_table.setHorizontalHeaderLabels(["Age Range", "Count", "Percentage", "Status"])
+        self.aging_table.setHorizontalHeaderLabels(
+            ["Age Range", "Count", "Percentage", "Status"]
+        )
         self.aging_table.setAlternatingRowColors(True)
         aging_layout.addWidget(self.aging_table)
 
@@ -156,7 +173,9 @@ class FinalizationDashboardDialog(QDialog):
 
         self.detailed_aging_table = QTableWidget()
         self.detailed_aging_table.setColumnCount(5)
-        self.detailed_aging_table.setHorizontalHeaderLabels(["Status", "0-30 days", "31-60 days", "61-90 days", "90+ days"])
+        self.detailed_aging_table.setHorizontalHeaderLabels(
+            ["Status", "0-30 days", "31-60 days", "61-90 days", "90+ days"]
+        )
         self.detailed_aging_table.setAlternatingRowColors(True)
         detailed_layout.addWidget(self.detailed_aging_table)
 
@@ -172,7 +191,9 @@ class FinalizationDashboardDialog(QDialog):
 
         self.lc_compliance_table = QTableWidget()
         self.lc_compliance_table.setColumnCount(4)
-        self.lc_compliance_table.setHorizontalHeaderLabels(["Metric", "Count", "Percentage", "Status"])
+        self.lc_compliance_table.setHorizontalHeaderLabels(
+            ["Metric", "Count", "Percentage", "Status"]
+        )
         self.lc_compliance_table.setAlternatingRowColors(True)
         lc_layout.addWidget(self.lc_compliance_table)
 
@@ -207,7 +228,9 @@ class FinalizationDashboardDialog(QDialog):
             # Default to current FY
             current_fy = datetime.now().year
             for i in range(self.fy_filter_combo.count()):
-                if self.fy_filter_combo.itemData(i) and str(current_fy) in self.fy_filter_combo.itemText(i):
+                if self.fy_filter_combo.itemData(i) and str(
+                    current_fy
+                ) in self.fy_filter_combo.itemText(i):
                     self.fy_filter_combo.setCurrentIndex(i)
                     break
 
@@ -223,7 +246,10 @@ class FinalizationDashboardDialog(QDialog):
 
                 # Get selected FY filter - handle case where combo might not be initialized
                 selected_fy_id = None
-                if hasattr(self, 'fy_filter_combo') and self.fy_filter_combo.count() > 0:
+                if (
+                    hasattr(self, "fy_filter_combo")
+                    and self.fy_filter_combo.count() > 0
+                ):
                     selected_fy_id = self.fy_filter_combo.currentData()
 
                 # Build FY filter condition
@@ -323,12 +349,20 @@ class FinalizationDashboardDialog(QDialog):
             self.status_table.setItem(row, 1, QTableWidgetItem(str(count)))
             percentage = (count / total_cases * 100) if total_cases > 0 else 0
             self.status_table.setItem(row, 2, QTableWidgetItem(f"{percentage:.1f}%"))
-            self.status_table.setItem(row, 3, QTableWidgetItem(f"R {status_amounts[status]:,.2f}"))
+            self.status_table.setItem(
+                row, 3, QTableWidgetItem(f"R {status_amounts[status]:,.2f}")
+            )
             row += 1
 
         # Calculate finalization rate
-        finalized_count = status_counts.get('Finalized', 0) + status_counts.get('Recovered', 0) + status_counts.get('Written Off', 0)
-        finalization_rate = (finalized_count / total_cases * 100) if total_cases > 0 else 0
+        finalized_count = (
+            status_counts.get("Finalized", 0)
+            + status_counts.get("Recovered", 0)
+            + status_counts.get("Written Off", 0)
+        )
+        finalization_rate = (
+            (finalized_count / total_cases * 100) if total_cases > 0 else 0
+        )
 
         self.finalization_rate_label.setText(f"{finalization_rate:.1f}%")
         self.finalization_progress.setValue(int(finalization_rate))
@@ -376,11 +410,11 @@ class FinalizationDashboardDialog(QDialog):
 
         # Aging buckets
         aging_buckets = {
-            '0-30 days': 0,
-            '31-60 days': 0,
-            '61-90 days': 0,
-            '91-180 days': 0,
-            '181+ days': 0
+            "0-30 days": 0,
+            "31-60 days": 0,
+            "61-90 days": 0,
+            "91-180 days": 0,
+            "181+ days": 0,
         }
 
         # Count cases in each bucket
@@ -391,15 +425,15 @@ class FinalizationDashboardDialog(QDialog):
             except (ValueError, TypeError):
                 days = 0.0
             if days <= 30:
-                aging_buckets['0-30 days'] += 1
+                aging_buckets["0-30 days"] += 1
             elif days <= 60:
-                aging_buckets['31-60 days'] += 1
+                aging_buckets["31-60 days"] += 1
             elif days <= 90:
-                aging_buckets['61-90 days'] += 1
+                aging_buckets["61-90 days"] += 1
             elif days <= 180:
-                aging_buckets['91-180 days'] += 1
+                aging_buckets["91-180 days"] += 1
             else:
-                aging_buckets['181+ days'] += 1
+                aging_buckets["181+ days"] += 1
 
         # Update aging table
         self.aging_table.setRowCount(len(aging_buckets))
@@ -413,15 +447,17 @@ class FinalizationDashboardDialog(QDialog):
             self.aging_table.setItem(row, 2, QTableWidgetItem(f"{percentage:.1f}%"))
 
             # Color coding
-            if '181+' in bucket:
-                self.aging_table.item(row, 0).setBackground(QColor('#fed7d7'))  # Red
-            elif '91-180' in bucket:
-                self.aging_table.item(row, 0).setBackground(QColor('#fef5e7'))  # Yellow
+            if "181+" in bucket:
+                self.aging_table.item(row, 0).setBackground(QColor("#fed7d7"))  # Red
+            elif "91-180" in bucket:
+                self.aging_table.item(row, 0).setBackground(QColor("#fef5e7"))  # Yellow
 
             row += 1
 
         # Detailed aging by status
-        status_aging = defaultdict(lambda: {'0-30': 0, '31-60': 0, '61-90': 0, '90+': 0})
+        status_aging = defaultdict(
+            lambda: {"0-30": 0, "31-60": 0, "61-90": 0, "90+": 0}
+        )
 
         for case in self.cases_data:
             status = case[9]
@@ -431,27 +467,37 @@ class FinalizationDashboardDialog(QDialog):
             except (ValueError, TypeError):
                 days = 0.0
             if days <= 30:
-                status_aging[status]['0-30'] += 1
+                status_aging[status]["0-30"] += 1
             elif days <= 60:
-                status_aging[status]['31-60'] += 1
+                status_aging[status]["31-60"] += 1
             elif days <= 90:
-                status_aging[status]['61-90'] += 1
+                status_aging[status]["61-90"] += 1
             else:
-                status_aging[status]['90+'] += 1
+                status_aging[status]["90+"] += 1
 
         self.detailed_aging_table.setRowCount(len(status_aging))
         row = 0
         for status, buckets in status_aging.items():
             self.detailed_aging_table.setItem(row, 0, QTableWidgetItem(status))
-            self.detailed_aging_table.setItem(row, 1, QTableWidgetItem(str(buckets['0-30'])))
-            self.detailed_aging_table.setItem(row, 2, QTableWidgetItem(str(buckets['31-60'])))
-            self.detailed_aging_table.setItem(row, 3, QTableWidgetItem(str(buckets['61-90'])))
-            self.detailed_aging_table.setItem(row, 4, QTableWidgetItem(str(buckets['90+'])))
+            self.detailed_aging_table.setItem(
+                row, 1, QTableWidgetItem(str(buckets["0-30"]))
+            )
+            self.detailed_aging_table.setItem(
+                row, 2, QTableWidgetItem(str(buckets["31-60"]))
+            )
+            self.detailed_aging_table.setItem(
+                row, 3, QTableWidgetItem(str(buckets["61-90"]))
+            )
+            self.detailed_aging_table.setItem(
+                row, 4, QTableWidgetItem(str(buckets["90+"]))
+            )
 
             # Highlight rows with cases in 90+ days
-            if buckets['90+'] > 0:
+            if buckets["90+"] > 0:
                 for col in range(5):
-                    self.detailed_aging_table.item(row, col).setBackground(QColor('#fed7d7'))
+                    self.detailed_aging_table.item(row, col).setBackground(
+                        QColor("#fed7d7")
+                    )
 
             row += 1
 
@@ -461,7 +507,9 @@ class FinalizationDashboardDialog(QDialog):
             return
 
         # LC Committee compliance (30-day target from date reported)
-        lc_cases = [case for case in self.cases_data if case[2] in ('Valid', 'Confirmed')]  # Cases that need LC determination
+        lc_cases = [
+            case for case in self.cases_data if case[2] in ("Valid", "Confirmed")
+        ]  # Cases that need LC determination
         total_lc_cases = len(lc_cases)
 
         compliant_cases = 0
@@ -473,8 +521,12 @@ class FinalizationDashboardDialog(QDialog):
 
             try:
                 if date_reported and lc_committee_date:
-                    reported_date = datetime.strptime(str(date_reported), '%Y-%m-%d').date()
-                    committee_date = datetime.strptime(str(lc_committee_date), '%Y-%m-%d').date()
+                    reported_date = datetime.strptime(
+                        str(date_reported), "%Y-%m-%d"
+                    ).date()
+                    committee_date = datetime.strptime(
+                        str(lc_committee_date), "%Y-%m-%d"
+                    ).date()
 
                     days_to_decision = (committee_date - reported_date).days
                     if days_to_decision <= 30:
@@ -483,7 +535,9 @@ class FinalizationDashboardDialog(QDialog):
                         non_compliant_cases += 1
                 elif date_reported:
                     # No committee date set yet, check if it's past 30 days
-                    reported_date = datetime.strptime(str(date_reported), '%Y-%m-%d').date()
+                    reported_date = datetime.strptime(
+                        str(date_reported), "%Y-%m-%d"
+                    ).date()
                     days_since_reported = (datetime.now().date() - reported_date).days
                     if days_since_reported > 30:
                         non_compliant_cases += 1
@@ -491,45 +545,79 @@ class FinalizationDashboardDialog(QDialog):
                 # Skip this case if date parsing fails
                 continue
 
-        compliance_rate = (compliant_cases / total_lc_cases * 100) if total_lc_cases > 0 else 0
+        compliance_rate = (
+            (compliant_cases / total_lc_cases * 100) if total_lc_cases > 0 else 0
+        )
 
         # Update LC compliance table
         self.lc_compliance_table.setRowCount(3)
-        self.lc_compliance_table.setItem(0, 0, QTableWidgetItem("Total Cases Requiring LC Decision"))
+        self.lc_compliance_table.setItem(
+            0, 0, QTableWidgetItem("Total Cases Requiring LC Decision")
+        )
         self.lc_compliance_table.setItem(0, 1, QTableWidgetItem(str(total_lc_cases)))
         self.lc_compliance_table.setItem(0, 2, QTableWidgetItem("100%"))
         self.lc_compliance_table.setItem(0, 3, QTableWidgetItem("Target"))
 
-        self.lc_compliance_table.setItem(1, 0, QTableWidgetItem("Decided Within 30 Days"))
+        self.lc_compliance_table.setItem(
+            1, 0, QTableWidgetItem("Decided Within 30 Days")
+        )
         self.lc_compliance_table.setItem(1, 1, QTableWidgetItem(str(compliant_cases)))
-        self.lc_compliance_table.setItem(1, 2, QTableWidgetItem(f"{compliance_rate:.1f}%"))
-        self.lc_compliance_table.setItem(1, 3, QTableWidgetItem("Compliant" if compliance_rate >= 95 else "Needs Attention"))
+        self.lc_compliance_table.setItem(
+            1, 2, QTableWidgetItem(f"{compliance_rate:.1f}%")
+        )
+        self.lc_compliance_table.setItem(
+            1,
+            3,
+            QTableWidgetItem(
+                "Compliant" if compliance_rate >= 95 else "Needs Attention"
+            ),
+        )
 
-        self.lc_compliance_table.setItem(2, 0, QTableWidgetItem("Decided After 30 Days"))
-        self.lc_compliance_table.setItem(2, 1, QTableWidgetItem(str(non_compliant_cases)))
-        non_compliance_rate = (non_compliant_cases / total_lc_cases * 100) if total_lc_cases > 0 else 0
-        self.lc_compliance_table.setItem(2, 2, QTableWidgetItem(f"{non_compliance_rate:.1f}%"))
-        self.lc_compliance_table.setItem(2, 3, QTableWidgetItem("Non-Compliant" if non_compliance_rate > 5 else "Acceptable"))
+        self.lc_compliance_table.setItem(
+            2, 0, QTableWidgetItem("Decided After 30 Days")
+        )
+        self.lc_compliance_table.setItem(
+            2, 1, QTableWidgetItem(str(non_compliant_cases))
+        )
+        non_compliance_rate = (
+            (non_compliant_cases / total_lc_cases * 100) if total_lc_cases > 0 else 0
+        )
+        self.lc_compliance_table.setItem(
+            2, 2, QTableWidgetItem(f"{non_compliance_rate:.1f}%")
+        )
+        self.lc_compliance_table.setItem(
+            2,
+            3,
+            QTableWidgetItem(
+                "Non-Compliant" if non_compliance_rate > 5 else "Acceptable"
+            ),
+        )
 
         # Color coding
         for row in range(3):
             status_item = self.lc_compliance_table.item(row, 3)
             if status_item:
                 if "Compliant" in status_item.text() or "Target" in status_item.text():
-                    status_item.setBackground(QColor('#c6f6d5'))  # Green
+                    status_item.setBackground(QColor("#c6f6d5"))  # Green
                 elif "Needs Attention" in status_item.text():
-                    status_item.setBackground(QColor('#fef5e7'))  # Yellow
+                    status_item.setBackground(QColor("#fef5e7"))  # Yellow
                 elif "Non-Compliant" in status_item.text():
-                    status_item.setBackground(QColor('#fed7d7'))  # Red
+                    status_item.setBackground(QColor("#fed7d7"))  # Red
 
         # Overall compliance metrics
         total_cases = len(self.cases_data)
         finalized_cases = sum(1 for case in self.cases_data if case[4])  # is_finalized
-        finalization_rate = (finalized_cases / total_cases * 100) if total_cases > 0 else 0
+        finalization_rate = (
+            (finalized_cases / total_cases * 100) if total_cases > 0 else 0
+        )
 
         self.compliance_table.setRowCount(4)
-        self.compliance_table.setItem(0, 0, QTableWidgetItem("Overall Finalization Rate"))
-        self.compliance_table.setItem(0, 1, QTableWidgetItem(f"{finalization_rate:.1f}%"))
+        self.compliance_table.setItem(
+            0, 0, QTableWidgetItem("Overall Finalization Rate")
+        )
+        self.compliance_table.setItem(
+            0, 1, QTableWidgetItem(f"{finalization_rate:.1f}%")
+        )
         self.compliance_table.setItem(0, 2, QTableWidgetItem("95%"))
 
         self.compliance_table.setItem(1, 0, QTableWidgetItem("LC Committee Compliance"))
@@ -548,7 +636,9 @@ class FinalizationDashboardDialog(QDialog):
         stuck_rate = (stuck_cases / total_cases * 100) if total_cases > 0 else 0
 
         self.compliance_table.setItem(2, 0, QTableWidgetItem("Cases Stuck >90 Days"))
-        self.compliance_table.setItem(2, 1, QTableWidgetItem(f"{stuck_cases} ({stuck_rate:.1f}%)"))
+        self.compliance_table.setItem(
+            2, 1, QTableWidgetItem(f"{stuck_cases} ({stuck_rate:.1f}%)")
+        )
         self.compliance_table.setItem(2, 2, QTableWidgetItem("<5%"))
 
         # Average resolution time for finalized cases
@@ -560,8 +650,12 @@ class FinalizationDashboardDialog(QDialog):
                     finalized_ages.append(age)
                 except (ValueError, TypeError):
                     continue
-        avg_resolution_time = sum(finalized_ages) / len(finalized_ages) if finalized_ages else 0
+        avg_resolution_time = (
+            sum(finalized_ages) / len(finalized_ages) if finalized_ages else 0
+        )
 
         self.compliance_table.setItem(3, 0, QTableWidgetItem("Average Resolution Time"))
-        self.compliance_table.setItem(3, 1, QTableWidgetItem(f"{avg_resolution_time:.0f} days"))
+        self.compliance_table.setItem(
+            3, 1, QTableWidgetItem(f"{avg_resolution_time:.0f} days")
+        )
         self.compliance_table.setItem(3, 2, QTableWidgetItem("<60 days"))

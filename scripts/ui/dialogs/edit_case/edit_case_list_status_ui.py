@@ -4,8 +4,7 @@ Handles list status information components.
 """
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QGridLayout, QGroupBox, QLabel, QVBoxLayout,
-                             QWidget)
+from PyQt5.QtWidgets import QGridLayout, QGroupBox, QLabel, QVBoxLayout, QWidget
 
 
 def setup_list_status_ui_components(dialog_instance):

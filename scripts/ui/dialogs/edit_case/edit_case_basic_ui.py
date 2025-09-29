@@ -4,9 +4,19 @@ Handles basic case information components.
 """
 
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import (QDateEdit, QFormLayout, QGridLayout, QGroupBox,
-                             QHBoxLayout, QLabel, QLineEdit, QPushButton,
-                             QTextEdit, QWidget)
+from PyQt5.QtWidgets import (
+    QDateEdit,
+    QFormLayout,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QTextEdit,
+    QWidget,
+)
+
 from scripts.ui.components.custom_widgets import NoWheelComboBox
 from scripts.Utilities.workflow_utils import get_display_transaction_no
 

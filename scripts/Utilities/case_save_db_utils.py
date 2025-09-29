@@ -7,10 +7,13 @@ import sqlite3
 from datetime import datetime
 
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.workflow_utils import (
-    handle_case_status_change, handle_loss_control_status_change)
+    handle_case_status_change,
+    handle_loss_control_status_change,
+)
 
 
 def update_database_and_workflow(dialog_instance, case: dict) -> bool:

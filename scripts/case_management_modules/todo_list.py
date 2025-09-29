@@ -1,9 +1,18 @@
 import sqlite3
 
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import (QDialog, QHBoxLayout, QHeaderView, QSplitter,
-                             QTableWidget, QTableWidgetItem, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.responsibility_utils import load_responsibilities
 from scripts.Utilities.tree_utils import get_subtree_resp_ids

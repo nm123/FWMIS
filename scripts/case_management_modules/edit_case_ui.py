@@ -1,11 +1,29 @@
 from PyQt5.QtCore import QDate, QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
-from PyQt5.QtWidgets import (QComboBox, QDateEdit, QFileDialog, QFormLayout,
-                             QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
-                             QLabel, QLineEdit, QMessageBox, QPushButton,
-                             QScrollArea, QSplitter, QTableWidget,
-                             QTableWidgetItem, QTextEdit, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDateEdit,
+    QFileDialog,
+    QFormLayout,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 
 

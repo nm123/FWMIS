@@ -5,11 +5,13 @@ from .category_utils import load_categories, save_categories
 from .config import BASE_DIR, DATA_DIR, DB_PATH, logging
 from .contact_utils import get_effective_contacts
 from .email_utils import load_email_templates, save_email_templates
-from .financial_utils import (create_year_folder, generate_transaction_no,
-                              get_financial_year)
+from .financial_utils import (
+    create_year_folder,
+    generate_transaction_no,
+    get_financial_year,
+)
 from .list_utils import load_lists, save_lists
-from .responsibility_utils import (load_posting_responsibilities,
-                                   load_responsibilities)
+from .responsibility_utils import load_posting_responsibilities, load_responsibilities
 from .tree_utils import get_subtree_resp_ids
 from .validation_utils import is_valid_email
 

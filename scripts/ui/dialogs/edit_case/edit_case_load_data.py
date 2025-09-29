@@ -157,7 +157,6 @@ def load_case_data_components(dialog_instance):
     # Set LC Committee Date
     if hasattr(dialog_instance, 'lc_committee_date_edit') and dialog_instance.lc_committee_date:
         try:
-            from PyQt5.QtCore import QDate
             date_obj = QDate.fromString(dialog_instance.lc_committee_date, "yyyy-MM-dd")
             if date_obj.isValid():
                 dialog_instance.lc_committee_date_edit.setDate(date_obj)

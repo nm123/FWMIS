@@ -6657,3 +6657,443 @@ PERFORMANCE RECOMMENDATIONS:
   5. Use SQL aggregations instead of Python loops
   6. Consider PyPy for 2-7x speed improvements
 2025-09-28 00:01:52,094 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+2025-09-28 00:11:54,593 | INFO | scripts.Utilities.optimization_manager | Optimization 'memory_efficient_imports': enabled
+2025-09-28 00:11:54,594 | INFO | scripts.Utilities.optimization_manager | Optimization 'streaming_excel_exports': enabled
+2025-09-28 00:11:54,594 | INFO | scripts.Utilities.optimization_manager | Optimization 'batch_database_operations': enabled
+2025-09-28 00:11:54,595 | INFO | scripts.Utilities.optimization_manager | Optimization 'performance_monitoring': enabled
+2025-09-28 00:11:54,595 | INFO | scripts.Utilities.optimization_manager | Optimization 'database_indexes': enabled
+2025-09-28 00:11:54,595 | INFO | scripts.Utilities.optimization_manager | Optimization 'adaptive_chunk_sizing': enabled
+2025-09-28 00:11:54,601 | INFO | scripts.Utilities.optimized_import_utils | Database optimizations applied successfully
+2025-09-28 00:11:54,613 | INFO | scripts.Utilities.optimized_import_utils | Performance indexes created successfully
+2025-09-28 00:11:54,620 | INFO | scripts.Utilities.optimization_manager | Database optimizations applied successfully
+2025-09-28 00:11:54,621 | INFO | scripts.Utilities.optimization_manager | FWMIS Optimization Status:
+2025-09-28 00:11:54,621 | INFO | scripts.Utilities.optimization_manager | ==============================
+2025-09-28 00:11:54,621 | INFO | scripts.Utilities.optimization_manager | [OK] memory_efficient_imports: enabled
+2025-09-28 00:11:54,622 | INFO | scripts.Utilities.optimization_manager | [OK] streaming_excel_exports: enabled
+2025-09-28 00:11:54,622 | INFO | scripts.Utilities.optimization_manager | [OK] batch_database_operations: enabled
+2025-09-28 00:11:54,622 | INFO | scripts.Utilities.optimization_manager | [OK] performance_monitoring: enabled
+2025-09-28 00:11:54,623 | INFO | scripts.Utilities.optimization_manager | [OK] database_indexes: enabled
+2025-09-28 00:11:54,623 | INFO | scripts.Utilities.optimization_manager | [OK] adaptive_chunk_sizing: enabled
+2025-09-28 00:11:54,623 | INFO | scripts.Utilities.optimization_manager | 
+Overall Status: All optimizations enabled
+2025-09-28 00:11:54,624 | INFO | scripts.Utilities.performance_profiler | Memory snapshot 'app_start': RSS=73.7MB
+2025-09-28 00:11:54,634 | INFO | scripts.Utilities.performance_profiler | === FWMIS PERFORMANCE REPORT ===
+Generated: 2025-09-28 00:11:54
+
+SYSTEM INFORMATION:
+  CPU Cores: 12
+  Total Memory: 7.6 GB
+  Available Memory: 0.9 GB
+  Memory Usage: 88.0%
+
+PERFORMANCE RECOMMENDATIONS:
+  1. Use streaming for large file imports
+  2. Implement batch database operations
+  3. Create appropriate database indexes
+  4. Monitor memory usage during operations
+  5. Use SQL aggregations instead of Python loops
+  6. Consider PyPy for 2-7x speed improvements
+2025-09-28 00:11:54,635 | ERROR | scripts.Utilities.performance_profiler | Error saving performance report: [Errno 2] No such file or directory: 'data/performance_report.txt'
+{"timestamp": "2025-09-28T15:06:03Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T15:06:03Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T15:28:36Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T15:28:36Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T15:35:15Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:35:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:35:29Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:35:29Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T15:35:29Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:35:29Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:35:29Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:35:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:06Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:06Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:06Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T15:36:06Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:06Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:36:06Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:36:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:16Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:16Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such column: financial_year"}
+{"timestamp": "2025-09-28T15:36:16Z", "level": "ERROR", "logger": "scripts.Repositories.case_repository", "message": "Failed to get cases with filters: no such column: financial_year"}
+{"timestamp": "2025-09-28T15:36:22Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:49Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:49Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:36:49Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:36:54Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:54Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:36:54Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to get all annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:36:55Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:56Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:58Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T15:36:58Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:36:58Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T15:51:27Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T15:51:27Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T16:02:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:02:28Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:02:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:02:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T16:02:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:02:31Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:02:31Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:04:15Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:33:13Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:33:22Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:33:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:33:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T16:33:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:33:23Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:33:23Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:33:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:33:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:34:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:34:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:34:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T16:34:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:34:09Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:34:09Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:34:13Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:34:51Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:35:00Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:35:00Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:35:00Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T16:35:00Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:35:00Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:35:00Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:36:02Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:36:02Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:38:49Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:38:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:38:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:38:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T16:38:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:38:57Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:38:57Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:40:40Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:42:18Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:42:25Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:42:25Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:42:25Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T16:42:25Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:42:25Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:42:25Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T16:42:27Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T16:43:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T16:43:48Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T17:05:17Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:05:24Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:05:26Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:05:26Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T17:05:26Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:05:26Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:05:26Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:05:51Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:07:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:07:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:31:13Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:31:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:31:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:31:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T17:31:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:31:31Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:31:31Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:31:43Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:32:22Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:32:22Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:41:29Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:41:38Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:41:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:41:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T17:41:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:41:39Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:41:39Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:41:47Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:43:11Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:43:12Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:46:03Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:46:13Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:46:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:46:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T17:46:15Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:46:15Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:46:15Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:46:25Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:47:37Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:47:37Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:51:47Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:51:56Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:51:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:51:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T17:51:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:51:57Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:51:57Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T17:52:01Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:53:07Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:56:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T17:56:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:03:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:03:37Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:03:41Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:03:41Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T18:03:41Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:03:41Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:03:41Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:08:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:08:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:25Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:34Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:35Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:35Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T18:12:35Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:35Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:35Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:48Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:48Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:52Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:52Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:52Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:53Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:53Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:54Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:54Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:54Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:55Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:12:55Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:12:55Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:13:00Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:13:00Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:13:00Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:13:03Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:13:03Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:13:03Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:13:03Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to get all annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:13:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:13:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:13:13Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:13:19Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:19:50Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T18:19:50Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T18:34:10Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:34:18Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:34:19Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:34:19Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: user_login"}
+{"timestamp": "2025-09-28T18:34:19Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T18:34:19Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T18:34:19Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to count pending annexures: no such table: write_off_annexures"}
+{"timestamp": "2025-09-28T19:35:11Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T19:35:11Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T19:39:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T19:39:53Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T19:40:47Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T19:40:50Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: web_application_startup"}
+{"timestamp": "2025-09-28T19:41:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T19:41:57Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T19:59:27Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T19:59:27Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T20:07:51Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T20:07:51Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T20:22:52Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T20:22:52Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T20:30:27Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T20:30:27Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T20:39:20Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T20:39:20Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T20:42:10Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T20:42:10Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T20:50:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T20:50:48Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T20:54:36Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T20:54:36Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:04:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:04:30Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:12:06Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:12:06Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:16:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:16:48Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:22:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:22:14Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:33:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:33:30Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:35:35Z", "level": "INFO", "logger": "scripts.Utilities.performance_profiler", "message": "Memory snapshot 'optimization_dialog_refresh': RSS=114.6MB"}
+{"timestamp": "2025-09-28T21:35:41Z", "level": "INFO", "logger": "scripts.Utilities.performance_profiler", "message": "Memory snapshot 'optimization_dialog_refresh': RSS=116.6MB"}
+{"timestamp": "2025-09-28T21:35:42Z", "level": "INFO", "logger": "scripts.Utilities.performance_profiler", "message": "Memory snapshot 'optimization_dialog_refresh': RSS=116.6MB"}
+{"timestamp": "2025-09-28T21:38:00Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:38:00Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:42:47Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:42:47Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:47:16Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:47:17Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T21:58:18Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T21:58:18Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T23:12:32Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T23:12:32Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T23:28:49Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T23:28:49Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T23:30:51Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T23:30:51Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-28T23:50:07Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-28T23:50:07Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T00:00:52Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T00:00:52Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T00:05:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T00:05:39Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T00:11:07Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T00:11:07Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T00:23:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T00:23:35Z", "level": "ERROR", "logger": "root", "message": "Failed to load lists: database is locked"}
+{"timestamp": "2025-09-29T00:23:35Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T00:34:03Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T00:34:09Z", "level": "ERROR", "logger": "root", "message": "Failed to load lists: database is locked"}
+{"timestamp": "2025-09-29T00:34:09Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T00:46:20Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T00:46:25Z", "level": "ERROR", "logger": "root", "message": "Failed to load lists: database is locked"}
+{"timestamp": "2025-09-29T00:46:25Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T00:55:32Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T00:55:38Z", "level": "ERROR", "logger": "root", "message": "Failed to load lists: database is locked"}
+{"timestamp": "2025-09-29T00:55:38Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T01:21:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T01:21:31Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T01:23:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T01:23:53Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T01:43:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T01:43:31Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T01:57:40Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T01:57:41Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T02:03:10Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T02:03:10Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T02:11:16Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T02:11:16Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T02:19:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T02:19:10Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T02:58:38Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T02:58:38Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T19:34:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T19:34:23Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T19:37:02Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-29T19:37:02Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to get all annexures with details: no such table: write_off_annexures"}
+{"timestamp": "2025-09-29T19:37:07Z", "level": "ERROR", "logger": "scripts.Utilities.database_connection", "message": "Transaction failed, rolled back: no such table: write_off_annexures"}
+{"timestamp": "2025-09-29T19:37:07Z", "level": "ERROR", "logger": "scripts.Repositories.annexure_repository", "message": "Failed to get all annexures with details: no such table: write_off_annexures"}
+{"timestamp": "2025-09-29T19:40:14Z", "level": "ERROR", "logger": "scripts.core.import_worker.worker_base", "message": "Import failed", "exception": "Traceback (most recent call last):\n  File \"d:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\worker_base.py\", line 66, in run\n    self._check_database_integrity()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"d:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\import_worker.py\", line 23, in _check_database_integrity\n    DatabaseIntegrityChecker.check_database_integrity(self)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"d:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\database_checks.py\", line 57, in check_database_integrity\n    raise Exception(f\"Required table '{table}' does not exist\")\nException: Required table 'case_status_history' does not exist"}
+{"timestamp": "2025-09-29T19:47:44Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T19:47:44Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T19:48:34Z", "level": "ERROR", "logger": "scripts.core.import_worker.worker_base", "message": "Import failed", "exception": "Traceback (most recent call last):\n  File \"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\worker_base.py\", line 66, in run\n    self._check_database_integrity()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\import_worker.py\", line 23, in _check_database_integrity\n    DatabaseIntegrityChecker.check_database_integrity(self)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\database_checks.py\", line 57, in check_database_integrity\n    raise Exception(f\"Required table '{table}' does not exist\")\nException: Required table 'case_status_history' does not exist"}
+{"timestamp": "2025-09-29T20:00:31Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:00:31Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:01:11Z", "level": "ERROR", "logger": "scripts.core.import_worker.worker_base", "message": "Import failed", "exception": "Traceback (most recent call last):\n  File \"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\database_checks.py\", line 77, in check_database_integrity\n    cursor.execute(\n    ~~~~~~~~~~~~~~^\n        \"\"\"\n        ^^^\n    ...<2 lines>...\n    \"\"\"\n    ^^^\n    )\n    ^\nsqlite3.OperationalError: no such column: is_open\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\worker_base.py\", line 66, in run\n    self._check_database_integrity()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\import_worker.py\", line 23, in _check_database_integrity\n    DatabaseIntegrityChecker.check_database_integrity(self)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"D:\\Users\\maritzne\\OneDrive\\Work\\Accounts Payable\\GitHub\\FWMIS\\scripts\\core\\import_worker\\database_checks.py\", line 128, in check_database_integrity\n    raise Exception(f\"Database error during integrity check: {str(e)}\")\nException: Database error during integrity check: no such column: is_open"}
+{"timestamp": "2025-09-29T20:02:07Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:02:07Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:02:35Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:03:20Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-09-29T20:04:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:04:53Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:34:27Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-09-29T20:34:27Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:34:28Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:34:28Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:34:28Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:34:28Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:34:28Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:34:28Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-09-29T20:35:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:35:48Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:36:39Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-09-29T20:36:51Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:36:51Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:42:16Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:42:16Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:43:23Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-09-29T20:44:06Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:44:06Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:44:40Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-09-29T20:44:40Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:44:40Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:44:40Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:44:41Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:44:41Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:44:41Z", "level": "WARNING", "logger": "scripts.core.import_worker.worker_base", "message": "Failed to import transaction"}
+{"timestamp": "2025-09-29T20:44:41Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-09-29T20:49:34Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:49:34Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-09-29T20:50:02Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-09-29T20:51:05Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:51:05Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:56:19Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:56:19Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T20:58:15Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T20:58:15Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:09:05Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:09:05Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:09:47Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:09:48Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:12:01Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:12:01Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:12:49Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:12:49Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:30:11Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:30:11Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:31:15Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:31:16Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:35:18Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:35:18Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:43:34Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:43:34Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T21:56:12Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T21:56:12Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T22:01:21Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T22:01:21Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T22:10:41Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T22:10:42Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T22:13:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T22:13:30Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T22:18:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T22:18:40Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T22:19:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T22:19:48Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T22:24:13Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T22:24:13Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-09-29T22:39:45Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-09-29T22:39:45Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}

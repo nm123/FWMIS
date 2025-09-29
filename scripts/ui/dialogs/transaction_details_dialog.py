@@ -1,5 +1,12 @@
-from PyQt5.QtWidgets import (QDialog, QFormLayout, QGroupBox, QLabel,
-                             QPushButton, QTextEdit, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QLabel,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+)
 
 
 class TransactionDetailsDialog(QDialog):

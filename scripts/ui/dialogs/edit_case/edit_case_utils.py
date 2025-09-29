@@ -3,8 +3,8 @@ from datetime import datetime
 
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMessageBox
-from scripts.case_management_modules.determination_dialog import \
-    DeterminationDialog
+
+from scripts.case_management_modules.determination_dialog import DeterminationDialog
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.workflow_utils import get_display_transaction_no

@@ -6,11 +6,14 @@ from PyQt5.QtWidgets import QMessageBox
 from ..core.import_worker import ImportWorker
 from ..Utilities.audit_utils import save_audit_log
 from ..Utilities.config import DB_PATH
-from ..Utilities.financial_utils import (generate_transaction_no,
-                                         get_financial_year)
+from ..Utilities.financial_utils import generate_transaction_no, get_financial_year
 from ..Utilities.import_undisclosed_utils import (
-    analyze_database_vs_import_data, check_period_status, find_duplicates,
-    get_current_open_period, validate_financial_year)
+    analyze_database_vs_import_data,
+    check_period_status,
+    find_duplicates,
+    get_current_open_period,
+    validate_financial_year,
+)
 
 
 class ImportLogic:
@@ -299,8 +302,9 @@ class ImportLogic:
             print(f"DEBUG: FY validation result: {fy_validation}")
 
             # Show FY selection dialog
-            from ..ui.dialogs.financial_year_selection_dialog import \
-                show_fy_selection_dialog
+            from ..ui.dialogs.financial_year_selection_dialog import (
+                show_fy_selection_dialog,
+            )
 
             selected_fy_data = show_fy_selection_dialog(current_fy, self.dialog)
             if selected_fy_data:

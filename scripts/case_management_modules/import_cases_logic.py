@@ -1,15 +1,19 @@
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
 from scripts.Utilities.import_assignment_utils import assign_case_numbers
 from scripts.Utilities.import_duplicate_utils import find_duplicates
 from scripts.Utilities.import_parsing_utils import parse_bas_file
 from scripts.Utilities.import_validation_utils import validate_imported_cases
-from scripts.Utilities.import_worker_utils import (import_cases, import_error,
-                                                   import_finished,
-                                                   perform_import,
-                                                   update_progress)
+from scripts.Utilities.import_worker_utils import (
+    import_cases,
+    import_error,
+    import_finished,
+    perform_import,
+    update_progress,
+)
 
 
 class ImportCasesLogic:
@@ -60,8 +64,7 @@ class ImportCasesLogic:
                 summary = f"Found {total_count} transactions ({debit_count} debits, {credit_count} credits) totaling R{total_amount:,.2f}"
 
             self.dialog.results_label.setText(summary)
-            from ..ui.components.import_cases_ui import \
-                populate_transactions_table
+            from scripts.ui.components.import_cases_ui import populate_transactions_table
 
             populate_transactions_table(self.dialog)
 

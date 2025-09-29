@@ -3,8 +3,11 @@ from collections import defaultdict
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QTreeWidgetItem
-from scripts.case_management_modules.case_table_utils import \
-    populate_case_table, create_totals_widget
+
+from scripts.case_management_modules.case_table_utils import (
+    create_totals_widget,
+    populate_case_table,
+)
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 
@@ -27,10 +30,14 @@ class ViewCasesLogic:
     @staticmethod
     def get_responsibilities_with_cases(dialog):
         """Get set of responsibility IDs that have cases, including their parents"""
-        from scripts.Utilities.shared_case_filter_utils import get_responsibilities_with_cases as shared_get_resp
-        
-        responsibilities_with_cases = shared_get_resp(dialog.fy_filter_combo, dialog.list_filter_combo)
-        
+        from scripts.Utilities.shared_case_filter_utils import (
+            get_responsibilities_with_cases as shared_get_resp,
+        )
+
+        responsibilities_with_cases = shared_get_resp(
+            dialog.fy_filter_combo, dialog.list_filter_combo
+        )
+
         # Include parent responsibilities
         for resp_id in list(responsibilities_with_cases):
             resp = next(
@@ -150,24 +157,29 @@ class ViewCasesLogic:
 
     @staticmethod
     def refresh_cases(dialog, resp_ids=None):
-        from scripts.Utilities.shared_case_filter_utils import build_case_query, execute_case_query
-        
+        from scripts.Utilities.shared_case_filter_utils import (
+            build_case_query,
+            execute_case_query,
+        )
+
         dialog.case_table.setRowCount(0)
-        
+
         # Build consistent query using shared filtering logic
-        query, params = build_case_query(dialog.fy_filter_combo, dialog.list_filter_combo, resp_ids)
-        
+        query, params = build_case_query(
+            dialog.fy_filter_combo, dialog.list_filter_combo, resp_ids
+        )
+
         # Execute query and populate table
         rows = execute_case_query(query, params)
         selected_list = dialog.list_filter_combo.currentText()
         populate_case_table(dialog.case_table, rows, selected_list, include_edit=False)
-        
+
         # Update totals widget
-        if hasattr(dialog, 'totals_widget'):
+        if hasattr(dialog, "totals_widget"):
             # Get financial year ID for totals calculation
             fy_id = dialog.fy_filter_combo.currentData()
             new_totals_widget = create_totals_widget(selected_list, fy_id)
-            
+
             # Replace the old totals widget
             layout = dialog.totals_widget.parent().layout()
             layout.removeWidget(dialog.totals_widget)
@@ -215,15 +227,13 @@ class ViewCasesLogic:
 
             if is_finalized:
                 # Show read-only details for finalized cases
-                from scripts.ui.components.view_cases_ui import \
-                    CaseDetailsDialog
+                from scripts.ui.components.view_cases_ui import CaseDetailsDialog
 
                 dialog_details = CaseDetailsDialog(case_data, dialog)
                 dialog_details.exec_()
             else:
                 # Open editable dialog for non-finalized cases
-                from scripts.ui.dialogs.edit_case.edit_case_dialog import \
-                    EditCaseDialog
+                from scripts.ui.dialogs.edit_case.edit_case_dialog import EditCaseDialog
 
                 edit_dialog = EditCaseDialog(
                     case_dict, dialog, selected_list=selected_list
@@ -318,8 +328,9 @@ class ViewCasesLogic:
     @staticmethod
     def create_write_off_submission(dialog):
         """Open dialog to create a write-off submission"""
-        from scripts.case_management_modules.write_off_submission_dialog import \
-            WriteOffSubmissionDialog
+        from scripts.case_management_modules.write_off_submission_dialog import (
+            WriteOffSubmissionDialog,
+        )
 
         submission_dialog = WriteOffSubmissionDialog(dialog)
         submission_dialog.exec_()
@@ -357,8 +368,9 @@ class ViewCasesLogic:
             # For now, just approve the first group (in a real app, you'd show a selection dialog)
             group_id = groups[0][0]
 
-            from scripts.case_management_modules.write_off_management_dialog import \
-                WriteOffApprovalDialog
+            from scripts.case_management_modules.write_off_management_dialog import (
+                WriteOffApprovalDialog,
+            )
 
             approval_dialog = WriteOffApprovalDialog(group_id, dialog)
             approval_dialog.exec_()

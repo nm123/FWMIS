@@ -2,12 +2,28 @@ import os
 
 from PyQt5.QtCore import QDate, QEvent, Qt
 from PyQt5.QtGui import QWheelEvent
-from PyQt5.QtWidgets import (QComboBox, QDateEdit, QDialog, QFileDialog,
-                             QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
-                             QLabel, QLineEdit, QMessageBox, QPushButton,
-                             QScrollArea, QTextEdit, QVBoxLayout, QWidget)
-from scripts.case_management_modules.responsibility_selection import \
-    ResponsibilitySelectionDialog
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDateEdit,
+    QDialog,
+    QFileDialog,
+    QFormLayout,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+from scripts.case_management_modules.responsibility_selection import (
+    ResponsibilitySelectionDialog,
+)
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 
 
@@ -33,8 +49,7 @@ def setup_add_ui(dialog):
         from scripts.Utilities.category_utils import load_categories
         from scripts.Utilities.financial_utils import get_financial_year
         from scripts.Utilities.list_utils import load_lists
-        from scripts.Utilities.responsibility_utils import \
-            load_posting_responsibilities
+        from scripts.Utilities.responsibility_utils import load_posting_responsibilities
 
         dialog.responsibilities = load_posting_responsibilities()
         dialog.categories = load_categories()
@@ -50,6 +65,7 @@ def setup_add_ui(dialog):
     dialog.transaction_no = None
     dialog.selected_responsibility_id = None
     dialog.supporting_evidence_compulsory = False
+    dialog.duplicates_checked = False  # Track whether duplicates have been checked
 
     # Create main layout
     layout = QVBoxLayout(dialog)
@@ -256,10 +272,45 @@ def setup_add_ui(dialog):
     except Exception as e:
         print(f"Warning: Could not initialize conditional fields: {e}")
 
+    # Duplicate check section
+    duplicate_group = QGroupBox("Duplicate Check (Required)")
+    duplicate_group.setStyleSheet("""
+        QGroupBox {
+            font-weight: bold;
+            border: 2px solid #ffc107;
+            border-radius: 5px;
+            margin-top: 1ex;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 10px;
+            padding: 0 10px 0 10px;
+        }
+    """)
+    duplicate_layout = QVBoxLayout(duplicate_group)
+
+    # Status label
+    dialog.duplicate_status_label = QLabel("❌ Duplicates not checked - Save button disabled")
+    dialog.duplicate_status_label.setStyleSheet("color: red; font-weight: bold; padding: 5px;")
+    duplicate_layout.addWidget(dialog.duplicate_status_label)
+
+    # Check duplicates button
+    check_duplicates_layout = QHBoxLayout()
+    dialog.check_duplicates_button = create_professional_button("🔍 Check Duplicates", "warning")
+    dialog.check_duplicates_button.setMinimumHeight(40)
+    dialog.check_duplicates_button.clicked.connect(dialog.logic.check_duplicates)
+
+    check_duplicates_layout.addWidget(dialog.check_duplicates_button)
+    check_duplicates_layout.addStretch()
+    duplicate_layout.addLayout(check_duplicates_layout)
+
+    layout.addWidget(duplicate_group)
+
     # Buttons
     button_layout = QHBoxLayout()
     dialog.save_button = create_professional_button("Save & Continue", "primary")
     dialog.save_button.clicked.connect(dialog.save_case)
+    dialog.save_button.setEnabled(False)  # Initially disabled until duplicates are checked
 
     dialog.cancel_button = create_professional_button("Cancel", "secondary")
     dialog.cancel_button.clicked.connect(dialog.reject)

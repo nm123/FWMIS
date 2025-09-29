@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QVBoxLayout
+
 from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 
 

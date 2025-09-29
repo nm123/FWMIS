@@ -2,8 +2,14 @@ import sqlite3
 
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import (QDialog, QHBoxLayout, QMessageBox, QPushButton,
-                             QTableWidgetItem, QWidget)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
+    QMessageBox,
+    QPushButton,
+    QTableWidgetItem,
+    QWidget,
+)
 
 from ..category_management import ManageCategoriesDialog
 from ..models.bas_parser import BASParser
@@ -327,8 +333,7 @@ class ImportUndisclosedCasesDialog(QDialog):
         # Update the database counter to reflect the imported case numbers
         if imported_cases:
             try:
-                from scripts.Utilities.financial_utils import \
-                    get_financial_year
+                from scripts.Utilities.financial_utils import get_financial_year
 
                 fy = get_financial_year()
                 fy_end_year = int(fy.split("-")[1])

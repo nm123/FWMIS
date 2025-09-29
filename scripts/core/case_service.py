@@ -3,8 +3,10 @@ from datetime import datetime
 
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.db_utils import get_db_connection
-from scripts.Utilities.financial_utils import (generate_transaction_no,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    generate_transaction_no,
+    get_financial_year,
+)
 
 
 class CaseService:
@@ -200,7 +202,9 @@ class CaseService:
                 cursor = conn.cursor()
                 cursor.execute("SELECT * FROM cases WHERE id = ?", (case_id,))
                 case_data = cursor.fetchone()
-                columns = [desc[0] for desc in cursor.description] if case_data else None
+                columns = (
+                    [desc[0] for desc in cursor.description] if case_data else None
+                )
 
             if case_data and columns:
                 # Convert to dictionary for easier handling
@@ -221,7 +225,9 @@ class CaseService:
                     "SELECT * FROM cases WHERE transaction_no = ?", (transaction_no,)
                 )
                 case_data = cursor.fetchone()
-                columns = [desc[0] for desc in cursor.description] if case_data else None
+                columns = (
+                    [desc[0] for desc in cursor.description] if case_data else None
+                )
 
             if case_data and columns:
                 # Convert to dictionary for easier handling
@@ -229,7 +235,9 @@ class CaseService:
             return None
 
         except Exception as e:
-            logging.getLogger(__name__).exception("Error getting case by transaction number")
+            logging.getLogger(__name__).exception(
+                "Error getting case by transaction number"
+            )
             return None
 
     @staticmethod

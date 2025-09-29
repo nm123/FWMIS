@@ -2,6 +2,7 @@ import logging
 import sqlite3
 
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.Utilities.db_utils import get_db_connection
 from scripts.Utilities.financial_utils import get_financial_year
 
@@ -17,7 +18,7 @@ def assign_case_numbers(dialog):
     try:
         # Determine current financial year based on date (April-March)
         fy = get_financial_year()
-        fy_end_year = int(fy.split('-')[1])
+        fy_end_year = int(fy.split("-")[1])
 
         # Read-only lookup of the highest existing transaction number for this FY
         with get_db_connection() as conn:

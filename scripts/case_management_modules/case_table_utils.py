@@ -4,12 +4,21 @@ Ensures consistent list and status display.
 """
 
 import sqlite3
+
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem,
-                             QVBoxLayout, QWidget, QHBoxLayout, QLabel)
+from PyQt5.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.utils import format_currency_amount
 from scripts.Utilities.db_utils import get_db_connection
+from scripts.Utilities.utils import format_currency_amount
 
 
 def create_table_button(text):
@@ -69,8 +78,10 @@ def setup_case_table_columns(table, include_edit=False):
     table.setColumnWidth(6, 200)  # To-Do (increased for longer text)
     if include_edit:
         table.setColumnWidth(7, 90)  # Edit Case
-    table.verticalHeader().setDefaultSectionSize(80)  # Further increased for wrapped text visibility
-    
+    table.verticalHeader().setDefaultSectionSize(
+        80
+    )  # Further increased for wrapped text visibility
+
     # Enable text wrapping for To-Do column (column 6)
     table.setWordWrap(True)
 
@@ -108,13 +119,18 @@ def populate_case_table(
         try:
             conn_temp = sqlite3.connect(DB_PATH)
             cursor_temp = conn_temp.cursor()
-            cursor_temp.execute("SELECT is_finalized FROM cases WHERE transaction_no = ?", (transaction_no,))
+            cursor_temp.execute(
+                "SELECT is_finalized FROM cases WHERE transaction_no = ?",
+                (transaction_no,),
+            )
             result = cursor_temp.fetchone()
             if result:
                 is_finalized = bool(result[0])
             conn_temp.close()
         except Exception as e:
-            print(f"Error getting finalized status for {transaction_no}: {e}")
+            import logging
+
+            logging.error(f"Error getting finalized status for {transaction_no}: {e}")
             is_finalized = False
 
         # Case No (with suffix stripping for display)
@@ -137,7 +153,9 @@ def populate_case_table(
         table.setItem(row, 2, QTableWidgetItem(str(category) if category else ""))
 
         # Amount - calculate based on list type
-        display_amount = calculate_display_amount(amount, suffixes, list_name, transaction_no)
+        display_amount = calculate_display_amount(
+            amount, suffixes, list_name, transaction_no
+        )
         amount_item = format_currency_amount(display_amount, right_align=True)
         table.setItem(row, 3, amount_item)
 
@@ -240,33 +258,38 @@ def get_case_annexure_info(transaction_no):
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT a.annexure_no, a.role
                 FROM annexures a
                 JOIN annexure_cases ac ON a.id = ac.annexure_id
                 JOIN cases c ON ac.case_id = c.id
                 WHERE c.transaction_no = ?
-            """, (transaction_no,))
-            
+            """,
+                (transaction_no,),
+            )
+
             row = cursor.fetchone()
             if row:
-                return {'annexure_no': row[0], 'role': row[1]}
+                return {"annexure_no": row[0], "role": row[1]}
             return None
     except Exception as e:
-        print(f"Error getting annexure info: {e}")
+        import logging
+
+        logging.error(f"Error getting annexure info: {e}")
         return None
 
 
 def calculate_display_amount(original_amount, suffixes, list_name, transaction_no):
     """
     Calculate the display amount based on list type and recovery status.
-    
+
     Args:
         original_amount (float): Original case amount
         suffixes (str): Case suffixes (e.g., "-LS,-RIP")
         list_name (str): Name of the list view
         transaction_no (str): Transaction number for database lookup
-        
+
     Returns:
         float: Amount to display in the list view
     """
@@ -274,28 +297,28 @@ def calculate_display_amount(original_amount, suffixes, list_name, transaction_n
         # For Checklist, always show original amount
         if list_name == "Checklist":
             return original_amount
-        
+
         # For Recovery in Progress list, show remaining balance
         if list_name == "Recovery in Progress":
             amount_paid = get_total_installments_paid(transaction_no)
             remaining = original_amount - amount_paid
             return max(0.0, remaining)  # Don't show negative amounts
-        
+
         # For Recovered list, show amount recovered so far (or original amount if no installments)
         if list_name == "Recovered":
             amount_paid = get_total_installments_paid(transaction_no)
             # If no installments, show original amount (fully recovered without installments)
             return amount_paid if amount_paid > 0 else original_amount
-        
+
         # For Lead Schedule, show remaining balance if in recovery
         if list_name == "Lead Schedule" and "-RIP" in suffixes:
             amount_paid = get_total_installments_paid(transaction_no)
             remaining = original_amount - amount_paid
             return max(0.0, remaining)
-        
+
         # For all other lists, show original amount
         return original_amount
-        
+
     except Exception as e:
         print(f"Error calculating display amount: {e}")
         return original_amount
@@ -304,37 +327,39 @@ def calculate_display_amount(original_amount, suffixes, list_name, transaction_n
 def get_total_installments_paid(transaction_no):
     """
     Get total amount paid from installments table.
-    
+
     Args:
         transaction_no (str): Transaction number
-        
+
     Returns:
         float: Total amount paid in installments
     """
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        
+
         # Get case ID from transaction number
-        cursor.execute("SELECT id FROM cases WHERE transaction_no = ?", (transaction_no,))
+        cursor.execute(
+            "SELECT id FROM cases WHERE transaction_no = ?", (transaction_no,)
+        )
         case_result = cursor.fetchone()
-        
+
         if not case_result:
             conn.close()
             return 0.0
-        
+
         case_id = case_result[0]
-        
+
         # Get total from installments
         cursor.execute(
             "SELECT COALESCE(SUM(amount), 0) FROM installments WHERE case_id = ?",
-            (case_id,)
+            (case_id,),
         )
         result = cursor.fetchone()
         conn.close()
-        
+
         return float(result[0]) if result else 0.0
-        
+
     except Exception as e:
         print(f"Error getting installments total: {e}")
         return 0.0
@@ -343,11 +368,11 @@ def get_total_installments_paid(transaction_no):
 def calculate_list_totals(list_name, fy_id=None):
     """
     Calculate totals for a specific list view.
-    
+
     Args:
         list_name (str): Name of the list view
         fy_id (int): Financial year ID (optional)
-        
+
     Returns:
         tuple: (total_count, total_amount, explanation)
     """
@@ -355,133 +380,202 @@ def calculate_list_totals(list_name, fy_id=None):
     total_count = 0
     total_amount = 0.0
     explanation = "Total for all cases"
-    
+
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        
+
         # Base query with financial year filter if provided
-        base_where = "WHERE fy_id = ?" if fy_id else ""
-        params = [fy_id] if fy_id else []
-        
+        if fy_id:
+            base_where = "WHERE fy_id = ?"
+            params = [fy_id]
+        else:
+            base_where = ""
+            params = []
+
         if list_name == "Checklist":
             # Total (Confirmed) - new cases for the reporting period
-            query = f"""
-                SELECT COUNT(*), COALESCE(SUM(amount), 0)
-                FROM cases 
-                {base_where}
-                AND assessment_status = 'Confirmed'
-            """
-            explanation = "Total (Confirmed) - Reconciliation: New cases for the reporting period"
-            
+            if fy_id:
+                query = f"""
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    {base_where}
+                    AND assessment_status = 'Confirmed'
+                """
+            else:
+                query = """
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    WHERE assessment_status = 'Confirmed'
+                """
+            explanation = (
+                "Total (Confirmed) - Reconciliation: New cases for the reporting period"
+            )
+
         elif list_name == "Lead Schedule":
             # Lead Schedule shows active cases (already accounts for recovered/written off)
-            query = f"""
-                SELECT COUNT(*), COALESCE(SUM(amount), 0)
-                FROM cases 
-                {base_where}
-                AND suffixes LIKE '%-LS%' 
-                AND suffixes NOT LIKE '%-REC%' 
-                AND suffixes NOT LIKE '%-WO'
-            """
+            if fy_id:
+                query = f"""
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    {base_where}
+                    AND suffixes LIKE '%-LS%'
+                    AND suffixes NOT LIKE '%-REC%'
+                    AND suffixes NOT LIKE '%-WO'
+                """
+            else:
+                query = """
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    WHERE suffixes LIKE '%-LS%'
+                    AND suffixes NOT LIKE '%-REC%'
+                    AND suffixes NOT LIKE '%-WO'
+                """
             explanation = "Total (Checklist - Recovered - Written Off) - Reconciliation: Movement for the reporting period"
-            
+
         elif list_name == "Recovery in Progress":
             # Show remaining balances for cases in recovery
-            query = f"""
-                SELECT COUNT(*), COALESCE(SUM(
-                    CASE 
-                        WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id) 
-                        THEN amount - COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
-                        ELSE amount 
-                    END
-                ), 0)
-                FROM cases 
-                {base_where}
-                AND suffixes LIKE '%-RIP%'
-            """
+            if fy_id:
+                query = f"""
+                    SELECT COUNT(*), COALESCE(SUM(
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id)
+                            THEN amount - COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
+                            ELSE amount
+                        END
+                    ), 0)
+                    FROM cases
+                    {base_where}
+                    AND suffixes LIKE '%-RIP%'
+                """
+            else:
+                query = """
+                    SELECT COUNT(*), COALESCE(SUM(
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id)
+                            THEN amount - COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
+                            ELSE amount
+                        END
+                    ), 0)
+                    FROM cases
+                    WHERE suffixes LIKE '%-RIP%'
+                """
             explanation = "Total remaining balances for cases in recovery"
-            
+
         elif list_name == "Recovered":
             # Show total amounts recovered
-            query = f"""
-                SELECT COUNT(*), COALESCE(SUM(
-                    CASE 
-                        WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id) 
-                        THEN COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
-                        ELSE amount 
-                    END
-                ), 0)
-                FROM cases 
-                {base_where}
-                AND (suffixes LIKE '%-REC%' OR EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id))
-            """
+            if fy_id:
+                query = f"""
+                    SELECT COUNT(*), COALESCE(SUM(
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id)
+                            THEN COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
+                            ELSE amount
+                        END
+                    ), 0)
+                    FROM cases
+                    {base_where}
+                    AND (suffixes LIKE '%-REC%' OR EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id))
+                """
+            else:
+                query = """
+                    SELECT COUNT(*), COALESCE(SUM(
+                        CASE
+                            WHEN EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id)
+                            THEN COALESCE((SELECT SUM(amount) FROM installments WHERE installments.case_id = cases.id), 0)
+                            ELSE amount
+                        END
+                    ), 0)
+                    FROM cases
+                    WHERE (suffixes LIKE '%-REC%' OR EXISTS (SELECT 1 FROM installments WHERE installments.case_id = cases.id))
+                """
             explanation = "Total amounts recovered to date - Reconciliation: Cases recovered during the reporting period"
-            
+
         elif list_name == "Write-Off Recommended":
-            query = f"""
-                SELECT COUNT(*), COALESCE(SUM(amount), 0)
-                FROM cases 
-                {base_where}
-                AND suffixes LIKE '%-WOR%'
-            """
+            if fy_id:
+                query = f"""
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    {base_where}
+                    AND suffixes LIKE '%-WOR%'
+                """
+            else:
+                query = """
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    WHERE suffixes LIKE '%-WOR%'
+                """
             explanation = "Total amounts recommended for write-off"
-            
+
         elif list_name == "Written Off":
-            query = f"""
-                SELECT COUNT(*), COALESCE(SUM(amount), 0)
-                FROM cases 
-                {base_where}
-                AND suffixes LIKE '%-WO'
-            """
+            if fy_id:
+                query = f"""
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    {base_where}
+                    AND suffixes LIKE '%-WO'
+                """
+            else:
+                query = """
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    WHERE suffixes LIKE '%-WO'
+                """
             explanation = "Total amounts written off - Reconciliation: Cases written off during the reporting period"
-            
+
         else:
             # Default: show all cases
-            query = f"""
-                SELECT COUNT(*), COALESCE(SUM(amount), 0)
-                FROM cases 
-                {base_where}
-            """
+            if fy_id:
+                query = f"""
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                    {base_where}
+                """
+            else:
+                query = """
+                    SELECT COUNT(*), COALESCE(SUM(amount), 0)
+                    FROM cases
+                """
             explanation = "Total for all cases"
-        
+
         cursor.execute(query, params)
         result = cursor.fetchone()
         conn.close()
-        
+
         if result:
             total_count = result[0] if result[0] is not None else 0
             total_amount = float(result[1]) if result[1] is not None else 0.0
-        
+
     except Exception as e:
         print(f"Error calculating list totals: {e}")
         # Return safe defaults instead of error message
-    
+
     return total_count, total_amount, explanation
 
 
 def create_totals_widget(list_name, fy_id=None):
     """
     Create a totals widget for a list view.
-    
+
     Args:
         list_name (str): Name of the list view
         fy_id (int): Financial year ID (optional)
-        
+
     Returns:
         QWidget: Widget containing totals display
     """
     # Get totals with fallback to safe defaults
     total_count, total_amount, explanation = calculate_list_totals(list_name, fy_id)
-    
+
     # Create totals widget
     totals_widget = QWidget()
     totals_layout = QHBoxLayout(totals_widget)
     totals_layout.setContentsMargins(10, 5, 10, 5)
-    
+
     # Total count
     count_label = QLabel(f"Total No: {total_count}")
-    count_label.setStyleSheet("""
+    count_label.setStyleSheet(
+        """
         QLabel {
             font-weight: bold;
             color: #2c5aa0;
@@ -490,16 +584,21 @@ def create_totals_widget(list_name, fy_id=None):
             border: 1px solid #ddd;
             border-radius: 3px;
         }
-    """)
-    
+    """
+    )
+
     # Total amount - safe formatting
     try:
         formatted_amount = format_currency_amount(total_amount)
-    except:
+    except Exception as e:
+        import logging
+
+        logging.warning(f"Failed to format currency amount {total_amount}: {e}")
         formatted_amount = f"R {total_amount:,.2f}"
-    
+
     amount_label = QLabel(f"Total Amt: {formatted_amount}")
-    amount_label.setStyleSheet("""
+    amount_label.setStyleSheet(
+        """
         QLabel {
             font-weight: bold;
             color: #2d7d32;
@@ -508,21 +607,24 @@ def create_totals_widget(list_name, fy_id=None):
             border: 1px solid #ddd;
             border-radius: 3px;
         }
-    """)
-    
+    """
+    )
+
     # Explanation
     explanation_label = QLabel(explanation)
-    explanation_label.setStyleSheet("""
+    explanation_label.setStyleSheet(
+        """
         QLabel {
             color: #666;
             font-style: italic;
             padding: 5px;
         }
-    """)
-    
+    """
+    )
+
     totals_layout.addWidget(count_label)
     totals_layout.addWidget(amount_label)
     totals_layout.addWidget(explanation_label)
     totals_layout.addStretch()
-    
+
     return totals_widget

@@ -1,28 +1,38 @@
+"""
+Legacy Configuration Module
+
+This module provides backward compatibility for existing code while
+encouraging migration to the new configuration system in config.settings.
+"""
+
 import logging
 import os
 import sqlite3
 
-# Set BASE_DIR to the project root
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-DB_PATH = os.path.join(DATA_DIR, "fruitless.db")
-os.makedirs(DATA_DIR, exist_ok=True)
+# Import new configuration system
+from scripts.config import get_config
 
-# Check for and remove empty FMIS.db if it exists
+# Get configuration instance
+config = get_config()
+
+# Backward compatibility constants - use new config system
+BASE_DIR = str(config.base_dir)
+DATA_DIR = str(config.data_dir)
+DB_PATH = str(config.database.path)
+
+# Ensure directories exist
+os.makedirs(config.data_dir, exist_ok=True)
+os.makedirs(config.logs_dir, exist_ok=True)
+os.makedirs(config.temp_dir, exist_ok=True)
+
+# Legacy database cleanup (keeping for backward compatibility)
 fmis_db_path = os.path.join(DATA_DIR, "fwmis.db")
 if os.path.exists(fmis_db_path):
     if os.path.getsize(fmis_db_path) == 0:
         os.remove(fmis_db_path)
-        print("Removed empty fwmis.db file")
+        logging.info("Removed empty fwmis.db file")
     else:
-        print("Warning: Non-empty fwmis.db found, not removing")
-
-# Configure logging
-logging.basicConfig(
-    filename=os.path.join(DATA_DIR, "app.log"),
-    level=logging.ERROR,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+        logging.warning("Non-empty fwmis.db found, not removing")
 
 
 def initialize_shared_documents_table():
@@ -57,6 +67,6 @@ def initialize_shared_documents_table():
 
         conn.commit()
         conn.close()
-        print("Shared documents table initialized successfully")
+        logging.info("Shared documents table initialized successfully")
     except Exception as e:
-        print(f"Error initializing shared documents table: {e}")
+        logging.error(f"Error initializing shared documents table: {e}")

@@ -9,10 +9,11 @@ This module provides database optimization features including:
 - Performance monitoring
 """
 
-import sqlite3
 import os
+import sqlite3
 import time
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
+
 from scripts.Utilities.config import DB_PATH
 
 
@@ -40,12 +41,14 @@ class DatabaseOptimizer:
                 stats[f"{table}_count"] = count
 
             # Database file size
-            stats['db_size_mb'] = os.path.getsize(self.db_path) / (1024 * 1024)
+            stats["db_size_mb"] = os.path.getsize(self.db_path) / (1024 * 1024)
 
             # Index information
-            cursor.execute("SELECT name, tbl_name FROM sqlite_master WHERE type='index'")
+            cursor.execute(
+                "SELECT name, tbl_name FROM sqlite_master WHERE type='index'"
+            )
             indexes = cursor.fetchall()
-            stats['indexes'] = indexes
+            stats["indexes"] = indexes
 
             return stats
 
@@ -74,7 +77,9 @@ class DatabaseOptimizer:
 
             for index_name, table, column in indexes:
                 try:
-                    cursor.execute(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table}({column})")
+                    cursor.execute(
+                        f"CREATE INDEX IF NOT EXISTS {index_name} ON {table}({column})"
+                    )
                     indexes_created.append(index_name)
                     print(f"[OK] Created index: {index_name}")
                 except sqlite3.Error as e:
@@ -108,10 +113,10 @@ class DatabaseOptimizer:
 
                 avg_time = sum(times) / len(times)
                 results[query_name] = {
-                    'avg_time': avg_time,
-                    'min_time': min(times),
-                    'max_time': max(times),
-                    'result_count': len(result) if result else 0
+                    "avg_time": avg_time,
+                    "min_time": min(times),
+                    "max_time": max(times),
+                    "result_count": len(result) if result else 0,
                 }
 
         finally:
@@ -133,30 +138,30 @@ class DatabaseOptimizer:
             cursor.execute("PRAGMA journal_mode=WAL")
             wal_result = cursor.fetchone()
             wal_mode = wal_result[0] if wal_result else "UNKNOWN"
-            results['wal_mode'] = wal_mode
+            results["wal_mode"] = wal_mode
 
             # Optimize page size
             cursor.execute("PRAGMA page_size=4096")
             page_result = cursor.fetchone()
             page_size = page_result[0] if page_result else 4096
-            results['page_size'] = page_size
+            results["page_size"] = page_size
 
             # Set synchronous mode for better performance (with some risk)
             cursor.execute("PRAGMA synchronous=NORMAL")
             sync_result = cursor.fetchone()
             sync_mode = sync_result[0] if sync_result else "NORMAL"
-            results['synchronous'] = sync_mode
+            results["synchronous"] = sync_mode
 
             # Cache size optimization
             cursor.execute("PRAGMA cache_size=-64000")  # ~64MB cache
             cache_result = cursor.fetchone()
             cache_size = cache_result[0] if cache_result else -64000
-            results['cache_size'] = cache_size
+            results["cache_size"] = cache_size
 
             # Run ANALYZE for query optimization
             print("[ANALYZE] Running ANALYZE for query optimization...")
             cursor.execute("ANALYZE")
-            results['analyze_completed'] = True
+            results["analyze_completed"] = True
 
             # Vacuum to reclaim space and optimize
             print("[VACUUM] Running VACUUM to optimize database...")
@@ -164,7 +169,7 @@ class DatabaseOptimizer:
             cursor.execute("VACUUM")
             end_size = os.path.getsize(self.db_path)
             space_saved = start_size - end_size
-            results['space_saved_mb'] = space_saved / (1024 * 1024)
+            results["space_saved_mb"] = space_saved / (1024 * 1024)
 
             conn.commit()
 
@@ -181,22 +186,34 @@ class DatabaseOptimizer:
         stats = self.get_database_stats()
 
         # Case count recommendations
-        case_count = stats.get('cases_count', 0)
+        case_count = stats.get("cases_count", 0)
         if case_count > 50000:
-            recommendations.append("🔴 CRITICAL: Database has >50,000 cases. Consider archiving old finalized cases.")
+            recommendations.append(
+                "🔴 CRITICAL: Database has >50,000 cases. Consider archiving old finalized cases."
+            )
         elif case_count > 10000:
-            recommendations.append("🟡 WARNING: Database has >10,000 cases. Implement pagination for list views.")
+            recommendations.append(
+                "🟡 WARNING: Database has >10,000 cases. Implement pagination for list views."
+            )
 
         # Database size recommendations
-        db_size = stats.get('db_size_mb', 0)
+        db_size = stats.get("db_size_mb", 0)
         if db_size > 500:
-            recommendations.append("🔴 CRITICAL: Database >500MB. Immediate archiving required.")
+            recommendations.append(
+                "🔴 CRITICAL: Database >500MB. Immediate archiving required."
+            )
         elif db_size > 100:
-            recommendations.append("🟡 WARNING: Database >100MB. Monitor growth and consider optimization.")
+            recommendations.append(
+                "🟡 WARNING: Database >100MB. Monitor growth and consider optimization."
+            )
 
         # Index recommendations
-        indexes = stats.get('indexes', [])
-        essential_indexes = ['idx_cases_status', 'idx_cases_finalized', 'idx_cases_transaction']
+        indexes = stats.get("indexes", [])
+        essential_indexes = [
+            "idx_cases_status",
+            "idx_cases_finalized",
+            "idx_cases_transaction",
+        ]
         missing_indexes = []
 
         for idx in essential_indexes:
@@ -204,16 +221,20 @@ class DatabaseOptimizer:
                 missing_indexes.append(idx)
 
         if missing_indexes:
-            recommendations.append(f"🟡 MISSING INDEXES: Create these indexes for better performance: {', '.join(missing_indexes)}")
+            recommendations.append(
+                f"🟡 MISSING INDEXES: Create these indexes for better performance: {', '.join(missing_indexes)}"
+            )
 
         # General recommendations
-        recommendations.extend([
-            "✅ Implement database connection pooling for concurrent users",
-            "✅ Use prepared statements for repeated queries",
-            "✅ Monitor slow queries (>1 second) in production",
-            "✅ Schedule regular database maintenance (weekly VACUUM)",
-            "✅ Consider read replicas for heavy reporting workloads"
-        ])
+        recommendations.extend(
+            [
+                "✅ Implement database connection pooling for concurrent users",
+                "✅ Use prepared statements for repeated queries",
+                "✅ Monitor slow queries (>1 second) in production",
+                "✅ Schedule regular database maintenance (weekly VACUUM)",
+                "✅ Consider read replicas for heavy reporting workloads",
+            ]
+        )
 
         return recommendations
 
@@ -223,10 +244,20 @@ def optimize_database_cli():
     import argparse
 
     parser = argparse.ArgumentParser(description="FWMIS Database Optimizer")
-    parser.add_argument("--create-indexes", action="store_true", help="Create performance indexes")
-    parser.add_argument("--optimize", action="store_true", help="Run full database optimization")
-    parser.add_argument("--analyze", action="store_true", help="Analyze query performance")
-    parser.add_argument("--recommendations", action="store_true", help="Show performance recommendations")
+    parser.add_argument(
+        "--create-indexes", action="store_true", help="Create performance indexes"
+    )
+    parser.add_argument(
+        "--optimize", action="store_true", help="Run full database optimization"
+    )
+    parser.add_argument(
+        "--analyze", action="store_true", help="Analyze query performance"
+    )
+    parser.add_argument(
+        "--recommendations",
+        action="store_true",
+        help="Show performance recommendations",
+    )
     parser.add_argument("--stats", action="store_true", help="Show database statistics")
 
     args = parser.parse_args()
@@ -237,7 +268,7 @@ def optimize_database_cli():
         print("📊 DATABASE STATISTICS:")
         stats = optimizer.get_database_stats()
         for key, value in stats.items():
-            if key == 'indexes':
+            if key == "indexes":
                 print(f"  {key}: {len(value)} indexes")
                 for idx in value[:5]:  # Show first 5
                     print(f"    - {idx[0]} on {idx[1]}")
@@ -265,15 +296,29 @@ def optimize_database_cli():
         # Common FWMIS queries to analyze
         queries = [
             ("Count all cases", "SELECT COUNT(*) FROM cases"),
-            ("List alleged cases", "SELECT * FROM cases WHERE assessment_status = 'Alleged' LIMIT 100"),
-            ("Search by transaction", "SELECT * FROM cases WHERE base_transaction_no LIKE 'TEST-%'"),
-            ("Complex filter", "SELECT COUNT(*) FROM cases WHERE assessment_status = 'Confirmed' AND lc_status IS NOT NULL"),
-            ("Status summary", "SELECT assessment_status, COUNT(*) FROM cases GROUP BY assessment_status"),
+            (
+                "List alleged cases",
+                "SELECT * FROM cases WHERE assessment_status = 'Alleged' LIMIT 100",
+            ),
+            (
+                "Search by transaction",
+                "SELECT * FROM cases WHERE base_transaction_no LIKE 'TEST-%'",
+            ),
+            (
+                "Complex filter",
+                "SELECT COUNT(*) FROM cases WHERE assessment_status = 'Confirmed' AND lc_status IS NOT NULL",
+            ),
+            (
+                "Status summary",
+                "SELECT assessment_status, COUNT(*) FROM cases GROUP BY assessment_status",
+            ),
         ]
 
         results = optimizer.analyze_query_performance(queries)
         for query_name, data in results.items():
-            print(f"  {query_name}: {data['avg_time']:.4f}s avg ({data['result_count']} results)")
+            print(
+                f"  {query_name}: {data['avg_time']:.4f}s avg ({data['result_count']} results)"
+            )
         print()
 
     if args.recommendations:
@@ -283,7 +328,15 @@ def optimize_database_cli():
             print(f"  {rec}")
         print()
 
-    if not any([args.stats, args.create_indexes, args.optimize, args.analyze, args.recommendations]):
+    if not any(
+        [
+            args.stats,
+            args.create_indexes,
+            args.optimize,
+            args.analyze,
+            args.recommendations,
+        ]
+    ):
         parser.print_help()
 
 

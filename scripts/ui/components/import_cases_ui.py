@@ -3,31 +3,48 @@ import sqlite3
 
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDialog,
-                             QFileDialog, QFormLayout, QGridLayout, QGroupBox,
-                             QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-                             QMessageBox, QProgressBar, QPushButton, QSplitter,
-                             QTableWidget, QTableWidgetItem, QTextEdit,
-                             QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDateEdit,
+    QDialog,
+    QFileDialog,
+    QFormLayout,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
 from scripts.category_management import ManageCategoriesDialog
 from scripts.core.import_worker import ImportWorker
 from scripts.models.bas_parser import BASParser
-from scripts.responsibility_management_actions import \
-    edit_responsibility_by_name
+from scripts.responsibility_management_actions import edit_responsibility_by_name
 from scripts.responsibility_management_ui import ResponsibilityManagementDialog
-from scripts.ui.dialogs.transaction_details_dialog import \
-    TransactionDetailsDialog
+from scripts.ui.dialogs.transaction_details_dialog import TransactionDetailsDialog
 from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
 from scripts.Utilities.import_cases_utils import validate_responsibility
-from scripts.Utilities.responsibility_utils import \
-    load_posting_responsibilities
-from scripts.Utilities.ui_theme import (apply_theme,
-                                        create_professional_button,
-                                        create_professional_groupbox,
-                                        create_status_label,
-                                        setup_professional_table)
+from scripts.Utilities.responsibility_utils import load_posting_responsibilities
+from scripts.Utilities.ui_theme import (
+    apply_theme,
+    create_professional_button,
+    create_professional_groupbox,
+    create_status_label,
+    setup_professional_table,
+)
 from scripts.Utilities.utils import format_currency_amount
 
 
@@ -280,14 +297,16 @@ def setup_import_ui(dialog):
     dialog.import_button.setMinimumHeight(50)
 
     dialog.cancel_button = create_professional_button("Cancel", "secondary")
+
     def _cancel_import():
         # If a worker is running, request cancellation; otherwise close dialog
-        if hasattr(dialog, 'worker') and dialog.worker is not None:
+        if hasattr(dialog, "worker") and dialog.worker is not None:
             try:
                 dialog.worker.cancel()
             except Exception:
                 pass
         dialog.reject()
+
     dialog.cancel_button.clicked.connect(_cancel_import)
     dialog.cancel_button.setMinimumHeight(45)
 
@@ -506,8 +525,9 @@ def compare_duplicates(dialog, transaction, duplicates):
     )
 
     # Import the duplicate comparison dialog
-    from scripts.case_management_modules.duplicate_comparison_dialog import \
-        DuplicateComparisonDialog
+    from scripts.case_management_modules.duplicate_comparison_dialog import (
+        DuplicateComparisonDialog,
+    )
 
     comp_dialog = DuplicateComparisonDialog(transaction_copy, duplicates, dialog)
     if comp_dialog.exec_():

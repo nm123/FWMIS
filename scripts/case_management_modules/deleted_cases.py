@@ -3,11 +3,26 @@ import sqlite3
 from collections import defaultdict
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QFormLayout, QGroupBox, QHBoxLayout,
-                             QHeaderView, QLabel, QMessageBox, QPushButton,
-                             QScrollArea, QSplitter, QTableWidget,
-                             QTableWidgetItem, QTextEdit, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year

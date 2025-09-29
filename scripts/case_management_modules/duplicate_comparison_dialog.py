@@ -1,10 +1,21 @@
 import sqlite3
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QFormLayout, QGroupBox, QHBoxLayout,
-                             QHeaderView, QLabel, QMessageBox, QPushButton,
-                             QTableWidget, QTableWidgetItem, QTextEdit,
-                             QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.utils import format_currency_amount
 

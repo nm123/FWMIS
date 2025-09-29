@@ -1,13 +1,21 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QComboBox, QDialog, QFileDialog, QFormLayout,
-                             QHBoxLayout, QMessageBox, QPushButton,
-                             QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QFileDialog,
+    QFormLayout,
+    QHBoxLayout,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+)
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
+
 from scripts.Utilities.case_utils import load_cases
 from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.config import DB_PATH

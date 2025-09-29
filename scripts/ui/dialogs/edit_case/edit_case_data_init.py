@@ -3,14 +3,15 @@ Data initialization utilities for EditCaseDialog.
 Handles loading responsibilities, categories, lists, financial year, and extracting case fields.
 """
 
-from scripts.case_management_modules.case_business_logic import \
-    CaseBusinessLogic
+from scripts.case_management_modules.case_business_logic import CaseBusinessLogic
 from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
 from scripts.Utilities.list_utils import load_lists
 from scripts.Utilities.responsibility_utils import (
-    load_posting_responsibilities, load_responsibilities)
+    load_posting_responsibilities,
+    load_responsibilities,
+)
 from scripts.Utilities.workflow_utils import get_case_workflow_status
 
 
@@ -51,7 +52,8 @@ def initialize_case_data(dialog_instance, case_data, selected_list):
             if transaction_no.startswith("FW-"):
                 # Find the first occurrence of a suffix pattern (-LS, -WOR, -REC, -WO)
                 import re
-                match = re.match(r'(FW-\d{9})', transaction_no)
+
+                match = re.match(r"(FW-\d{9})", transaction_no)
                 if match:
                     base_transaction_no = match.group(1)
                 else:
@@ -79,7 +81,8 @@ def initialize_case_data(dialog_instance, case_data, selected_list):
             if transaction_no.startswith("FW-"):
                 # Find the first occurrence of a suffix pattern (-LS, -WOR, -REC, -WO)
                 import re
-                match = re.match(r'(FW-\d{9})', transaction_no)
+
+                match = re.match(r"(FW-\d{9})", transaction_no)
                 if match:
                     base_transaction_no = match.group(1)
                 else:

@@ -5,14 +5,17 @@ from datetime import datetime
 import win32com.client
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.ui.components.add_case_ui import AssessmentDialog
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.contact_utils import get_effective_contacts
-from scripts.Utilities.financial_utils import (create_year_folder,
-                                               generate_transaction_no,
-                                               get_current_open_financial_year,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    create_year_folder,
+    generate_transaction_no,
+    get_current_open_financial_year,
+    get_financial_year,
+)
 from scripts.Utilities.validation_utils import is_valid_email
 
 
@@ -71,8 +74,9 @@ class AddCaseLogic:
             self.dialog.supporting_evidence_edit.setText(file_path)
 
     def select_responsibility(self):
-        from scripts.case_management_modules.responsibility_selection import \
-            ResponsibilitySelectionDialog
+        from scripts.case_management_modules.responsibility_selection import (
+            ResponsibilitySelectionDialog,
+        )
 
         dialog = ResponsibilitySelectionDialog(self.dialog)
         if dialog.exec_():
@@ -257,12 +261,165 @@ class AddCaseLogic:
         self.dialog.persal_label.setVisible(persal_comp)
         self.dialog.persal_no_edit.setVisible(persal_comp)
 
+    def check_duplicates(self):
+        """Check for duplicate cases based on responsibility, category, and amount"""
+        try:
+            # Validate required fields are filled
+            if not self.dialog.selected_responsibility_id:
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.warning(
+                    self.dialog, "Missing Information",
+                    "Please select a responsibility first."
+                )
+                return
+
+            category = self.dialog.category_combo.currentText()
+            if not category:
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.warning(
+                    self.dialog, "Missing Information",
+                    "Please select a category first."
+                )
+                return
+
+            try:
+                amount_text = self.dialog.amount_edit.text().replace("R", "").replace(",", "").strip()
+                amount = float(amount_text)
+            except (ValueError, TypeError):
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.warning(
+                    self.dialog, "Invalid Amount",
+                    "Please enter a valid amount."
+                )
+                return
+
+            # Get current financial year
+            from scripts.Utilities.financial_utils import get_financial_year
+            fy = get_financial_year()
+            if not fy:
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.critical(
+                    self.dialog, "Error", "Could not determine current financial year."
+                )
+                return
+
+            # Get fy_id
+            import sqlite3
+            from scripts.Utilities.config import DB_PATH
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "SELECT id FROM financial_years WHERE start_year || '-' || end_year = ?",
+                (fy,)
+            )
+            fy_result = cursor.fetchone()
+            fy_id = fy_result[0] if fy_result else None
+
+            if not fy_id:
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.critical(
+                    self.dialog, "Error", f"Could not find financial year ID for {fy}."
+                )
+                conn.close()
+                return
+
+            # Search for duplicates
+            cursor.execute(
+                """
+                SELECT c.*, r.name as responsibility_name
+                FROM cases c
+                JOIN responsibilities r ON c.responsibility_id = r.id
+                WHERE c.responsibility_id = ?
+                  AND c.category = ?
+                  AND ABS(c.amount - ?) < 0.01
+                  AND c.fy_id = ?
+                  AND c.list != 'Deleted Cases'
+                ORDER BY c.date_reported DESC
+                """,
+                (self.dialog.selected_responsibility_id, category, abs(amount), fy_id),
+            )
+
+            duplicates = cursor.fetchall()
+            conn.close()
+
+            # Show results
+            if duplicates:
+                # Format duplicate information
+                duplicate_info = []
+                for dup in duplicates[:5]:  # Show first 5 duplicates
+                    duplicate_info.append(
+                        f"Case {dup[1]}: {dup[5][:50]}... - R{dup[11]:,.2f} - {dup[4] or 'N/A'}"
+                    )
+
+                message = f"⚠️ Found {len(duplicates)} potential duplicate case(s):\n\n"
+                message += "\n".join(duplicate_info)
+
+                if len(duplicates) > 5:
+                    message += f"\n... and {len(duplicates) - 5} more"
+
+                message += "\n\nPlease review these cases before proceeding."
+                message += "\n\nDo you want to continue with saving this case?"
+
+                from PyQt5.QtWidgets import QMessageBox
+                reply = QMessageBox.question(
+                    self.dialog,
+                    "Potential Duplicates Found",
+                    message,
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+
+                if reply == QMessageBox.Yes:
+                    # Mark as checked and enable save button
+                    self.dialog.duplicates_checked = True
+                    self.dialog.save_button.setEnabled(True)
+                    self.dialog.duplicate_status_label.setText("✅ Duplicates checked - proceed with caution")
+                    self.dialog.duplicate_status_label.setStyleSheet("color: orange; font-weight: bold;")
+                else:
+                    # Keep save button disabled
+                    self.dialog.duplicates_checked = False
+                    self.dialog.save_button.setEnabled(False)
+
+            else:
+                # No duplicates found
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.information(
+                    self.dialog,
+                    "No Duplicates Found",
+                    "✅ No duplicate cases found for this responsibility, category, and amount in the current financial year.\n\nYou can now proceed with saving the case."
+                )
+
+                # Mark as checked and enable save button
+                self.dialog.duplicates_checked = True
+                self.dialog.save_button.setEnabled(True)
+                self.dialog.duplicate_status_label.setText("✅ No duplicates found - ready to save")
+                self.dialog.duplicate_status_label.setStyleSheet("color: green; font-weight: bold;")
+
+        except Exception as e:
+            from PyQt5.QtWidgets import QMessageBox
+            QMessageBox.critical(
+                self.dialog, "Error", f"Failed to check for duplicates: {str(e)}"
+            )
+
     def save_case(self):
-        from scripts.Utilities.add_case_utils import (get_case_data,
-                                                      handle_file_operations,
-                                                      validate_add_data)
+        from scripts.Utilities.add_case_utils import (
+            get_case_data,
+            handle_file_operations,
+            validate_add_data,
+        )
 
         try:
+            # Check if duplicates have been checked
+            if not getattr(self.dialog, 'duplicates_checked', False):
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.warning(
+                    self.dialog,
+                    "Duplicate Check Required",
+                    "⚠️ You must check for duplicate cases before saving.\n\nPlease click the 'Check Duplicates' button first."
+                )
+                return
+
             # Validate data
             if not validate_add_data(self.dialog):
                 return
@@ -272,10 +429,14 @@ class AddCaseLogic:
             self.dialog.trans_no_edit.setText(self.dialog.transaction_no)
 
             # Validate that transaction_no was generated successfully
-            if not self.dialog.transaction_no or self.dialog.transaction_no.strip() == "":
+            if (
+                not self.dialog.transaction_no
+                or self.dialog.transaction_no.strip() == ""
+            ):
                 QMessageBox.critical(
-                    self.dialog, "Transaction Number Error",
-                    "Failed to generate a valid transaction number. Please try again."
+                    self.dialog,
+                    "Transaction Number Error",
+                    "Failed to generate a valid transaction number. Please try again.",
                 )
                 return
 
@@ -284,7 +445,9 @@ class AddCaseLogic:
 
             # Validate and set date_reported
             if not case.get("date_reported"):
-                QMessageBox.warning(self.dialog, "Required Field", "Date Reported is mandatory.")
+                QMessageBox.warning(
+                    self.dialog, "Required Field", "Date Reported is mandatory."
+                )
                 return
 
             # Auto-set fy_id and period_id

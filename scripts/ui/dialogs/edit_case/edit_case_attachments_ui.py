@@ -3,8 +3,16 @@ Attachments and buttons UI setup for EditCaseDialog.
 Handles source document, attachments, and dialog buttons.
 """
 
-from PyQt5.QtWidgets import (QFormLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QLineEdit, QPushButton, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.case_save_utils import save_case
 
 

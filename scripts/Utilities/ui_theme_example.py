@@ -8,15 +8,29 @@ EXAMPLE USAGE:
 """
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QGridLayout, QGroupBox, QHBoxLayout,
-                             QLabel, QLineEdit, QMessageBox, QPushButton,
-                             QTableWidget, QVBoxLayout)
-from scripts.Utilities.ui_theme import (COLORS, apply_theme,
-                                        create_professional_button,
-                                        create_professional_groupbox,
-                                        create_status_label, get_button_style,
-                                        get_groupbox_style,
-                                        setup_professional_table)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QVBoxLayout,
+)
+
+from scripts.Utilities.ui_theme import (
+    COLORS,
+    apply_theme,
+    create_professional_button,
+    create_professional_groupbox,
+    create_status_label,
+    get_button_style,
+    get_groupbox_style,
+    setup_professional_table,
+)
 
 
 class ExampleDialog(QDialog):

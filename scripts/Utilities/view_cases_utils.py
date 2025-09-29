@@ -3,10 +3,14 @@ from datetime import datetime
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.Utilities.financial_utils import get_financial_year
-from scripts.Utilities.optimized_excel_utils import StreamingExcelExporter, create_optimized_excel_export
-from scripts.Utilities.performance_profiler import memory_profiler
 from scripts.Utilities.optimization_manager import get_optimization_manager
+from scripts.Utilities.optimized_excel_utils import (
+    StreamingExcelExporter,
+    create_optimized_excel_export,
+)
+from scripts.Utilities.performance_profiler import memory_profiler
 
 
 class ViewCasesUtils:
@@ -22,10 +26,12 @@ class ViewCasesUtils:
             # Get optimization manager and auto-enable for large exports
             optimization_manager = get_optimization_manager()
             data_size = dialog.case_table.rowCount()
-            
+
             # Auto-enable optimizations for large exports
-            optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(data_size, "export")
-            
+            optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(
+                data_size, "export"
+            )
+
             if optimizations_enabled:
                 # Show optimization notification
                 QMessageBox.information(
@@ -35,7 +41,7 @@ class ViewCasesUtils:
                     "Performance optimizations have been automatically enabled:\n"
                     "• Streaming Excel exports\n"
                     "• Memory-efficient processing\n\n"
-                    "This will provide better performance and memory usage."
+                    "This will provide better performance and memory usage.",
                 )
 
             # Take memory snapshot before export
@@ -46,6 +52,7 @@ class ViewCasesUtils:
 
             # Create year folder
             from scripts.Utilities.financial_utils import create_year_folder
+
             year_folder = create_year_folder(get_financial_year())
             export_dir = os.path.join(year_folder, "Exports")
             os.makedirs(export_dir, exist_ok=True)
@@ -59,7 +66,7 @@ class ViewCasesUtils:
             def extract_table_data():
                 """Generator to extract table data without loading everything into memory."""
                 headers = []
-                
+
                 # Get headers from table horizontal header
                 for col in range(dialog.case_table.columnCount()):
                     header_item = dialog.case_table.horizontalHeaderItem(col)
@@ -95,7 +102,7 @@ class ViewCasesUtils:
 
             # Use optimized Excel exporter
             exporter = StreamingExcelExporter(chunk_size=1000)
-            
+
             # Convert generator to iterator for streaming export
             def cases_iterator():
                 headers = None
@@ -107,9 +114,7 @@ class ViewCasesUtils:
 
             # Export using streaming
             exported_file = exporter.export_cases_to_excel_streaming(
-                cases_iterator(), 
-                filepath, 
-                f"{current_list} Cases"
+                cases_iterator(), filepath, f"{current_list} Cases"
             )
 
             # Take memory snapshot after export
@@ -174,8 +179,10 @@ class ViewCasesUtils:
     @staticmethod
     def get_case_filter_conditions(selected_list):
         """Get SQL conditions for different list filters"""
-        from scripts.Utilities.shared_case_filter_utils import get_list_filter_conditions
-        
+        from scripts.Utilities.shared_case_filter_utils import (
+            get_list_filter_conditions,
+        )
+
         return get_list_filter_conditions(selected_list)
 
     @staticmethod
@@ -318,7 +325,10 @@ class ViewCasesUtils:
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(str(cell.value))
-                except:
+                except Exception as e:
+                    import logging
+
+                    logging.debug(f"Failed to process cell value: {e}")
                     pass
             adjusted_width = min(max_length + 2, 50)
             worksheet.column_dimensions[column_letter].width = adjusted_width
@@ -419,7 +429,9 @@ class ViewCasesUtils:
         """Log case-related actions"""
         timestamp = datetime.now().isoformat()
         log_entry = f"{timestamp}: {action} on case {case_id} by user {user_id}"
-        print(log_entry)  # In real app, this would write to a log file
+        import logging
+
+        logging.info(log_entry)
 
     @staticmethod
     def validate_date_range(start_date, end_date):

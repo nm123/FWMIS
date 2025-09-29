@@ -54,8 +54,9 @@ def save_case(dialog_instance) -> bool:
 
         # If fy_id is missing, get current open financial year
         if existing_fy_id is None:
-            from scripts.Utilities.financial_utils import \
-                get_current_open_financial_year
+            from scripts.Utilities.financial_utils import (
+                get_current_open_financial_year,
+            )
 
             current_fy = get_current_open_financial_year()
             if current_fy:

@@ -4,20 +4,39 @@ import sqlite3
 from datetime import datetime
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QCheckBox, QDialog, QFileDialog, QGroupBox,
-                             QHBoxLayout, QHeaderView, QLabel, QMessageBox,
-                             QPushButton, QTableWidget, QTableWidgetItem,
-                             QTextEdit, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QFileDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
 from scripts.Utilities.utils import format_currency_amount
-from scripts.Utilities.workflow_utils import (approve_write_off_submission,
-                                              create_write_off_group)
-from scripts.Utilities.write_off_creation_utils import (generate_annexure,
-                                                        get_evidence_status)
-from scripts.Utilities.write_off_management_utils import (approve_write_off,
-                                                          load_group_details)
+from scripts.Utilities.workflow_utils import (
+    approve_write_off_submission,
+    create_write_off_group,
+)
+from scripts.Utilities.write_off_creation_utils import (
+    generate_annexure,
+    get_evidence_status,
+)
+from scripts.Utilities.write_off_management_utils import (
+    approve_write_off,
+    load_group_details,
+)
 
 
 class WriteOffSubmissionDialog(QDialog):

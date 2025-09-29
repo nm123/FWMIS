@@ -1,8 +1,21 @@
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDoubleSpinBox,
-                             QFormLayout, QFrame, QGroupBox, QHBoxLayout,
-                             QLabel, QLineEdit, QSpinBox, QTextEdit,
-                             QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDateEdit,
+    QDoubleSpinBox,
+    QFormLayout,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QSpinBox,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
 from scripts.Utilities.ui_theme import create_professional_button
 
 

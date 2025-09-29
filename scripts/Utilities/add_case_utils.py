@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QMessageBox
 import sqlite3
+
+from PyQt5.QtWidgets import QMessageBox
 
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.financial_utils import get_financial_year
@@ -211,6 +212,7 @@ def handle_file_operations(case, fy, transaction_no):
 def reset_form_fields(dialog):
     """Reset all form fields to default values"""
     from PyQt5.QtCore import QDate
+
     from scripts.Utilities.financial_utils import generate_transaction_no
 
     # Generate new transaction number
@@ -260,6 +262,7 @@ def reset_form_fields(dialog):
     # Reset focus to first field
     dialog.responsibility_edit.setFocus()
 
+
 def assign_case_numbers(dialog):
     fy = get_financial_year()
     fy_end_year = int(fy.split("-")[1])
@@ -269,10 +272,14 @@ def assign_case_numbers(dialog):
     cursor.execute("SELECT MAX(CAST(SUBSTR(transaction_no, -5) AS INTEGER)) FROM cases")
     max_id = cursor.fetchone()[0] or 0
     # Assign to imported cases only (assume they have a flag or are in a temp state)
-    cursor.execute("SELECT id FROM cases WHERE transaction_no IS NULL OR transaction_no = ''")  # Imported without numbers
+    cursor.execute(
+        "SELECT id FROM cases WHERE transaction_no IS NULL OR transaction_no = ''"
+    )  # Imported without numbers
     imported_ids = [row[0] for row in cursor.fetchall()]
     for i, case_id in enumerate(imported_ids, start=max_id + 1):
         new_no = f"FW-{fy_end_year}{i:05d}"  # Adjust format with FW- prefix
-        cursor.execute("UPDATE cases SET transaction_no = ? WHERE id = ?", (new_no, case_id))
+        cursor.execute(
+            "UPDATE cases SET transaction_no = ? WHERE id = ?", (new_no, case_id)
+        )
     conn.commit()
     conn.close()

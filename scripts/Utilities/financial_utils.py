@@ -215,6 +215,44 @@ def get_all_financial_years():
         return []
 
 
+def get_all_financial_years_detailed():
+    """
+    Get all financial years from the database with detailed information
+    Returns list of dictionaries for web app usage
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT id, start_year, end_year, status, active_period
+            FROM financial_years
+            ORDER BY start_year DESC
+        """
+        )
+
+        financial_years = []
+        for row in cursor.fetchall():
+            fy_id, start_year, end_year, status, active_period = row
+            financial_years.append({
+                'id': fy_id,
+                'start_year': start_year,
+                'end_year': end_year,
+                'status': status,
+                'active_period': active_period
+            })
+
+        conn.close()
+        return financial_years
+
+    except sqlite3.Error as e:
+        logging.error(f"Failed to get detailed financial years: {e}")
+        return []
+
+
 def get_current_open_financial_year():
     """
     Get the current open financial year

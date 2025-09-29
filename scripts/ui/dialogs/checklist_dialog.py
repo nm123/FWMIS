@@ -1,8 +1,15 @@
 import sqlite3
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QHeaderView, QMessageBox, QTableWidget,
-                             QTableWidgetItem, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QHeaderView,
+    QMessageBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.config import DB_PATH
 
 
@@ -70,8 +77,9 @@ class ChecklistDialog(QDialog):
 
             if case_data:
                 # Import here to avoid circular imports
-                from scripts.case_management_modules.edit_case_dialog import \
-                    EditCaseDialog
+                from scripts.case_management_modules.edit_case_dialog import (
+                    EditCaseDialog,
+                )
 
                 dialog = EditCaseDialog(case_data, self, "Checklist")
                 dialog.exec_()

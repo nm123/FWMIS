@@ -3,6 +3,7 @@ Utilities for creating write-off submissions.
 """
 
 import csv
+import logging
 import os
 import sqlite3
 from datetime import datetime
@@ -30,7 +31,10 @@ def get_evidence_status(evidence_paths):
             evidence_types.append("Recovery")
 
         return ", ".join(evidence_types) if evidence_types else "No evidence"
-    except:
+    except Exception as e:
+        import logging
+
+        logging.warning(f"Failed to parse evidence data '{evidence}': {e}")
         return "Invalid evidence data"
 
 
@@ -104,7 +108,7 @@ def generate_annexure(group_id, fy):
                     ]
                 )
 
-        print(f"CSV Annexure generated: {csv_filepath}")
+        logging.info(f"CSV Annexure generated: {csv_filepath}")
 
         # Generate PDF
         pdf_filename = f"Write_Off_Annexure_{group_id}_{timestamp}.pdf"
@@ -112,7 +116,7 @@ def generate_annexure(group_id, fy):
 
         generate_pdf_annexure(pdf_filepath, group_id, cases, timestamp)
 
-        print(f"PDF Annexure generated: {pdf_filepath}")
+        logging.info(f"PDF Annexure generated: {pdf_filepath}")
 
         # Generate Excel
         excel_filename = f"Write_Off_Annexure_{group_id}_{timestamp}.xlsx"
@@ -120,10 +124,10 @@ def generate_annexure(group_id, fy):
 
         generate_excel_annexure(excel_filepath, group_id, cases, timestamp)
 
-        print(f"Excel Annexure generated: {excel_filepath}")
+        logging.info(f"Excel Annexure generated: {excel_filepath}")
 
     except Exception as e:
-        print(f"Error generating annexure: {e}")
+        logging.error(f"Error generating annexure: {e}")
         raise  # Re-raise to let caller handle
 
 
@@ -133,8 +137,13 @@ def generate_pdf_annexure(filepath, group_id, cases, timestamp):
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4, letter
         from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
-                                        Table, TableStyle)
+        from reportlab.platypus import (
+            Paragraph,
+            SimpleDocTemplate,
+            Spacer,
+            Table,
+            TableStyle,
+        )
 
         doc = SimpleDocTemplate(filepath, pagesize=A4)
         styles = getSampleStyleSheet()
@@ -218,9 +227,11 @@ def generate_pdf_annexure(filepath, group_id, cases, timestamp):
         doc.build(elements)
 
     except ImportError:
-        print("Warning: reportlab not installed. PDF annexure generation skipped.")
+        logging.warning(
+            "Warning: reportlab not installed. PDF annexure generation skipped."
+        )
     except Exception as e:
-        print(f"Error generating PDF annexure: {e}")
+        logging.error(f"Error generating PDF annexure: {e}")
 
 
 def generate_excel_annexure(filepath, group_id, cases, timestamp):
@@ -291,7 +302,10 @@ def generate_excel_annexure(filepath, group_id, cases, timestamp):
                     try:
                         if len(str(cell.value)) > max_length:
                             max_length = len(str(cell.value))
-                    except:
+                    except Exception as e:
+                        import logging
+
+                        logging.debug(f"Failed to process cell value: {e}")
                         pass
                 adjusted_width = min(
                     max_length + 2, 50
@@ -313,8 +327,8 @@ def generate_excel_annexure(filepath, group_id, cases, timestamp):
             worksheet.merge_cells("A1:G1")
 
     except ImportError:
-        print(
+        logging.warning(
             "Warning: pandas/openpyxl not installed. Excel annexure generation skipped."
         )
     except Exception as e:
-        print(f"Error generating Excel annexure: {e}")
+        logging.error(f"Error generating Excel annexure: {e}")

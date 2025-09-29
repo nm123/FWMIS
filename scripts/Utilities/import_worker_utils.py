@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.core.import_worker import ImportWorker
 from scripts.core.optimized_import_worker import OptimizedImportWorker
 from scripts.Utilities.optimization_manager import get_optimization_manager
@@ -57,15 +58,17 @@ def import_cases(dialog):
         # Get optimization manager and auto-enable for large datasets
         optimization_manager = get_optimization_manager()
         data_size = len(transactions_to_import)
-        
+
         # Auto-enable optimizations for large datasets
-        optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(data_size, "import")
-        
+        optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(
+            data_size, "import"
+        )
+
         if optimizations_enabled:
             # Use optimized worker for large datasets
             use_streaming = optimization_manager.should_use_streaming(data_size)
             batch_size = optimization_manager.get_optimal_chunk_size()
-            
+
             dialog.worker = OptimizedImportWorker(
                 transactions_to_import,
                 dialog.category,
@@ -76,7 +79,7 @@ def import_cases(dialog):
                 use_streaming=use_streaming,
                 batch_size=batch_size,
             )
-            
+
             # Show optimization notification
             QMessageBox.information(
                 dialog,
@@ -86,7 +89,7 @@ def import_cases(dialog):
                 "• Memory-efficient imports\n"
                 "• Batch database operations\n"
                 "• Adaptive chunk sizing\n\n"
-                "This will provide better performance and memory usage."
+                "This will provide better performance and memory usage.",
             )
         else:
             # Use original worker for small datasets

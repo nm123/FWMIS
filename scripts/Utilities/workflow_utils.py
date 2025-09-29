@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 from datetime import datetime
 
@@ -8,7 +9,11 @@ from scripts.Utilities.financial_utils import get_financial_year
 
 
 def handle_loss_control_status_change(
-    case_id, base_transaction_no, loss_control_status, user_id=None, skip_evidence_check=False
+    case_id,
+    base_transaction_no,
+    loss_control_status,
+    user_id=None,
+    skip_evidence_check=False,
 ):
     """
     Handle Loss Control status changes in the single-case model.
@@ -34,7 +39,9 @@ def handle_loss_control_status_change(
         f"DEBUG: handle_loss_control_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, loss_control_status: {loss_control_status}"
     )
 
-    conn = sqlite3.connect(DB_PATH)
+    # Use test database if available (for testing)
+    db_path = os.environ.get('FWMIS_TEST_DB', DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
@@ -69,20 +76,28 @@ def handle_loss_control_status_change(
 
         # Check if evidence is uploaded for LC status changes (only for final statuses)
         # Skip evidence check if explicitly requested (for automatic recovery completion)
-        if not skip_evidence_check and loss_control_status in ["Recovered", "Write Off Recommended", "Write-Off Recommended"]:
+        if not skip_evidence_check and loss_control_status in [
+            "Recovered",
+            "Write Off Recommended",
+            "Write-Off Recommended",
+        ]:
             cursor.execute("SELECT evidence_paths FROM cases WHERE id = ?", (case_id,))
             evidence_data = cursor.fetchone()
             if evidence_data and evidence_data[0]:
                 try:
                     evidence_dict = json.loads(evidence_data[0])
                     if not evidence_dict or not any(evidence_dict.values()):
-                        print(f"ERROR: Evidence must be uploaded before changing LC status to {loss_control_status}")
+                        print(
+                            f"ERROR: Evidence must be uploaded before changing LC status to {loss_control_status}"
+                        )
                         return False
                 except json.JSONDecodeError:
                     print(f"ERROR: Invalid evidence data format")
                     return False
             else:
-                print(f"ERROR: Evidence must be uploaded before changing LC status to {loss_control_status}")
+                print(
+                    f"ERROR: Evidence must be uploaded before changing LC status to {loss_control_status}"
+                )
                 return False
 
         # Parse current suffixes
@@ -204,7 +219,9 @@ def handle_case_status_change(
         f"DEBUG: handle_case_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, new_assessment_status: {new_assessment_status}"
     )
 
-    conn = sqlite3.connect(DB_PATH)
+    # Use test database if available (for testing)
+    db_path = os.environ.get('FWMIS_TEST_DB', DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
@@ -370,7 +387,9 @@ def approve_write_off_submission(write_off_group_id, user_id=None):
 
     print(f"DEBUG: approve_write_off_submission called for group: {write_off_group_id}")
 
-    conn = sqlite3.connect(DB_PATH)
+    # Use test database if available (for testing)
+    db_path = os.environ.get('FWMIS_TEST_DB', DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
@@ -459,7 +478,9 @@ def create_write_off_group(selected_case_ids, user_id=None):
 
     print(f"DEBUG: create_write_off_group called for {len(selected_case_ids)} cases")
 
-    conn = sqlite3.connect(DB_PATH)
+    # Use test database if available (for testing)
+    db_path = os.environ.get('FWMIS_TEST_DB', DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
@@ -515,7 +536,9 @@ def get_case_workflow_status(case_id):
     Returns:
         dict: Workflow status information
     """
-    conn = sqlite3.connect(DB_PATH)
+    # Use test database if available (for testing)
+    db_path = os.environ.get('FWMIS_TEST_DB', DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
@@ -590,7 +613,9 @@ def check_workflow_completion():
     Check for cases that need workflow attention in the single-case model
     Returns list of cases needing action
     """
-    conn = sqlite3.connect(DB_PATH)
+    # Use test database if available (for testing)
+    db_path = os.environ.get('FWMIS_TEST_DB', DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
@@ -644,7 +669,7 @@ def get_list_filter_query(list_name):
         str: SQL WHERE clause
     """
     from scripts.Utilities.shared_case_filter_utils import get_list_filter_conditions
-    
+
     return get_list_filter_conditions(list_name)
 
 

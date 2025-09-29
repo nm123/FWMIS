@@ -4,8 +4,15 @@ Handles assessment status and evidence components.
 """
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QFormLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QLineEdit, QPushButton)
+from PyQt5.QtWidgets import (
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+)
+
 from scripts.ui.components.custom_widgets import NoWheelComboBox
 
 

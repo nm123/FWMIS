@@ -7,6 +7,7 @@ import os
 import sqlite3
 
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.Utilities.config import DB_PATH
 
 
@@ -99,7 +100,9 @@ def validate_case_data(dialog_instance) -> bool:
         return False
 
     # Check if there are incomplete installment details (critical validation)
-    unsaved_installment_amount = dialog_instance.new_installment_amount_edit.text().strip()
+    unsaved_installment_amount = (
+        dialog_instance.new_installment_amount_edit.text().strip()
+    )
 
     # If there's an amount entered, the user tried to add an installment but didn't complete the process
     if unsaved_installment_amount:
@@ -147,42 +150,59 @@ def validate_case_data(dialog_instance) -> bool:
     if selected_assessment_status in ["Valid", "Confirmed"]:
         # Check if evidence exists in the current evidence field (uploaded during this session)
         current_evidence_path = dialog_instance.assessment_evidence_edit.text().strip()
-        
+
         # Also check if evidence already exists in the database
         existing_evidence = False
-        if hasattr(dialog_instance, 'case_id') and dialog_instance.case_id:
+        if hasattr(dialog_instance, "case_id") and dialog_instance.case_id:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT evidence_paths FROM cases WHERE id = ?", (dialog_instance.case_id,))
+            cursor.execute(
+                "SELECT evidence_paths FROM cases WHERE id = ?",
+                (dialog_instance.case_id,),
+            )
             evidence_data = cursor.fetchone()
             conn.close()
-            
+
             if evidence_data and evidence_data[0]:
                 try:
                     evidence_dict = json.loads(evidence_data[0])
-                    if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                    if evidence_dict and (
+                        evidence_dict.get("assessment_evidence")
+                        or evidence_dict.get("assessment")
+                    ):
                         existing_evidence = True
                 except json.JSONDecodeError:
                     pass
         else:
             # Fallback: check by transaction_no if case_id not available
-            if hasattr(dialog_instance, 'base_transaction_no') and dialog_instance.base_transaction_no:
+            if (
+                hasattr(dialog_instance, "base_transaction_no")
+                and dialog_instance.base_transaction_no
+            ):
                 conn = sqlite3.connect(DB_PATH)
                 cursor = conn.cursor()
-                cursor.execute("SELECT evidence_paths FROM cases WHERE base_transaction_no = ?", (dialog_instance.base_transaction_no,))
+                cursor.execute(
+                    "SELECT evidence_paths FROM cases WHERE base_transaction_no = ?",
+                    (dialog_instance.base_transaction_no,),
+                )
                 evidence_data = cursor.fetchone()
                 conn.close()
-                
+
                 if evidence_data and evidence_data[0]:
                     try:
                         evidence_dict = json.loads(evidence_data[0])
-                        if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                        if evidence_dict and (
+                            evidence_dict.get("assessment_evidence")
+                            or evidence_dict.get("assessment")
+                        ):
                             existing_evidence = True
                     except json.JSONDecodeError:
                         pass
 
         # Require evidence if not in current session AND not in database
-        if (not current_evidence_path or not os.path.exists(current_evidence_path)) and not existing_evidence:
+        if (
+            not current_evidence_path or not os.path.exists(current_evidence_path)
+        ) and not existing_evidence:
             QMessageBox.warning(
                 dialog_instance,
                 "Cannot Save",

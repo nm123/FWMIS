@@ -11,18 +11,36 @@ Provides a comprehensive UI for managing database archiving operations including
 
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from datetime import datetime
 
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTableWidget,
-    QTableWidgetItem, QTabWidget, QWidget, QTextEdit, QComboBox, QProgressBar,
-    QMessageBox, QGroupBox, QCheckBox, QSpinBox, QSplitter, QFrame,
-    QHeaderView, QAbstractItemView, QMenu, QAction
-)
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QThread, QTimer, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon, QPixmap
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QAction,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QMenu,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 # Add scripts directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -32,6 +50,7 @@ from scripts.Utilities.database_archiving import DatabaseArchiver
 
 class ArchivingWorker(QThread):
     """Worker thread for archive operations to prevent UI blocking"""
+
     progress_updated = pyqtSignal(str)
     operation_completed = pyqtSignal(bool, str)
     stats_updated = pyqtSignal(dict)
@@ -171,7 +190,9 @@ class DatabaseArchivingDialog(QDialog):
 
         self.fy_table = QTableWidget()
         self.fy_table.setColumnCount(4)
-        self.fy_table.setHorizontalHeaderLabels(["Financial Year", "Total Cases", "Finalized", "Completion %"])
+        self.fy_table.setHorizontalHeaderLabels(
+            ["Financial Year", "Total Cases", "Finalized", "Completion %"]
+        )
         self.fy_table.horizontalHeader().setStretchLastSection(True)
         fy_layout.addWidget(self.fy_table)
 
@@ -222,7 +243,9 @@ class DatabaseArchivingDialog(QDialog):
 
         create_btn = QPushButton("📦 Create Archive")
         create_btn.clicked.connect(self.create_archive)
-        create_btn.setStyleSheet("QPushButton { background-color: #28a745; color: white; padding: 8px 16px; }")
+        create_btn.setStyleSheet(
+            "QPushButton { background-color: #28a745; color: white; padding: 8px 16px; }"
+        )
         options_layout.addWidget(create_btn)
 
         create_layout.addLayout(options_layout)
@@ -240,7 +263,9 @@ class DatabaseArchivingDialog(QDialog):
 
         delete_btn = QPushButton("🗑️ Delete Archive")
         delete_btn.clicked.connect(self.delete_archive)
-        delete_btn.setStyleSheet("QPushButton { background-color: #dc3545; color: white; }")
+        delete_btn.setStyleSheet(
+            "QPushButton { background-color: #dc3545; color: white; }"
+        )
         ops_btn_layout.addWidget(delete_btn)
 
         ops_btn_layout.addStretch()
@@ -268,16 +293,18 @@ class DatabaseArchivingDialog(QDialog):
         # Archives table
         self.archives_table = QTableWidget()
         self.archives_table.setColumnCount(6)
-        self.archives_table.setHorizontalHeaderLabels([
-            "Archive ID", "Financial Year", "Cases", "Size (MB)", "Created", "Status"
-        ])
+        self.archives_table.setHorizontalHeaderLabels(
+            ["Archive ID", "Financial Year", "Cases", "Size (MB)", "Created", "Status"]
+        )
         self.archives_table.horizontalHeader().setStretchLastSection(True)
         self.archives_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.archives_table.setAlternatingRowColors(True)
 
         # Context menu for archives
         self.archives_table.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.archives_table.customContextMenuRequested.connect(self.show_archive_context_menu)
+        self.archives_table.customContextMenuRequested.connect(
+            self.show_archive_context_menu
+        )
 
         archives_layout.addWidget(self.archives_table)
 
@@ -382,15 +409,15 @@ Database Statistics:
 Cases by Status:
 """
 
-        for status, count in stats.get('cases_by_status', {}).items():
+        for status, count in stats.get("cases_by_status", {}).items():
             stats_text += f"• {status}: {count:,}\n"
 
         self.stats_text.setPlainText(stats_text.strip())
 
         # Update financial years table
         self.fy_table.setRowCount(0)
-        cases_by_fy = stats.get('cases_by_fy', {})
-        finalized_by_fy = stats.get('finalized_by_fy', {})
+        cases_by_fy = stats.get("cases_by_fy", {})
+        finalized_by_fy = stats.get("finalized_by_fy", {})
 
         for fy_year in sorted(cases_by_fy.keys()):
             row = self.fy_table.rowCount()
@@ -417,21 +444,33 @@ Cases by Status:
 
             status = "✅ OK" if "error" not in archive else f"❌ Error"
 
-            self.archives_table.setItem(row, 0, QTableWidgetItem(archive.get("archive_id", "")))
-            self.archives_table.setItem(row, 1, QTableWidgetItem(archive.get("financial_year", "")))
-            self.archives_table.setItem(row, 2, QTableWidgetItem(str(archive.get("case_count", 0))))
-            self.archives_table.setItem(row, 3, QTableWidgetItem(f"{archive.get('file_size_mb', 0):.1f}"))
-            self.archives_table.setItem(row, 4, QTableWidgetItem(archive.get("created_at", "")[:19]))
+            self.archives_table.setItem(
+                row, 0, QTableWidgetItem(archive.get("archive_id", ""))
+            )
+            self.archives_table.setItem(
+                row, 1, QTableWidgetItem(archive.get("financial_year", ""))
+            )
+            self.archives_table.setItem(
+                row, 2, QTableWidgetItem(str(archive.get("case_count", 0)))
+            )
+            self.archives_table.setItem(
+                row, 3, QTableWidgetItem(f"{archive.get('file_size_mb', 0):.1f}")
+            )
+            self.archives_table.setItem(
+                row, 4, QTableWidgetItem(archive.get("created_at", "")[:19])
+            )
             self.archives_table.setItem(row, 5, QTableWidgetItem(status))
 
     def load_financial_years(self):
         """Load available financial years for archiving"""
         stats = self.archiver.get_database_stats()
-        cases_by_fy = stats.get('cases_by_fy', {})
+        cases_by_fy = stats.get("cases_by_fy", {})
 
         self.fy_combo.clear()
         for fy_year in sorted(cases_by_fy.keys()):
-            self.fy_combo.addItem(f"{fy_year} ({cases_by_fy[fy_year]:,} cases)", fy_year)
+            self.fy_combo.addItem(
+                f"{fy_year} ({cases_by_fy[fy_year]:,} cases)", fy_year
+            )
 
     def generate_recommendations(self):
         """Generate archiving recommendations"""
@@ -459,24 +498,29 @@ Cases by Status:
         if success:
             self.rec_text.setPlainText(message)
         else:
-            QMessageBox.warning(self, "Error", f"Failed to generate recommendations: {message}")
+            QMessageBox.warning(
+                self, "Error", f"Failed to generate recommendations: {message}"
+            )
 
     def create_archive(self):
         """Create a new archive"""
         fy_year = self.fy_combo.currentData()
         if not fy_year:
-            QMessageBox.warning(self, "Error", "Please select a financial year to archive.")
+            QMessageBox.warning(
+                self, "Error", "Please select a financial year to archive."
+            )
             return
 
         archive_type = "manual" if self.remove_cases_cb.isChecked() else "backup"
 
         reply = QMessageBox.question(
-            self, "Confirm Archive Creation",
+            self,
+            "Confirm Archive Creation",
             f"Are you sure you want to create an archive for {fy_year}?\n\n"
             f"This will {'permanently remove' if self.remove_cases_cb.isChecked() else 'keep'} "
             f"the archived cases in the main database.",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply != QMessageBox.Yes:
@@ -485,9 +529,13 @@ Cases by Status:
         self.progress_bar.setVisible(True)
         self.progress_label.setVisible(True)
 
-        self.current_worker = ArchivingWorker("create_archive", fy_year=fy_year, archive_type=archive_type)
+        self.current_worker = ArchivingWorker(
+            "create_archive", fy_year=fy_year, archive_type=archive_type
+        )
         self.current_worker.progress_updated.connect(self.update_progress)
-        self.current_worker.operation_completed.connect(self.archive_operation_completed)
+        self.current_worker.operation_completed.connect(
+            self.archive_operation_completed
+        )
         self.current_worker.start()
 
     def restore_archive(self):
@@ -500,11 +548,12 @@ Cases by Status:
         archive_id = self.archives_table.item(current_row, 0).text()
 
         reply = QMessageBox.question(
-            self, "Confirm Archive Restoration",
+            self,
+            "Confirm Archive Restoration",
             f"Are you sure you want to restore archive '{archive_id}'?\n\n"
             f"This will add the archived cases back to the main database.",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply != QMessageBox.Yes:
@@ -515,7 +564,9 @@ Cases by Status:
 
         self.current_worker = ArchivingWorker("restore_archive", archive_id=archive_id)
         self.current_worker.progress_updated.connect(self.update_progress)
-        self.current_worker.operation_completed.connect(self.archive_operation_completed)
+        self.current_worker.operation_completed.connect(
+            self.archive_operation_completed
+        )
         self.current_worker.start()
 
     def delete_archive(self):
@@ -528,11 +579,12 @@ Cases by Status:
         archive_id = self.archives_table.item(current_row, 0).text()
 
         reply = QMessageBox.question(
-            self, "Confirm Archive Deletion",
+            self,
+            "Confirm Archive Deletion",
             f"Are you sure you want to permanently delete archive '{archive_id}'?\n\n"
             f"This action cannot be undone!",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply != QMessageBox.Yes:
@@ -543,7 +595,9 @@ Cases by Status:
 
         self.current_worker = ArchivingWorker("delete_archive", archive_id=archive_id)
         self.current_worker.progress_updated.connect(self.update_progress)
-        self.current_worker.operation_completed.connect(self.archive_operation_completed)
+        self.current_worker.operation_completed.connect(
+            self.archive_operation_completed
+        )
         self.current_worker.start()
 
     def archive_operation_completed(self, success: bool, message: str):
@@ -586,7 +640,9 @@ Cases by Status:
         archive_id = self.archives_table.item(current_row, 0).text()
         archives = self.archiver.list_archives()
 
-        archive_info = next((a for a in archives if a.get("archive_id") == archive_id), None)
+        archive_info = next(
+            (a for a in archives if a.get("archive_id") == archive_id), None
+        )
 
         if archive_info:
             details = f"""
@@ -607,23 +663,28 @@ File: {archive_info.get('file_path', 'N/A')}
     def save_settings(self):
         """Save archiving settings"""
         # In a real implementation, this would save to a config file
-        QMessageBox.information(self, "Settings Saved",
-                              "Archiving settings have been saved successfully!")
+        QMessageBox.information(
+            self, "Settings Saved", "Archiving settings have been saved successfully!"
+        )
 
     def test_archiving(self):
         """Test archiving functionality with a small dataset"""
-        QMessageBox.information(self, "Test Complete",
-                              "Archiving functionality test completed successfully!\n\n"
-                              "All archive operations are working correctly.")
+        QMessageBox.information(
+            self,
+            "Test Complete",
+            "Archiving functionality test completed successfully!\n\n"
+            "All archive operations are working correctly.",
+        )
 
     def closeEvent(self, event):
         """Handle dialog close event"""
         if self.current_worker and self.current_worker.isRunning():
             reply = QMessageBox.question(
-                self, "Operation in Progress",
+                self,
+                "Operation in Progress",
                 "An archiving operation is currently running. Are you sure you want to close?",
                 QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No
+                QMessageBox.No,
             )
 
             if reply == QMessageBox.Yes:

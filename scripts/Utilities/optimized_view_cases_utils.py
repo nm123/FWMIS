@@ -3,21 +3,26 @@ Optimized view cases utilities with memory-efficient operations.
 Replaces Pandas-based Excel exports with streaming alternatives.
 """
 
-import os
 import logging
+import os
 from datetime import datetime
-from typing import List, Dict, Any, Iterator
+from typing import Any, Dict, Iterator, List
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox
 
-from scripts.Utilities.optimized_excel_utils import StreamingExcelExporter, OptimizedReportGenerator
-from scripts.Utilities.performance_profiler import profile_operation, memory_profiler
+from scripts.Utilities.optimized_excel_utils import (
+    OptimizedReportGenerator,
+    StreamingExcelExporter,
+)
+from scripts.Utilities.performance_profiler import memory_profiler, profile_operation
 
 logger = logging.getLogger(__name__)
 
+
 class OptimizedViewCasesUtils:
     """Memory-efficient view cases utilities."""
-    
+
     @staticmethod
     @profile_operation("export_to_excel")
     def export_to_excel(dialog):
@@ -35,7 +40,11 @@ class OptimizedViewCasesUtils:
             current_list = dialog.list_filter_combo.currentText().replace(" ", "_")
 
             # Create year folder
-            from scripts.Utilities.financial_utils import create_year_folder, get_financial_year
+            from scripts.Utilities.financial_utils import (
+                create_year_folder,
+                get_financial_year,
+            )
+
             year_folder = create_year_folder(get_financial_year())
             export_dir = os.path.join(year_folder, "Exports")
             os.makedirs(export_dir, exist_ok=True)
@@ -55,7 +64,9 @@ class OptimizedViewCasesUtils:
                         if item:
                             if col == 0:  # Case No column
                                 transaction_no = item.data(Qt.UserRole)
-                                row_data[f"col_{col}"] = transaction_no if transaction_no else item.text()
+                                row_data[f"col_{col}"] = (
+                                    transaction_no if transaction_no else item.text()
+                                )
                             else:
                                 row_data[f"col_{col}"] = item.text()
                         else:
@@ -75,7 +86,7 @@ class OptimizedViewCasesUtils:
 
             # Use streaming Excel exporter
             exporter = StreamingExcelExporter(chunk_size=1000)
-            
+
             # Convert generator to proper format
             def formatted_cases_generator():
                 for case_data in cases_generator():
@@ -86,18 +97,20 @@ class OptimizedViewCasesUtils:
 
             # Export using streaming
             exported_file = exporter.export_cases_to_excel_streaming(
-                formatted_cases_generator(),
-                filepath,
-                f"{current_list} Cases"
+                formatted_cases_generator(), filepath, f"{current_list} Cases"
             )
 
             # Take memory snapshot after export
             memory_profiler.take_snapshot("after_export")
-            
+
             # Compare memory usage
-            memory_diff = memory_profiler.compare_snapshots("before_export", "after_export")
+            memory_diff = memory_profiler.compare_snapshots(
+                "before_export", "after_export"
+            )
             if memory_diff:
-                logger.info(f"Memory usage during export: {memory_diff['rss_diff'] / 1024 / 1024:.1f}MB")
+                logger.info(
+                    f"Memory usage during export: {memory_diff['rss_diff'] / 1024 / 1024:.1f}MB"
+                )
 
             # Show success message
             QMessageBox.information(
@@ -116,50 +129,52 @@ class OptimizedViewCasesUtils:
             )
 
     @staticmethod
-    def generate_optimized_report(cases_data: List[Dict], report_type: str = "Summary") -> str:
+    def generate_optimized_report(
+        cases_data: List[Dict], report_type: str = "Summary"
+    ) -> str:
         """Generate report using SQL aggregations instead of Python loops."""
         try:
             report_generator = OptimizedReportGenerator()
-            
+
             # Extract fy_id from first case if available
-            fy_id = cases_data[0].get('fy_id') if cases_data else None
-            
+            fy_id = cases_data[0].get("fy_id") if cases_data else None
+
             if report_type == "Summary":
                 report_data = report_generator.generate_case_summary_report(fy_id)
             elif report_type == "Responsibility":
                 report_data = report_generator.generate_responsibility_report(fy_id)
             else:
                 report_data = report_generator.generate_case_summary_report(fy_id)
-            
+
             # Format report
             report = f"Case Report - {report_type}\n"
             report += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-            
-            if 'totals' in report_data:
-                totals = report_data['totals']
+
+            if "totals" in report_data:
+                totals = report_data["totals"]
                 report += f"Total Cases: {totals['total_cases']}\n"
                 report += f"Total Amount: R {totals['total_amount']:,.2f}\n"
                 report += f"Average Amount: R {totals['avg_amount']:,.2f}\n\n"
-            
-            if 'categories' in report_data:
+
+            if "categories" in report_data:
                 report += "Categories:\n"
-                for cat in report_data['categories'][:10]:  # Top 10
+                for cat in report_data["categories"][:10]:  # Top 10
                     report += f"  {cat['category']}: {cat['count']} cases, R {cat['amount']:,.2f}\n"
                 report += "\n"
-            
-            if 'statuses' in report_data:
+
+            if "statuses" in report_data:
                 report += "Statuses:\n"
-                for stat in report_data['statuses'][:10]:  # Top 10
+                for stat in report_data["statuses"][:10]:  # Top 10
                     report += f"  {stat['status']}: {stat['count']} cases, R {stat['amount']:,.2f}\n"
                 report += "\n"
-            
-            if 'responsibilities' in report_data:
+
+            if "responsibilities" in report_data:
                 report += "Top Responsibilities:\n"
-                for resp in report_data['responsibilities'][:10]:  # Top 10
+                for resp in report_data["responsibilities"][:10]:  # Top 10
                     report += f"  {resp['name']}: {resp['case_count']} cases, R {resp['total_amount']:,.2f}\n"
-            
+
             return report
-            
+
         except Exception as e:
             logger.error(f"Error generating optimized report: {e}")
             return f"Error generating report: {str(e)}"
@@ -185,54 +200,64 @@ class OptimizedViewCasesUtils:
         return True, "Data is valid for export"
 
     @staticmethod
-    def filter_cases_efficiently(cases: List[Dict], filters: Dict[str, Any]) -> List[Dict]:
+    def filter_cases_efficiently(
+        cases: List[Dict], filters: Dict[str, Any]
+    ) -> List[Dict]:
         """Filter cases efficiently using list comprehension."""
         filtered_cases = cases
-        
+
         # Apply filters one by one
-        if 'search_term' in filters and filters['search_term']:
-            search_term = filters['search_term'].lower()
+        if "search_term" in filters and filters["search_term"]:
+            search_term = filters["search_term"].lower()
             filtered_cases = [
-                case for case in filtered_cases
-                if search_term in str(case.get('transaction_no', '')).lower() or
-                   search_term in str(case.get('category', '')).lower() or
-                   search_term in str(case.get('description', '')).lower()
+                case
+                for case in filtered_cases
+                if search_term in str(case.get("transaction_no", "")).lower()
+                or search_term in str(case.get("category", "")).lower()
+                or search_term in str(case.get("description", "")).lower()
             ]
-        
-        if 'min_amount' in filters and filters['min_amount'] is not None:
+
+        if "min_amount" in filters and filters["min_amount"] is not None:
             filtered_cases = [
-                case for case in filtered_cases
-                if case.get('amount', 0) >= filters['min_amount']
+                case
+                for case in filtered_cases
+                if case.get("amount", 0) >= filters["min_amount"]
             ]
-        
-        if 'max_amount' in filters and filters['max_amount'] is not None:
+
+        if "max_amount" in filters and filters["max_amount"] is not None:
             filtered_cases = [
-                case for case in filtered_cases
-                if case.get('amount', 0) <= filters['max_amount']
+                case
+                for case in filtered_cases
+                if case.get("amount", 0) <= filters["max_amount"]
             ]
-        
-        if 'status' in filters and filters['status']:
+
+        if "status" in filters and filters["status"]:
             filtered_cases = [
-                case for case in filtered_cases
-                if case.get('status', '') == filters['status']
+                case
+                for case in filtered_cases
+                if case.get("status", "") == filters["status"]
             ]
-        
-        if 'category' in filters and filters['category']:
+
+        if "category" in filters and filters["category"]:
             filtered_cases = [
-                case for case in filtered_cases
-                if case.get('category', '') == filters['category']
+                case
+                for case in filtered_cases
+                if case.get("category", "") == filters["category"]
             ]
-        
+
         return filtered_cases
 
     @staticmethod
-    def sort_cases_efficiently(cases: List[Dict], sort_by: str = "date_reported", ascending: bool = True) -> List[Dict]:
+    def sort_cases_efficiently(
+        cases: List[Dict], sort_by: str = "date_reported", ascending: bool = True
+    ) -> List[Dict]:
         """Sort cases efficiently using built-in sort with key function."""
+
         def sort_key(case):
             value = case.get(sort_by)
             if value is None:
                 return "" if ascending else "z"
-            
+
             # Handle different data types
             if isinstance(value, str):
                 return value.lower() if ascending else value.lower()
@@ -240,7 +265,7 @@ class OptimizedViewCasesUtils:
                 return value if ascending else -value
             else:
                 return str(value) if ascending else str(value)
-        
+
         return sorted(cases, key=sort_key, reverse=not ascending)
 
     @staticmethod
@@ -250,18 +275,18 @@ class OptimizedViewCasesUtils:
         total_cases = len(cases)
         categories = {}
         statuses = {}
-        
+
         # Single pass through cases
         for case in cases:
             amount = case.get("amount", 0.0)
             total_amount += amount
-            
+
             category = case.get("category", "Unknown")
             categories[category] = categories.get(category, 0) + 1
-            
+
             status = case.get("assessment_status", "Unknown")
             statuses[status] = statuses.get(status, 0) + 1
-        
+
         return {
             "total_amount": total_amount,
             "total_cases": total_cases,
@@ -288,18 +313,24 @@ class OptimizedViewCasesUtils:
         """Validate if there's enough memory for large export operations."""
         try:
             import psutil
-            
+
             available_memory_gb = psutil.virtual_memory().available / (1024**3)
-            
+
             # Estimate memory needed (conservative estimate)
-            estimated_memory_mb = cases_count * 0.002  # ~2KB per case for Excel processing
-            
-            if estimated_memory_mb > available_memory_gb * 1024 * 0.3:  # Use max 30% of available memory
-                logger.warning(f"Large export may cause memory issues: {cases_count} cases, {estimated_memory_mb:.1f}MB estimated")
+            estimated_memory_mb = (
+                cases_count * 0.002
+            )  # ~2KB per case for Excel processing
+
+            if (
+                estimated_memory_mb > available_memory_gb * 1024 * 0.3
+            ):  # Use max 30% of available memory
+                logger.warning(
+                    f"Large export may cause memory issues: {cases_count} cases, {estimated_memory_mb:.1f}MB estimated"
+                )
                 return False
-            
+
             return True
-            
+
         except ImportError:
             # psutil not available, assume OK for reasonable sizes
             return cases_count < 50000
@@ -307,10 +338,16 @@ class OptimizedViewCasesUtils:
     @staticmethod
     def log_export_performance(cases_count: int, export_time: float, file_size: int):
         """Log export performance metrics."""
-        logger.info(f"Export Performance: {cases_count} cases in {export_time:.2f}s, {file_size/1024/1024:.1f}MB file")
-        
+        logger.info(
+            f"Export Performance: {cases_count} cases in {export_time:.2f}s, {file_size/1024/1024:.1f}MB file"
+        )
+
         # Calculate performance metrics
         cases_per_second = cases_count / export_time if export_time > 0 else 0
-        mb_per_second = (file_size / 1024 / 1024) / export_time if export_time > 0 else 0
-        
-        logger.info(f"Performance Metrics: {cases_per_second:.0f} cases/sec, {mb_per_second:.1f} MB/sec")
+        mb_per_second = (
+            (file_size / 1024 / 1024) / export_time if export_time > 0 else 0
+        )
+
+        logger.info(
+            f"Performance Metrics: {cases_per_second:.0f} cases/sec, {mb_per_second:.1f} MB/sec"
+        )

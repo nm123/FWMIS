@@ -3,12 +3,24 @@ from datetime import datetime
 
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QFont, QIcon, QWheelEvent
-from PyQt5.QtWidgets import (QComboBox, QDialog, QFormLayout, QGroupBox,
-                             QHBoxLayout, QLabel, QMessageBox, QPushButton,
-                             QTextEdit, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+)
+
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import (get_all_financial_years,
-                                               get_current_open_financial_year)
+from scripts.Utilities.financial_utils import (
+    get_all_financial_years,
+    get_current_open_financial_year,
+)
 
 
 class NoWheelComboBox(QComboBox):
@@ -415,10 +427,14 @@ class WipeCasesDialog(QDialog):
             # Check installments before deletion
             cursor.execute("SELECT COUNT(*) FROM installments")
             total_installments_before = cursor.fetchone()[0]
-            print(f"DEBUG: Total installments before cleanup: {total_installments_before}")
+            print(
+                f"DEBUG: Total installments before cleanup: {total_installments_before}"
+            )
 
             with open("wipe_debug.log", "a") as f:
-                f.write(f"Total installments before cleanup: {total_installments_before}\\n")
+                f.write(
+                    f"Total installments before cleanup: {total_installments_before}\\n"
+                )
 
             # Also delete related data that depends on cases BEFORE deleting cases
             # Delete installments for cases in this financial year
@@ -433,7 +449,9 @@ class WipeCasesDialog(QDialog):
             print(f"DEBUG: Deleted {installments_deleted} installments for FY {fy_id}")
 
             with open("wipe_debug.log", "a") as f:
-                f.write(f"Deleted {installments_deleted} installments for FY {fy_id}\\n")
+                f.write(
+                    f"Deleted {installments_deleted} installments for FY {fy_id}\\n"
+                )
 
             # Also clean up any orphaned installments (installments for non-existent cases)
             cursor.execute(
@@ -443,18 +461,26 @@ class WipeCasesDialog(QDialog):
             """
             )
             orphaned_installments_deleted = cursor.rowcount
-            print(f"DEBUG: Deleted {orphaned_installments_deleted} orphaned installments")
+            print(
+                f"DEBUG: Deleted {orphaned_installments_deleted} orphaned installments"
+            )
 
             with open("wipe_debug.log", "a") as f:
-                f.write(f"Deleted {orphaned_installments_deleted} orphaned installments\\n")
+                f.write(
+                    f"Deleted {orphaned_installments_deleted} orphaned installments\\n"
+                )
 
             # Check installments after deletion
             cursor.execute("SELECT COUNT(*) FROM installments")
             total_installments_after = cursor.fetchone()[0]
-            print(f"DEBUG: Total installments after cleanup: {total_installments_after}")
+            print(
+                f"DEBUG: Total installments after cleanup: {total_installments_after}"
+            )
 
             with open("wipe_debug.log", "a") as f:
-                f.write(f"Total installments after cleanup: {total_installments_after}\\n")
+                f.write(
+                    f"Total installments after cleanup: {total_installments_after}\\n"
+                )
 
             # Delete all cases for this financial year
             cursor.execute("DELETE FROM cases WHERE fy_id = ?", (fy_id,))

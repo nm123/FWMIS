@@ -1,9 +1,20 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView,
-                             QLabel, QPushButton, QTableWidget,
-                             QTableWidgetItem, QVBoxLayout, QWidget)
-from scripts.Utilities.ui_theme import (create_professional_button,
-                                        setup_professional_table)
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+from scripts.Utilities.ui_theme import (
+    create_professional_button,
+    setup_professional_table,
+)
 
 
 class ProfessionalTable:

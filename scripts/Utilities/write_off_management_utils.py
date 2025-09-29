@@ -28,7 +28,10 @@ def get_evidence_status(evidence_paths):
             evidence_types.append("Recovery")
 
         return ", ".join(evidence_types) if evidence_types else "No evidence"
-    except:
+    except Exception as e:
+        import logging
+
+        logging.warning(f"Failed to parse evidence data '{evidence}': {e}")
         return "Invalid evidence data"
 
 

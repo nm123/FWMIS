@@ -5,57 +5,94 @@ from collections import defaultdict
 from datetime import datetime
 
 from PyQt5.QtCore import QDate, Qt, QTimer, pyqtSignal
-from PyQt5.QtWidgets import (QCalendarWidget, QComboBox, QDateEdit, QDialog,
-                             QFileDialog, QFormLayout, QGridLayout, QGroupBox,
-                             QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-                             QMessageBox, QPushButton, QScrollArea,
-                             QTableWidget, QTableWidgetItem, QTextEdit,
-                             QVBoxLayout, QWidget)
-from scripts.case_management_modules.case_business_logic import \
-    CaseBusinessLogic
-from scripts.case_management_modules.determination_dialog import \
-    DeterminationDialog
-from scripts.case_management_modules.responsibility_selection import \
-    ResponsibilitySelectionDialog
+from PyQt5.QtWidgets import (
+    QCalendarWidget,
+    QComboBox,
+    QDateEdit,
+    QDialog,
+    QFileDialog,
+    QFormLayout,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+from scripts.case_management_modules.case_business_logic import CaseBusinessLogic
+from scripts.case_management_modules.determination_dialog import DeterminationDialog
+from scripts.case_management_modules.responsibility_selection import (
+    ResponsibilitySelectionDialog,
+)
 from scripts.ui.components.custom_widgets import NoWheelComboBox
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.case_save_utils import save_case
 from scripts.Utilities.category_utils import load_categories
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.edit_case_status_display_utils import \
-    update_list_status_display
-from scripts.Utilities.financial_utils import (create_year_folder,
-                                               get_financial_year)
+from scripts.Utilities.edit_case_status_display_utils import update_list_status_display
+from scripts.Utilities.financial_utils import create_year_folder, get_financial_year
 from scripts.Utilities.list_utils import load_lists
 from scripts.Utilities.responsibility_utils import (
-    load_posting_responsibilities, load_responsibilities)
+    load_posting_responsibilities,
+    load_responsibilities,
+)
 from scripts.Utilities.tree_utils import get_subtree_resp_ids
 from scripts.Utilities.workflow_utils import (
-    get_case_workflow_status, get_display_transaction_no,
-    handle_case_status_change, handle_loss_control_status_change)
+    get_case_workflow_status,
+    get_display_transaction_no,
+    handle_case_status_change,
+    handle_loss_control_status_change,
+)
 
 from .edit_case_assessment_ui import setup_assessment_ui_components
 from .edit_case_attachments_ui import setup_attachments_ui_components
 from .edit_case_basic_ui import setup_basic_ui_components
 from .edit_case_data_init import initialize_case_data
-from .edit_case_handlers import (add_new_installment, browse_assessment_evidence, browse_evidence,
-                                 browse_minutes, browse_recovery_evidence, browse_recovery_evidence_rip,
-                                 browse_source_doc, browse_supporting_evidence,
-                                 on_assessment_status_changed,
-                                 on_lc_status_changed, select_bas_journal_date,
-                                 select_bas_payment_date, select_latest_installment_date,
-                                 select_new_installment_date, update_conditional_fields,
-                                 update_list_status_grid, update_recovery_progress,
-                                 view_assessment_evidence, view_installment_history, view_minutes,
-                                 view_recovery_evidence, view_recovery_evidence_rip, view_source_doc,
-                                 view_supporting_evidence)
+from .edit_case_handlers import (
+    add_new_installment,
+    browse_assessment_evidence,
+    browse_evidence,
+    browse_minutes,
+    browse_recovery_evidence,
+    browse_recovery_evidence_rip,
+    browse_source_doc,
+    browse_supporting_evidence,
+    on_assessment_status_changed,
+    on_lc_status_changed,
+    select_bas_journal_date,
+    select_bas_payment_date,
+    select_latest_installment_date,
+    select_new_installment_date,
+    update_conditional_fields,
+    update_list_status_grid,
+    update_recovery_progress,
+    view_assessment_evidence,
+    view_installment_history,
+    view_minutes,
+    view_recovery_evidence,
+    view_recovery_evidence_rip,
+    view_source_doc,
+    view_supporting_evidence,
+)
 from .edit_case_list_status_ui import setup_list_status_ui_components
 from .edit_case_load_data import load_case_data_components
 from .edit_case_loss_control_ui import setup_loss_control_ui_components
 from .edit_case_supporting_ui import setup_supporting_ui_components
-from .edit_case_utils import (delete_case, open_determination_dialog,
-                              schedule_update_conditional_fields,
-                              update_determination_button_visibility)
+from .edit_case_utils import (
+    delete_case,
+    open_determination_dialog,
+    schedule_update_conditional_fields,
+    update_determination_button_visibility,
+)
 
 
 class EditCaseDialog(QDialog):

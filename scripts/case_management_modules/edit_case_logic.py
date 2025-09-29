@@ -5,10 +5,10 @@ from datetime import datetime
 
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
-from scripts.Utilities.financial_utils import (create_year_folder,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import create_year_folder, get_financial_year
 
 
 class EditCaseLogic:
@@ -110,17 +110,22 @@ class EditCaseLogic:
         """Save the case data to database"""
         try:
             # Validate that transaction_no is not None or empty
-            if not hasattr(self, 'transaction_no') or self.transaction_no is None:
+            if not hasattr(self, "transaction_no") or self.transaction_no is None:
                 QMessageBox.critical(
-                    self.dialog, "Invalid Case Data",
-                    "Case transaction number is missing. Cannot save case."
+                    self.dialog,
+                    "Invalid Case Data",
+                    "Case transaction number is missing. Cannot save case.",
                 )
                 return
 
-            if not isinstance(self.transaction_no, str) or self.transaction_no.strip() == "":
+            if (
+                not isinstance(self.transaction_no, str)
+                or self.transaction_no.strip() == ""
+            ):
                 QMessageBox.critical(
-                    self.dialog, "Invalid Case Data",
-                    "Case transaction number is empty. Cannot save case."
+                    self.dialog,
+                    "Invalid Case Data",
+                    "Case transaction number is empty. Cannot save case.",
                 )
                 return
             bas_payment_no = self.dialog.bas_payment_no_edit.text().strip()
@@ -228,8 +233,9 @@ class EditCaseLogic:
 
             # Fix fy_id if missing
             if existing_fy_id is None:
-                from scripts.Utilities.financial_utils import \
-                    get_current_open_financial_year
+                from scripts.Utilities.financial_utils import (
+                    get_current_open_financial_year,
+                )
 
                 current_fy = get_current_open_financial_year()
                 if current_fy:
@@ -261,11 +267,15 @@ class EditCaseLogic:
                 conn_temp.close()
 
             # Validate required IDs to prevent orphans
-            if not existing_fy_id or not existing_period_id or not self.dialog.selected_responsibility_id:
+            if (
+                not existing_fy_id
+                or not existing_period_id
+                or not self.dialog.selected_responsibility_id
+            ):
                 QMessageBox.critical(
                     self.dialog,
                     "Validation Error",
-                    "Cannot save case: Missing required IDs (FY, Period, or Responsibility)."
+                    "Cannot save case: Missing required IDs (FY, Period, or Responsibility).",
                 )
                 return
 
@@ -284,7 +294,7 @@ class EditCaseLogic:
             else:
                 lc_status = None
                 list_text = "Checklist"
-                is_finalized = (status_text == "Valid")
+                is_finalized = status_text == "Valid"
 
             transaction_no_with_suffix = self.transaction_no
 
