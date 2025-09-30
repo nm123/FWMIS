@@ -12,7 +12,7 @@ PyQt5==5.15.10
 
 # Development and Testing Dependencies
 pytest==8.4.2
-pytest-cov==4.1.0
+pytest-cov==7.0.0
 pytest-xdist==3.5.0
 pytest-benchmark==4.0.2
 
