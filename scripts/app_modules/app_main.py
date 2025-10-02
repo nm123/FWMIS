@@ -25,6 +25,13 @@ from .ui_setup import setup_ui
 from scripts.Utilities.logging_utils import configure_logging
 configure_logging()
 
+# Initialize metrics and monitoring
+from scripts.Utilities.metrics_core import Histogram
+# TODO: Call initialize_metrics() or setup monitoring here once implemented
+
+import logging
+logger = logging.getLogger('fwmis')
+
 
 class FWManagementApp(QMainWindow):
     """
@@ -39,6 +46,9 @@ class FWManagementApp(QMainWindow):
         self.setWindowTitle(
             "FWMIS - Fruitless and Wasteful Expenditure Management Information System"
         )
+
+        # Log application startup
+        logger.info("FWMIS application started successfully")
 
         # Set minimum size and allow resizing/maximizing
         self.setMinimumSize(1000, 700)
