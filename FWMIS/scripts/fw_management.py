@@ -24,6 +24,8 @@ if __name__ == "__main__":
 from PyQt5.QtWidgets import QApplication
 from scripts.app_modules.app_main import FWManagementApp, exception_handler
 
+from scripts.Utilities.metrics_collectors import StructuredLogger
+
 # Set up global exception handler
 sys.excepthook = exception_handler
 
@@ -39,6 +41,13 @@ def main():
 
     # Create and show the main window
     main_window = FWManagementApp()
+
+    # Log main window creation for monitoring
+    StructuredLogger.log_application_event(
+        "main_window_created",
+        extra_data={"version": "2.0.0", "environment": "production"}
+    )
+
     main_window.show()
 
     # Start the Qt event loop
