@@ -21,6 +21,10 @@ from .app_imports import *
 from .menu_setup import setup_menu
 from .ui_setup import setup_ui
 
+# Configure structured logging
+from scripts.Utilities.logging_utils import configure_logging
+configure_logging()
+
 
 class FWManagementApp(QMainWindow):
     """
