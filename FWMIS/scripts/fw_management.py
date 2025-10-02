@@ -56,7 +56,7 @@ def main():
         extra_data={"version": "2.0.0", "environment": "production"}
     )
 
-    # Start the Qt event loop
+    # Start the event loop
     sys.exit(app.exec_())
 
 
