@@ -56,6 +56,12 @@ def main():
         extra_data={"version": "2.0.0", "environment": "production"}
     )
 
+    # Log event loop start for monitoring
+    StructuredLogger.log_application_event(
+        "event_loop_started",
+        extra_data={"version": "2.0.0", "environment": "production"}
+    )
+
     # Start the event loop
     sys.exit(app.exec_())
 
