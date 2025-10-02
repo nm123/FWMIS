@@ -50,6 +50,12 @@ def main():
 
     main_window.show()
 
+    # Log main window display for monitoring
+    StructuredLogger.log_application_event(
+        "main_window_shown",
+        extra_data={"version": "2.0.0", "environment": "production"}
+    )
+
     # Start the Qt event loop
     sys.exit(app.exec_())
 
