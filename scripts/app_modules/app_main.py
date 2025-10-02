@@ -32,6 +32,8 @@ from scripts.Utilities.metrics_core import Histogram
 import logging
 logger = logging.getLogger('fwmis')
 
+from scripts.Utilities.metrics_collectors import StructuredLogger
+
 
 class FWManagementApp(QMainWindow):
     """
@@ -48,7 +50,7 @@ class FWManagementApp(QMainWindow):
         )
 
         # Log application startup
-        logger.info("FWMIS application started successfully")
+        StructuredLogger.log_application_event("application_startup")
 
         # Set minimum size and allow resizing/maximizing
         self.setMinimumSize(1000, 700)
