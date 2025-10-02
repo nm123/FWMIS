@@ -37,10 +37,8 @@ def main():
     app.setApplicationName("FWMIS")
     app.setOrganizationName("FWMIS Development Team")
 
-    # Create the main application window
+    # Create and show the main window
     main_window = FWManagementApp()
-
-    # Show the main window
     main_window.show()
 
     # Start the Qt event loop
