@@ -50,7 +50,10 @@ class FWManagementApp(QMainWindow):
         )
 
         # Log application startup
-        StructuredLogger.log_application_event("application_startup")
+        StructuredLogger.log_application_event(
+            "application_startup",
+            extra_data={"version": "2.0.0", "environment": "production"}
+        )
 
         # Set minimum size and allow resizing/maximizing
         self.setMinimumSize(1000, 700)
