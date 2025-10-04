@@ -162,18 +162,21 @@ def find_duplicates(transaction, category_name):
         print(f"DEBUG: Total cases in all FYs (excluding deleted): {total_all_cases}")
 
         # Search for cases with same responsibility, category, amount, and financial year
-        # First, find responsibility ID by name
+        # First, find responsibility ID by name with normalization
         resp_id = None
+        responsibility_name = transaction["responsibility"].strip()
         cursor.execute(
-            "SELECT id FROM responsibilities WHERE name = ?",
-            (transaction["responsibility"],),
+            "SELECT id FROM responsibilities WHERE LOWER(TRIM(name)) = LOWER(?) LIMIT 1",
+            (responsibility_name,),
         )
         resp_result = cursor.fetchone()
         resp_id = resp_result[0] if resp_result else None
 
-        print(
-            f"DEBUG: Looking for responsibility '{transaction['responsibility']}' - found ID: {resp_id}"
-        )
+        if resp_id:
+            print(f"DEBUG: Resolved responsibility '{responsibility_name}' to ID: {resp_id}")
+        else:
+            print(f"DEBUG: WARNING: No responsibility match found for '{responsibility_name}', using default ID 1")
+            resp_id = 1  # Fallback to default responsibility ID
         print(
             f"DEBUG: Transaction details: responsibility='{transaction['responsibility']}', category='{category_name}', amount={abs(transaction['amount']):.2f}"
         )
@@ -295,22 +298,40 @@ def find_duplicates(transaction, category_name):
             cursor.execute(
                 """
                 SELECT * FROM cases
-                WHERE responsibility_id = ?
-                  AND category = ?
-                  AND ABS(amount - ?) < 0.01
-                  AND fy_id = ?
-                  AND list != 'Deleted Cases'
-            """,
+                  WHERE responsibility_id = ?
+                    AND category = ?
+                    AND ABS(amount - ?) < 0.01
+                    AND fy_id = ?
+                    AND (list != 'Deleted Cases' OR list IS NULL)
+                """,
                 (resp_id, category_name, transaction_amount, fy_id),
             )
 
             rows = cursor.fetchall()
+
+            # Count potential without list filter
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM cases
+                  WHERE responsibility_id = ?
+                    AND category = ?
+                    AND ABS(amount - ?) < 0.01
+                    AND fy_id = ?
+                """,
+                (resp_id, category_name, transaction_amount, fy_id),
+            )
+            potential_count = cursor.fetchone()[0]
+            print(f"DEBUG: Potential duplicates before list filter: {potential_count}")
+            print(f"DEBUG: After list filter: {len(rows)}")
+            if potential_count > len(rows):
+                print(f"DEBUG: Excluded {potential_count - len(rows)} cases due to list filter")
+
             print(
                 f"DEBUG: Exact match in current FY {fy_id} found {len(rows)} duplicates"
             )
             if len(rows) > 0:
                 print(
-                    f"DEBUG: Exact match sample: {rows[0][1]} | {rows[0][9]} | {rows[0][11]:.2f}"
+                    f"DEBUG: Exact match sample: {rows[0][1]} | {rows[0][9]} | {float(rows[0][11]):.2f}"
                 )
                 # Convert all rows to dictionaries
                 for row in rows:
@@ -354,22 +375,40 @@ def find_duplicates(transaction, category_name):
                     cursor.execute(
                         """
                         SELECT * FROM cases
-                        WHERE responsibility_id = ?
-                          AND category = ?
-                          AND ABS(amount - ?) < 0.01
-                          AND fy_id = ?
-                          AND list != 'Deleted Cases'
-                    """,
+                          WHERE responsibility_id = ?
+                            AND category = ?
+                            AND ABS(amount - ?) < 0.01
+                            AND fy_id = ?
+                            AND (list != 'Deleted Cases' OR list IS NULL)
+                        """,
                         (resp_id, category_name, transaction_amount, orphaned_fy_id),
                     )
 
                     orphaned_rows = cursor.fetchall()
+
+                    # Count potential without list filter for orphaned FY
+                    cursor.execute(
+                        """
+                        SELECT COUNT(*) FROM cases
+                          WHERE responsibility_id = ?
+                            AND category = ?
+                            AND ABS(amount - ?) < 0.01
+                            AND fy_id = ?
+                        """,
+                        (resp_id, category_name, transaction_amount, orphaned_fy_id),
+                    )
+                    potential_count_orph = cursor.fetchone()[0]
+                    print(f"DEBUG: Potential duplicates before list filter (orphaned FY {orphaned_fy_id}): {potential_count_orph}")
+                    print(f"DEBUG: After list filter: {len(orphaned_rows)}")
+                    if potential_count_orph > len(orphaned_rows):
+                        print(f"DEBUG: Excluded {potential_count_orph - len(orphaned_rows)} cases due to list filter (orphaned FY)")
+
                     print(
                         f"DEBUG: Exact match in orphaned FY {orphaned_fy_id} found {len(orphaned_rows)} duplicates"
                     )
                     if len(orphaned_rows) > 0:
                         print(
-                            f"DEBUG: Orphaned FY match sample: {orphaned_rows[0][1]} | {orphaned_rows[0][9]} | {orphaned_rows[0][11]:.2f}"
+                            f"DEBUG: Orphaned FY match sample: {orphaned_rows[0][1]} | {orphaned_rows[0][9]} | {float(orphaned_rows[0][11]):.2f}"
                         )
                         # Convert orphaned rows to dictionaries too
                         for row in orphaned_rows:

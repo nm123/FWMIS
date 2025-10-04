@@ -1,0 +1,7 @@
+Transaction_No|Amount|Vendor_Name|Date|Category|Description
+TEST-001|1000.00|Test|2025-07-15|Duplicate Supplier Payments|Test description for duplicate 1
+TEST-002|1000.00|Test|2025-07-16|Duplicate Supplier Payments|Test description for duplicate 2
+TEST-003|1000.00|Test|2025-07-17|Duplicate Supplier Payments|Test description for duplicate 3
+TEST-004|1000.00|Test|2025-07-18|Duplicate Supplier Payments|Test description for duplicate 4
+TEST-005|1000.00|Test|2025-07-19|Duplicate Supplier Payments|Test description for duplicate 5
+TEST-006|1000.00|Test|2025-07-20|Duplicate Supplier Payments|Test description for duplicate 6

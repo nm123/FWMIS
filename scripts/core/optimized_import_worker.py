@@ -303,11 +303,49 @@ class OptimizedImportWorker(QThread):
     def _prepare_case_data(self, transaction: Dict) -> Dict:
         """Prepare case data for batch insertion."""
         try:
+            # Safe access with defaults
+            responsibility = transaction.get("responsibility")
+            date_obj = transaction.get("date")
+            trans_type = transaction.get("type")
+            item = transaction.get("item")
+            description = transaction.get("description", "")
+            user_id = transaction.get("user_id", "")
+            number = transaction.get("number", "0")
+            amount = transaction.get("amount")
+
+            # Log transaction keys for debugging
+            logger.debug("Preparing transaction data", extra={
+                "keys_present": list(transaction.keys()),
+                "responsibility": responsibility,
+                "date": date_obj,
+                "item": item,
+                "amount": amount,
+                "type": trans_type
+            })
+
+            if not responsibility:
+                logger.error("Missing 'responsibility' key in transaction", extra={"transaction": transaction})
+                return None
+
+            if not date_obj:
+                logger.error("Missing 'date' key in transaction", extra={"transaction": transaction})
+                return None
+
+            if amount is None:
+                logger.error("Missing 'amount' key in transaction", extra={"transaction": transaction})
+                return None
+
+            if not trans_type:
+                logger.error("Missing 'type' key in transaction", extra={"transaction": transaction})
+                return None
+
             fy_id = self._get_fy_id()
-            period_id = self._get_period_id(transaction["date"], fy_id)
-            resp_id = self._get_responsibility_id(transaction["responsibility"])
+            period_id = self._get_period_id(date_obj, fy_id)
+            responsibility_name = responsibility.strip()
+            resp_id = self._get_responsibility_id(responsibility_name)
 
             if not fy_id or not resp_id:
+                logger.warning("Missing FY or responsibility ID", extra={"fy_id": fy_id, "resp_id": resp_id, "responsibility": responsibility})
                 return None
 
             # Use the case number that was already assigned during preview
@@ -319,10 +357,28 @@ class OptimizedImportWorker(QThread):
                 base_transaction_no = case_number
 
             # Prepare case data
-            date_str = transaction["date"].strftime("%Y-%m-%d")
+            date_str = date_obj.strftime("%Y-%m-%d")
+
+            # Safe category access
+            category_name = self.category.get("name", "Unknown")
+            if not category_name or category_name == "Unknown":
+                logger.error("Invalid category name", extra={"category": self.category})
+                return None
+
+            # Log category access
+            if not hasattr(self, 'category') or 'name' not in self.category:
+                logger.error("Missing or invalid category", extra={"category": self.category})
+                return None
 
             # Determine list and status based on transaction type
+            if "type" not in transaction:
+                logger.error("Missing 'type' key in transaction", extra={"transaction": transaction})
+                return None
+
             if transaction["type"] == "GJ":
+                if "item" not in transaction or "user_id" not in transaction:
+                    logger.error("Missing keys for GJ type", extra={"transaction": transaction})
+                    return None
                 list_name = "Checklist"
                 status = "Alleged"
                 description = f"{transaction['item']}. Journal authorised by BAS user {transaction['user_id']}"
@@ -331,6 +387,9 @@ class OptimizedImportWorker(QThread):
                 bas_payment_no = None
                 bas_payment_date = None
             elif transaction["type"] == "AP":
+                if "description" not in transaction or "user_id" not in transaction or "number" not in transaction:
+                    logger.error("Missing keys for AP type", extra={"transaction": transaction})
+                    return None
                 list_name = "Checklist"
                 status = "Alleged"
                 description = f"{transaction['description']} Payment authorised by BAS user {transaction['user_id']}"
@@ -339,6 +398,9 @@ class OptimizedImportWorker(QThread):
                 bas_payment_no = transaction["number"].lstrip("0") or "0"
                 bas_payment_date = date_str
             else:  # CL
+                if "description" not in transaction or "user_id" not in transaction or "number" not in transaction:
+                    logger.error("Missing keys for CL type", extra={"transaction": transaction})
+                    return None
                 list_name = "Checklist"
                 status = "Alleged"
                 description = f"{transaction['description']} Payment authorised by BAS user {transaction['user_id']}"
@@ -346,6 +408,10 @@ class OptimizedImportWorker(QThread):
                 bas_journal_date = None
                 bas_payment_no = transaction["number"].lstrip("0") or "0"
                 bas_payment_date = date_str
+
+            if "amount" not in transaction:
+                logger.error("Missing 'amount' key in transaction", extra={"transaction": transaction})
+                return None
 
             return {
                 "transaction_no": case_number,
@@ -387,6 +453,35 @@ class OptimizedImportWorker(QThread):
     def _import_transaction_optimized(self, transaction: Dict) -> str:
         """Import a single transaction with optimized database operations."""
         try:
+            # Safe access (reuse logic from prepare_case_data)
+            responsibility = transaction.get("responsibility")
+            date_obj = transaction.get("date")
+            trans_type = transaction.get("type")
+            item = transaction.get("item")
+            description = transaction.get("description", "")
+            user_id = transaction.get("user_id", "")
+            number = transaction.get("number", "0")
+            amount = transaction.get("amount")
+
+            # Log transaction for debugging
+            logger.debug("Importing transaction", extra={
+                "keys_present": list(transaction.keys()),
+                "responsibility": responsibility,
+                "date": date_obj
+            })
+
+            if not responsibility:
+                raise Exception("Missing 'responsibility' key in transaction")
+
+            if not date_obj:
+                raise Exception("Missing 'date' key in transaction")
+
+            if amount is None:
+                raise Exception("Missing 'amount' key in transaction")
+
+            if not trans_type:
+                raise Exception("Missing 'type' key in transaction")
+
             with memory_efficient_db_connection() as conn:
                 cursor = conn.cursor()
 
@@ -396,12 +491,13 @@ class OptimizedImportWorker(QThread):
                     raise Exception("Financial Year not found")
 
                 # Get period and responsibility IDs
-                period_id = self._get_period_id(transaction["date"], fy_id)
-                resp_id = self._get_responsibility_id(transaction["responsibility"])
+                period_id = self._get_period_id(date_obj, fy_id)
+                responsibility_name = responsibility.strip()
+                resp_id = self._get_responsibility_id(responsibility_name)
 
                 if not resp_id:
                     raise Exception(
-                        f"Responsibility '{transaction['responsibility']}' not found"
+                        f"Responsibility '{responsibility}' not found"
                     )
 
                 # Use the case number that was already assigned during preview
@@ -521,11 +617,33 @@ class OptimizedImportWorker(QThread):
 
     def _get_fy_id(self) -> int:
         """Get financial year ID."""
-        fy = self.selected_fy or get_financial_year()
+        from scripts.Utilities.financial_utils import get_current_open_financial_year
+
+        current_open = get_current_open_financial_year()
+        if current_open:
+            fy_id, _ = current_open
+            return fy_id
+
+        # Fallback to selected_fy if provided
+        if self.selected_fy:
+            fy = self.selected_fy
+            fy_parts = fy.split("-")
+            start_year = int(fy_parts[0])
+            end_year = int(fy_parts[1])
+            with memory_efficient_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT id FROM financial_years WHERE start_year = ? AND end_year = ?",
+                    (start_year, end_year),
+                )
+                result = cursor.fetchone()
+                return result[0] if result else None
+
+        # Final fallback to get_financial_year
+        fy = get_financial_year()
         fy_parts = fy.split("-")
         start_year = int(fy_parts[0])
         end_year = int(fy_parts[1])
-
         with memory_efficient_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -554,15 +672,20 @@ class OptimizedImportWorker(QThread):
             return result[0] if result else None
 
     def _get_responsibility_id(self, responsibility_name: str) -> int:
-        """Get responsibility ID by name."""
+        """Get responsibility ID by name with normalization."""
         with memory_efficient_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT id FROM responsibilities WHERE name = ?",
+                "SELECT id FROM responsibilities WHERE LOWER(TRIM(name)) = LOWER(?) LIMIT 1",
                 (responsibility_name,),
             )
             result = cursor.fetchone()
-            return result[0] if result else None
+            if result:
+                logger.info(f"Resolved responsibility '{responsibility_name}' to ID: {result[0]}")
+                return result[0]
+            else:
+                logger.warning(f"No responsibility match found for '{responsibility_name}', using default ID 1")
+                return 1  # Fallback to default responsibility ID
 
     def _generate_case_number(self, fy_id: int) -> str:
         """Generate a new case number for the financial year."""

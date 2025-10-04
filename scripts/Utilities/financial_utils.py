@@ -1,14 +1,11 @@
-from datetime import datetime
+from datetime import datetime, date
 
+from .central_fy_utils import CentralFYUtils
 from .config import DB_PATH, logging
 
 
 def get_financial_year():
-    today = datetime.now()
-    year = today.year
-    if today.month >= 4:
-        return f"{year}-{year + 1}"
-    return f"{year - 1}-{year}"
+    return CentralFYUtils(DB_PATH).get_fy_from_date(date.today())
 
 
 def generate_transaction_no(fy):

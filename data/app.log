@@ -7097,3 +7097,174 @@ PERFORMANCE RECOMMENDATIONS:
 {"timestamp": "2025-09-29T22:24:13Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
 {"timestamp": "2025-09-29T22:39:45Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
 {"timestamp": "2025-09-29T22:39:45Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-01T17:11:12Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-01T17:11:13Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T12:42:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T12:42:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T12:42:23Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T12:42:43Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T12:42:43Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T12:42:43Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T13:35:20Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T13:35:20Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T13:35:20Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:02:56Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:02:57Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:02:57Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:08:52Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:08:52Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:08:52Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:11:37Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:11:37Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:11:37Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:13:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:13:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:13:23Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:15:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:15:09Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:15:09Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:16:15Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:16:15Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:16:15Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:17:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:17:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:17:23Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:19:59Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:19:59Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:19:59Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:31:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:31:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:31:53Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:34:49Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:34:49Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:34:49Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "ImportWorker starting"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "root", "message": "Audit log saved successfully: CASE_IMPORTED"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Imported case"}
+{"timestamp": "2025-10-04T14:36:06Z", "level": "INFO", "logger": "scripts.core.import_worker.worker_base", "message": "Import completed"}
+{"timestamp": "2025-10-04T14:46:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:46:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:46:23Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:58:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:58:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T14:58:39Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T14:58:39Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T14:58:43Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T14:58:48Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T14:58:51Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T14:59:13Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:00:17Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:00:17Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:00:17Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:00:17Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T15:01:37Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:11:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:11:48Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:11:48Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:13:02Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:13:02Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:13:02Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:16:18Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:16:18Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:16:18Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:17:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:17:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:17:23Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:17:28Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:20:45Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:20:45Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:20:45Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:20:49Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:20:57Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:26:02Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:26:02Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:26:02Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:26:40Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:26:46Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:27:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:27:53Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:27:53Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:27:58Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:40:11Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:40:11Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:40:11Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:40:11Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T15:40:23Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:41:11Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:41:11Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T15:41:11Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T15:41:11Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T15:41:18Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:41:29Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T15:48:16Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T17:21:59Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:21:59Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:21:59Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T17:21:59Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T17:40:04Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:40:04Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:40:04Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T17:40:04Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T17:40:38Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T17:41:20Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T17:43:31Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T17:56:37Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:56:37Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:56:37Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T17:56:37Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T17:56:46Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T17:57:16Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:57:16Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T17:57:16Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T17:57:16Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T18:14:22Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:14:23Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:14:23Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T18:14:23Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T18:14:32Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T18:14:32Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-001: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:14:32Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-002: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:14:32Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-003: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:14:32Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-004: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:14:32Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-005: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:14:32Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-006: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:41Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T18:17:41Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-001: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:41Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-002: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:41Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-003: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:41Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-004: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:41Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-005: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:41Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-006: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:46Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T18:17:47Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-001: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:47Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-002: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:47Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-003: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:47Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-004: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:47Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-005: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:17:47Z", "level": "ERROR", "logger": "root", "message": "Error getting finalized status for TEST-006: no such column: is_finalized"}
+{"timestamp": "2025-10-04T18:22:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:22:30Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:22:30Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T18:22:30Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T18:23:22Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T18:23:27Z", "level": "ERROR", "logger": "root", "message": "Failed to load responsibilities: no such column: parent_id"}
+{"timestamp": "2025-10-04T18:28:27Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:28:27Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:28:27Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-04T18:28:27Z", "level": "ERROR", "logger": "root", "message": "Failed to get active period display: no such column: active_period"}
+{"timestamp": "2025-10-04T18:44:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:44:14Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-04T18:44:14Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}
+{"timestamp": "2025-10-05T00:00:38Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-05T00:00:39Z", "level": "INFO", "logger": "scripts.Utilities.metrics_collectors", "message": "Application event: application_startup"}
+{"timestamp": "2025-10-05T00:00:39Z", "level": "INFO", "logger": "root", "message": "Shared documents table initialized successfully"}

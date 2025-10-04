@@ -39,7 +39,7 @@ class WipeCasesDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("⚠️ Wipe Cases - DANGER ZONE")
-        self.setFixedSize(500, 400)
+        self.setFixedSize(600, 450)
         self.setModal(True)
         self.setup_ui()
         self.load_financial_years()
@@ -98,7 +98,7 @@ class WipeCasesDialog(QDialog):
         fy_layout = QFormLayout()
 
         self.fy_combo = NoWheelComboBox()
-        self.fy_combo.setMinimumWidth(200)
+        self.fy_combo.setMinimumWidth(250)
         fy_layout.addRow("Financial Year:", self.fy_combo)
 
         fy_group.setLayout(fy_layout)
@@ -118,6 +118,22 @@ class WipeCasesDialog(QDialog):
         """
         )
         layout.addWidget(self.case_count_label)
+
+        # Orphaned cases warning
+        self.orphaned_label = QLabel("")
+        self.orphaned_label.setStyleSheet(
+            """
+            QLabel {
+                color: #dc3545;
+                font-weight: bold;
+                padding: 5px;
+                background-color: #fff3cd;
+                border: 1px solid #ffeaa7;
+                border-radius: 3px;
+            }
+        """
+        )
+        layout.addWidget(self.orphaned_label)
 
         # Connect fy combo change to update case count
         self.fy_combo.currentIndexChanged.connect(self.update_case_count)
@@ -179,9 +195,12 @@ class WipeCasesDialog(QDialog):
 
             self.fy_combo.clear()
 
-            # Find current open year for default selection
+            # Add "All Valid FYs" option first (special value None)
+            self.fy_combo.addItem("All Valid FYs (Default)", None)
+
+            # Find current open year for default selection after all
             current_open = get_current_open_financial_year()
-            default_index = 0
+            default_index = 0  # Default to "All"
 
             for i, (fy_id, fy_string, is_open) in enumerate(financial_years):
                 display_text = f"{fy_string}"
@@ -192,12 +211,12 @@ class WipeCasesDialog(QDialog):
 
                 self.fy_combo.addItem(display_text, fy_id)
 
-                # Set default to current open year
+                # Set default to current open year if not "All"
                 if current_open and fy_id == current_open[0]:
-                    default_index = i
+                    default_index = i + 1  # +1 because "All" is first
 
-            # Set default selection
-            self.fy_combo.setCurrentIndex(default_index)
+            # Set default selection to "All Valid FYs"
+            self.fy_combo.setCurrentIndex(0)
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load financial years: {e}")
@@ -207,21 +226,61 @@ class WipeCasesDialog(QDialog):
         """Update the case count display for selected financial year"""
         try:
             fy_id = self.fy_combo.currentData()
-
-            if not fy_id:
-                self.case_count_label.setText(
-                    "Select a financial year to see case count..."
-                )
-                return
+            selected_text = self.fy_combo.currentText()
 
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            # Count cases for this financial year
+            if fy_id is None:  # "All Valid FYs"
+                # Count cases for all valid FYs
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) FROM cases c
+                    JOIN financial_years fy ON c.fy_id = fy.id
+                    """
+                )
+                valid_case_count = cursor.fetchone()[0]
+
+                # Count orphaned cases separately
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) FROM cases
+                    WHERE fy_id NOT IN (SELECT id FROM financial_years) OR fy_id IS NULL
+                """
+                )
+                orphaned_count = cursor.fetchone()[0]
+
+                conn.close()
+
+                if valid_case_count == 0 and orphaned_count == 0:
+                    self.case_count_label.setText("No cases found in valid financial years.")
+                elif valid_case_count > 0 and orphaned_count == 0:
+                    self.case_count_label.setText(
+                        f"⚠️ {valid_case_count} case(s) in valid FYs will be permanently deleted!"
+                    )
+                elif valid_case_count == 0 and orphaned_count > 0:
+                    self.case_count_label.setText(
+                        f"⚠️ {orphaned_count} orphaned case(s) will be cleaned up!"
+                    )
+                else:
+                    self.case_count_label.setText(
+                        f"⚠️ {valid_case_count} case(s) in valid FYs + {orphaned_count} orphaned case(s) will be cleaned up!"
+                    )
+
+                if orphaned_count > 0:
+                    self.orphaned_label.setText(
+                        f"⚠️ Warning: {orphaned_count} orphaned cases (invalid FY IDs) will be deleted separately."
+                    )
+                else:
+                    self.orphaned_label.setText("")
+
+                return
+
+            # Count cases for specific FY
             cursor.execute("SELECT COUNT(*) FROM cases WHERE fy_id = ?", (fy_id,))
             fy_case_count = cursor.fetchone()[0]
 
-            # Count orphaned cases (NULL or invalid fy_id)
+            # Count orphaned cases separately
             cursor.execute(
                 """
                 SELECT COUNT(*) FROM cases
@@ -233,10 +292,10 @@ class WipeCasesDialog(QDialog):
             conn.close()
 
             if fy_case_count == 0 and orphaned_count == 0:
-                self.case_count_label.setText("No cases found for this financial year.")
+                self.case_count_label.setText(f"No cases found for {selected_text}.")
             elif fy_case_count > 0 and orphaned_count == 0:
                 self.case_count_label.setText(
-                    f"⚠️ {fy_case_count} case(s) will be permanently deleted!"
+                    f"⚠️ {fy_case_count} case(s) in {selected_text} will be permanently deleted!"
                 )
             elif fy_case_count == 0 and orphaned_count > 0:
                 self.case_count_label.setText(
@@ -244,19 +303,45 @@ class WipeCasesDialog(QDialog):
                 )
             else:
                 self.case_count_label.setText(
-                    f"⚠️ {fy_case_count} case(s) + {orphaned_count} orphaned case(s) will be cleaned up!"
+                    f"⚠️ {fy_case_count} case(s) in {selected_text} + {orphaned_count} orphaned case(s) will be cleaned up!"
                 )
+
+            if orphaned_count > 0:
+                self.orphaned_label.setText(
+                    f"⚠️ Warning: {orphaned_count} orphaned cases (invalid FY IDs) will be deleted separately."
+                )
+            else:
+                self.orphaned_label.setText("")
 
         except sqlite3.Error as e:
             self.case_count_label.setText(f"Error counting cases: {e}")
+            self.orphaned_label.setText("")
 
     def confirm_wipe(self):
         """Show confirmation dialog before wiping"""
         fy_id = self.fy_combo.currentData()
         fy_text = self.fy_combo.currentText()
 
-        if not fy_id:
-            QMessageBox.warning(self, "No Selection", "Please select a financial year.")
+        if fy_id is None and fy_text == "All Valid FYs (Default)":
+            fy_id = None  # All valid
+
+        if fy_id is None:
+            # For all valid, confirm
+            reply = QMessageBox.question(
+                self,
+                "Confirm Wipe All Valid FYs",
+                "Are you sure you want to wipe ALL cases from valid financial years?\n\n"
+                "Orphaned cases will be cleaned up separately.\n\n"
+                "This action CANNOT be undone!",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.Yes:
+                if self.case_count_label.text().startswith("⚠️"):
+                    # Extract counts from label or requery
+                    self.perform_wipe(fy_id, fy_text, 0, 0)  # Counts handled inside
+                else:
+                    QMessageBox.information(self, "No Action", "No cases to wipe.")
             return
 
         # Get case counts for confirmation
@@ -264,18 +349,33 @@ class WipeCasesDialog(QDialog):
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
-            # Count cases for this financial year
-            cursor.execute("SELECT COUNT(*) FROM cases WHERE fy_id = ?", (fy_id,))
-            fy_case_count = cursor.fetchone()[0]
-
-            # Count orphaned cases
-            cursor.execute(
+            if fy_id is None:  # All valid
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) FROM cases c
+                    JOIN financial_years fy ON c.fy_id = fy.id
                 """
-                SELECT COUNT(*) FROM cases
-                WHERE fy_id NOT IN (SELECT id FROM financial_years) OR fy_id IS NULL
-            """
-            )
-            orphaned_count = cursor.fetchone()[0]
+                )
+                valid_case_count = cursor.fetchone()[0]
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) FROM cases
+                    WHERE fy_id NOT IN (SELECT id FROM financial_years) OR fy_id IS NULL
+                """
+                )
+                orphaned_count = cursor.fetchone()[0]
+                fy_case_count = valid_case_count
+            else:
+                # Specific FY
+                cursor.execute("SELECT COUNT(*) FROM cases WHERE fy_id = ?", (fy_id,))
+                fy_case_count = cursor.fetchone()[0]
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) FROM cases
+                    WHERE fy_id NOT IN (SELECT id FROM financial_years) OR fy_id IS NULL
+                """
+                )
+                orphaned_count = cursor.fetchone()[0]
 
             conn.close()
         except sqlite3.Error as e:
@@ -288,7 +388,7 @@ class WipeCasesDialog(QDialog):
             QMessageBox.information(
                 self,
                 "No Cases",
-                "No cases found for this financial year or orphaned cases to clean up.",
+                "No cases found for the selected financial year(s) or orphaned cases to clean up.",
             )
             return
 
@@ -297,16 +397,28 @@ class WipeCasesDialog(QDialog):
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("FINAL CONFIRMATION - DATA LOSS")
 
-        if fy_case_count > 0 and orphaned_count > 0:
-            msg.setText(
-                f"You are about to DELETE {fy_case_count} case(s) from {fy_text} and {orphaned_count} orphaned case(s)"
-            )
-        elif fy_case_count > 0:
-            msg.setText(
-                f"You are about to DELETE {fy_case_count} case(s) from {fy_text}"
-            )
+        if fy_id is None:
+            if fy_case_count > 0 and orphaned_count > 0:
+                msg.setText(
+                    f"You are about to DELETE {fy_case_count} case(s) from ALL valid FYs and {orphaned_count} orphaned case(s)"
+                )
+            elif fy_case_count > 0:
+                msg.setText(
+                    f"You are about to DELETE {fy_case_count} case(s) from ALL valid FYs"
+                )
+            else:
+                msg.setText(f"You are about to DELETE {orphaned_count} orphaned case(s)")
         else:
-            msg.setText(f"You are about to DELETE {orphaned_count} orphaned case(s)")
+            if fy_case_count > 0 and orphaned_count > 0:
+                msg.setText(
+                    f"You are about to DELETE {fy_case_count} case(s) from {fy_text} and {orphaned_count} orphaned case(s)"
+                )
+            elif fy_case_count > 0:
+                msg.setText(
+                    f"You are about to DELETE {fy_case_count} case(s) from {fy_text}"
+                )
+            else:
+                msg.setText(f"You are about to DELETE {orphaned_count} orphaned case(s)")
 
         msg.setInformativeText(
             "This action CANNOT be undone!\n\n"
@@ -425,11 +537,17 @@ class WipeCasesDialog(QDialog):
                 cleaned_count = 0
 
             # Check installments before deletion
-            cursor.execute("SELECT COUNT(*) FROM installments")
-            total_installments_before = cursor.fetchone()[0]
-            print(
-                f"DEBUG: Total installments before cleanup: {total_installments_before}"
-            )
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='installments'")
+            installments_table_exists = cursor.fetchone() is not None
+            if installments_table_exists:
+                cursor.execute("SELECT COUNT(*) FROM installments")
+                total_installments_before = cursor.fetchone()[0]
+                print(
+                    f"DEBUG: Total installments before cleanup: {total_installments_before}"
+                )
+            else:
+                total_installments_before = 0
+                print("DEBUG: Installments table does not exist; total before: 0")
 
             with open("wipe_debug.log", "a") as f:
                 f.write(
@@ -438,15 +556,20 @@ class WipeCasesDialog(QDialog):
 
             # Also delete related data that depends on cases BEFORE deleting cases
             # Delete installments for cases in this financial year
-            cursor.execute(
-                """
-                DELETE FROM installments
-                WHERE case_id IN (SELECT id FROM cases WHERE fy_id = ?)
-            """,
-                (fy_id,),
-            )
-            installments_deleted = cursor.rowcount
-            print(f"DEBUG: Deleted {installments_deleted} installments for FY {fy_id}")
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='installments'")
+            if cursor.fetchone():
+                cursor.execute(
+                    """
+                    DELETE FROM installments
+                    WHERE case_id IN (SELECT id FROM cases WHERE fy_id = ?)
+                """,
+                    (fy_id,),
+                )
+                installments_deleted = cursor.rowcount
+                print(f"DEBUG: Deleted {installments_deleted} installments for FY {fy_id}")
+            else:
+                installments_deleted = 0
+                print("DEBUG: Installments table does not exist; skipping deletion")
 
             with open("wipe_debug.log", "a") as f:
                 f.write(
@@ -454,16 +577,21 @@ class WipeCasesDialog(QDialog):
                 )
 
             # Also clean up any orphaned installments (installments for non-existent cases)
-            cursor.execute(
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='installments'")
+            if cursor.fetchone():
+                cursor.execute(
+                    """
+                    DELETE FROM installments
+                    WHERE case_id NOT IN (SELECT id FROM cases)
                 """
-                DELETE FROM installments
-                WHERE case_id NOT IN (SELECT id FROM cases)
-            """
-            )
-            orphaned_installments_deleted = cursor.rowcount
-            print(
-                f"DEBUG: Deleted {orphaned_installments_deleted} orphaned installments"
-            )
+                )
+                orphaned_installments_deleted = cursor.rowcount
+                print(
+                    f"DEBUG: Deleted {orphaned_installments_deleted} orphaned installments"
+                )
+            else:
+                orphaned_installments_deleted = 0
+                print("DEBUG: Installments table does not exist; skipping orphaned cleanup")
 
             with open("wipe_debug.log", "a") as f:
                 f.write(
@@ -471,11 +599,17 @@ class WipeCasesDialog(QDialog):
                 )
 
             # Check installments after deletion
-            cursor.execute("SELECT COUNT(*) FROM installments")
-            total_installments_after = cursor.fetchone()[0]
-            print(
-                f"DEBUG: Total installments after cleanup: {total_installments_after}"
-            )
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='installments'")
+            installments_table_exists = cursor.fetchone() is not None
+            if installments_table_exists:
+                cursor.execute("SELECT COUNT(*) FROM installments")
+                total_installments_after = cursor.fetchone()[0]
+                print(
+                    f"DEBUG: Total installments after cleanup: {total_installments_after}"
+                )
+            else:
+                total_installments_after = 0
+                print("DEBUG: Installments table does not exist; total after: 0")
 
             with open("wipe_debug.log", "a") as f:
                 f.write(

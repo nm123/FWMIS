@@ -78,7 +78,7 @@ class UISetupManager:
 
         # FY buttons
         fy_buttons_layout = QHBoxLayout()
-        self.dialog.create_fy_button = QPushButton("Create New FY")
+        self.dialog.create_fy_button = QPushButton("Add Next FY")
         self.dialog.create_fy_button.clicked.connect(self.dialog.create_financial_year)
         self.dialog.open_fy_button = QPushButton("Open FY")
         self.dialog.open_fy_button.clicked.connect(self.dialog.open_financial_year)

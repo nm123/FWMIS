@@ -126,6 +126,7 @@ class BASParser:
                     try:
                         date_obj = datetime.strptime(user_date, "%d/%m/%Y").date()
                     except ValueError:
+                        print(f"Warning: Invalid date '{user_date}' in line, skipping transaction")
                         continue  # Skip invalid dates
 
                     # Validate date range (skip if dates are None - used for header extraction)
@@ -137,6 +138,7 @@ class BASParser:
                     try:
                         amount = float(debit) if float(debit) > 0 else -float(credit)
                     except ValueError:
+                        print(f"Warning: Invalid amount (debit='{debit}', credit='{credit}'), skipping transaction")
                         continue
 
                     # Create transaction record
@@ -151,6 +153,10 @@ class BASParser:
                         "amount": amount,
                         "is_credit": amount < 0,
                     }
+
+                    # Log if keys are unexpectedly missing (defensive)
+                    if not all(k in transaction for k in ["responsibility", "item", "date", "amount"]):
+                        print(f"Warning: Incomplete transaction created: {transaction}")
 
                     self.transactions.append(transaction)
 

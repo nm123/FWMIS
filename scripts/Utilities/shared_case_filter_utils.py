@@ -5,6 +5,7 @@ Ensures identical filtering logic across both dialogs.
 
 import sqlite3
 
+from scripts.Utilities.central_fy_utils import CentralFYUtils
 from scripts.Utilities.config import DB_PATH
 
 
@@ -34,67 +35,81 @@ def get_list_filter_conditions(selected_list):
 def build_case_query(fy_filter_combo, list_filter_combo, resp_ids=None):
     """
     Build a consistent SQL query for case filtering across both dialogs.
-
+    
     Args:
         fy_filter_combo: Financial year filter combo box
         list_filter_combo: List filter combo box
         resp_ids: Optional list of responsibility IDs to filter by
-
+    
     Returns:
         tuple: (query_string, params_list)
     """
     # Base conditions
-    base_conditions = ["fy_id IS NOT NULL AND responsibility_id IS NOT NULL"]
+    base_conditions = ["fy_id IS NOT NULL AND responsibility_id IS NOT NULL", "fy_id IN (SELECT id FROM financial_years)"]
     params = []
-
+    
     # Add financial year filter
     selected_fy_id = fy_filter_combo.currentData()
-    if selected_fy_id:
-        base_conditions.append("fy_id = ?")
-        params.append(selected_fy_id)
-
+    utils = CentralFYUtils()
+    fy_condition, fy_params = utils.build_fy_filter_query(selected_fy_id)
+    if fy_condition:
+        base_conditions.append(fy_condition)
+        params.extend(fy_params)
+    
     # Add list filter condition
     selected_list = list_filter_combo.currentText()
     list_condition = get_list_filter_conditions(selected_list)
     if list_condition != "1=1":
         base_conditions.append(list_condition)
-
+    
     # Add responsibility filter if provided
     if resp_ids:
         placeholders = ",".join("?" for _ in resp_ids)
         base_conditions.append(f"responsibility_id IN ({placeholders})")
         params.extend(resp_ids)
-
+    
     # Build final query
     where_clause = " AND ".join(base_conditions)
     query = f"""
-        SELECT transaction_no, date_reported, category, amount, assessment_status, 
-               lc_status, suffixes, bas_payment_no, bas_journal_no 
-        FROM cases 
+        SELECT transaction_no, date_reported, category, amount, assessment_status,
+               lc_status, suffixes, bas_payment_no, bas_journal_no
+        FROM cases
         WHERE {where_clause}
         ORDER BY transaction_no
     """
-
+    
+    # DEBUG LOG: Print the built query and params for diagnosis
+    print(f"DEBUG [build_case_query]: Selected FY ID: {selected_fy_id}, Selected List: {selected_list}, Resp IDs: {resp_ids}")
+    print(f"DEBUG [build_case_query]: Where clause: {where_clause}")
+    print(f"DEBUG [build_case_query]: Params: {params}")
+    print(f"DEBUG [build_case_query]: Full Query: {query}")
+    
     return query, params
 
 
 def execute_case_query(query, params):
     """
     Execute a case query and return results.
-
+    
     Args:
         query (str): SQL query string
         params (list): Query parameters
-
+    
     Returns:
         list: List of case data tuples
     """
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-
+    
     try:
         cursor.execute(query, params)
         rows = cursor.fetchall()
+        # DEBUG LOG: Print execution results for diagnosis
+        print(f"DEBUG [execute_case_query]: Executed query with {len(params)} params, returned {len(rows)} rows")
+        if rows:
+            print(f"DEBUG [execute_case_query]: Sample row: {rows[0]}")
+        else:
+            print(f"DEBUG [execute_case_query]: No rows returned - possible exclusion in base conditions or filters")
         return rows
     except sqlite3.Error as e:
         print(f"Database query error: {e}")
@@ -143,12 +158,12 @@ def get_responsibilities_with_cases(fy_filter_combo, list_filter_combo):
 def search_case_by_number(case_no, fy_filter_combo, list_filter_combo):
     """
     Search for cases by number with consistent filtering.
-
+    
     Args:
         case_no (str): Case number to search for (with or without FW- prefix)
         fy_filter_combo: Financial year filter combo box
         list_filter_combo: List filter combo box
-
+    
     Returns:
         list: List of matching case tuples
     """
@@ -156,30 +171,31 @@ def search_case_by_number(case_no, fy_filter_combo, list_filter_combo):
     normalized_case_no = case_no
     if not case_no.upper().startswith("FW-"):
         normalized_case_no = f"FW-{case_no}"
-
+    
     # Build base query with list filtering
-    base_conditions = ["(transaction_no LIKE ? OR base_transaction_no LIKE ?)"]
-    base_conditions.append("fy_id IS NOT NULL AND responsibility_id IS NOT NULL")
+    base_conditions = ["(transaction_no LIKE ? OR base_transaction_no LIKE ?)", "fy_id IS NOT NULL AND responsibility_id IS NOT NULL", "fy_id IN (SELECT id FROM financial_years)"]
     params = [f"%{normalized_case_no}%", f"%{normalized_case_no}%"]
-
+    
     # Add financial year filter
     selected_fy_id = fy_filter_combo.currentData()
-    if selected_fy_id:
-        base_conditions.append("fy_id = ?")
-        params.append(selected_fy_id)
-
+    utils = CentralFYUtils()
+    fy_condition, fy_params = utils.build_fy_filter_query(selected_fy_id)
+    if fy_condition:
+        base_conditions.append(fy_condition)
+        params.extend(fy_params)
+    
     # Add list filter condition
     selected_list = list_filter_combo.currentText()
     list_condition = get_list_filter_conditions(selected_list)
     if list_condition != "1=1":
         base_conditions.append(list_condition)
-
+    
     where_clause = " AND ".join(base_conditions)
     query = f"""
-        SELECT transaction_no, date_reported, category, amount, assessment_status, 
-               lc_status, suffixes, bas_payment_no, bas_journal_no 
-        FROM cases 
+        SELECT transaction_no, date_reported, category, amount, assessment_status,
+               lc_status, suffixes, bas_payment_no, bas_journal_no
+        FROM cases
         WHERE {where_clause}
     """
-
+    
     return execute_case_query(query, params)

@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from scripts.Utilities.database_connection import DatabaseManager
 from scripts.Utilities.sql_builder import SQLBuilder
+from scripts.Utilities.central_fy_utils import CentralFYUtils
+from scripts.Utilities.config import DB_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ class CaseRepository:
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
+        self.utils = CentralFYUtils(DB_PATH)
 
     def get_case_by_id(self, case_id: int) -> Optional[Dict[str, Any]]:
         """
@@ -223,9 +226,11 @@ class CaseRepository:
                 conditions.append("responsibility_id = ?")
                 params.append(responsibility_id)
 
-            if fy_id:
-                conditions.append("fy_id = ?")
-                params.append(fy_id)
+            if fy_id is not None:
+                cond, p = self.utils.build_fy_filter_query(fy_id)
+                if cond:
+                    conditions.append(cond)
+                    params.extend(p)
 
             where_clause = " AND ".join(conditions) if conditions else ""
             query = f"""
@@ -379,7 +384,12 @@ class CaseRepository:
                 conditions["financial_year"] = financial_year
 
             if fy_id is not None:
-                conditions["fy_id"] = fy_id
+                cond, p = self.utils.build_fy_filter_query(fy_id)
+                if cond:
+                    # For SQLBuilder, add a dummy condition if needed, but since manual build later, handle in query build
+                    # Actually, since get_cases_with_filters uses SQLBuilder only if no search, need to integrate
+                    # To minimize, replace the conditions with manual if fy_id
+                    pass  # Will handle below in query build
 
             if assessment_status and assessment_status != "All Assessment Statuses":
                 conditions["assessment_status"] = assessment_status
@@ -431,12 +441,28 @@ class CaseRepository:
                 if limit:
                     query += f" LIMIT {limit}"
             else:
-                query, params = SQLBuilder.build_select_query(
-                    "cases",
-                    where_conditions=conditions,
-                    order_by="date_reported DESC",
-                    limit=limit,
-                )
+                # Manual build for fy_id consistency
+                manual_conditions = []
+                manual_params = []
+                for col, val in conditions.items():
+                    if col == "fy_id":
+                        fy_cond, fy_p = self.utils.build_fy_filter_query(val)
+                        if fy_cond:
+                            manual_conditions.append(fy_cond)
+                            manual_params.extend(fy_p)
+                    else:
+                        manual_conditions.append(f"{col} = ?")
+                        manual_params.append(val)
+                
+                where_clause = " AND ".join(manual_conditions) if manual_conditions else ""
+                query = f"""
+                    SELECT * FROM cases
+                    {f"WHERE {where_clause}" if where_clause else ""}
+                    ORDER BY date_reported DESC
+                """
+                if limit:
+                    query += f" LIMIT {limit}"
+                params = manual_params
             return self.db_manager.execute_query(query, params)
         except Exception as e:
             logger.error(f"Failed to get cases with filters: {e}")

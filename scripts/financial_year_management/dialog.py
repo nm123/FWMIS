@@ -21,7 +21,7 @@ class FinancialYearManagementDialog:
     def __init__(self, parent=None):
         """
         Initialize the financial year management dialog.
-
+        
         Args:
             parent: Parent widget
         """
@@ -35,6 +35,12 @@ class FinancialYearManagementDialog:
         from .fy_manager import FinancialYearManager
         from .period_manager import PeriodManager
         from .ui_setup import UISetupManager
+        
+        from scripts.Utilities.central_fy_utils import CentralFYUtils, FYError
+        from scripts.Utilities.config import DB_PATH
+        from PyQt5.QtWidgets import QMessageBox
+        
+        self.utils = CentralFYUtils(DB_PATH)
 
         self.ui_manager = UISetupManager(self)
         self.fy_manager = FinancialYearManager(self)
@@ -57,6 +63,22 @@ class FinancialYearManagementDialog:
     def create_financial_year(self) -> None:
         """Create a new financial year."""
         self.fy_manager.create_financial_year()
+
+    def on_activate_clicked(self):
+        current_item = self.fy_tree.currentItem()
+        if current_item:
+            try:
+                self.utils.activate_fy(current_item.fy_id)
+            except FYError as e:
+                QMessageBox.warning(self.dialog, "FY Error", str(e))
+
+    def on_close_clicked(self):
+        current_item = self.fy_tree.currentItem()
+        if current_item:
+            try:
+                self.utils.close_fy(current_item.fy_id)
+            except FYError as e:
+                QMessageBox.warning(self.dialog, "FY Error", str(e))
 
     def open_financial_year(self) -> None:
         """Open a financial year."""

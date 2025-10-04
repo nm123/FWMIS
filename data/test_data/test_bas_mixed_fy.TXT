@@ -1,0 +1,3 @@
+Transaction_No|Amount|Vendor_Name|Date|Category|Description
+MIX-001|500.00|Mixed Vendor|2024-12-01|Duplicate Supplier Payments|Mixed FY date previous year
+MIX-002|600.00|Mixed Vendor|2025-08-01|Duplicate Supplier Payments|Mixed FY date current year
