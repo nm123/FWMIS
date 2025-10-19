@@ -33,7 +33,7 @@ def analyze_database_vs_import_data(transactions, category, date_from, date_to):
         print("=" * 80)
 
         # 1. Database content analysis
-        print(f"\n1. DATABASE CONTENT ANALYSIS (FY: {fy}, fy_id: {fy_id})")
+        print("\n1. DATABASE CONTENT ANALYSIS (FY: {}, fy_id: {})".format(fy, fy_id))
         print("-" * 50)
 
         cursor.execute(
@@ -62,29 +62,41 @@ def analyze_database_vs_import_data(transactions, category, date_from, date_to):
         print("\nSample database cases:")
         for case in db_cases:
             print(
-                f"  {case[0]} | RespID: {case[1]} | Cat: {case[2]} | Amt: {case[3]:.2f} | List: {case[4]} | Status: {case[5]}"
+                "  {} | RespID: {} | Cat: {} | Amt: {:.2f} | List: {} | Status: {}".format(
+                    case[0],
+                    case[1],
+                    case[2],
+                    case[3],
+                    case[4],
+                    case[5],
+                )
             )
 
         # 2. Import data analysis
-        print(f"\n2. IMPORT DATA ANALYSIS")
+        print("\n2. IMPORT DATA ANALYSIS")
         print("-" * 50)
-        print(f"Total transactions to import: {len(transactions)}")
+        print("Total transactions to import: {}".format(len(transactions)))
 
         print("\nSample import transactions:")
         for i, transaction in enumerate(transactions[:10]):
             print(
-                f"  {i+1}. Resp: '{transaction['responsibility']}' | Cat: '{category['name']}' | Amt: {abs(transaction['amount']):.2f}"
+                "  {}. Resp: '{}' | Cat: '{}' | Amt: {:.2f}".format(
+                    i + 1,
+                    transaction["responsibility"],
+                    category["name"],
+                    abs(transaction["amount"]),
+                )
             )
 
         # 3. Responsibility mapping analysis
-        print(f"\n3. RESPONSIBILITY MAPPING ANALYSIS")
+        print("\n3. RESPONSIBILITY MAPPING ANALYSIS")
         print("-" * 50)
 
         # Get all unique responsibilities from import
         import_responsibilities = set(t["responsibility"] for t in transactions)
         print(f"Unique responsibilities in import: {len(import_responsibilities)}")
         for resp in sorted(list(import_responsibilities))[:10]:  # Show first 10
-            print(f"  '{resp}'")
+            print("  '{}'".format(resp))
 
         # Check which responsibilities exist in database
         existing_resp_map = {}
@@ -95,25 +107,27 @@ def analyze_database_vs_import_data(transactions, category, date_from, date_to):
             result = cursor.fetchone()
             existing_resp_map[resp_name] = result[0] if result else None
 
-        print(f"\nResponsibility mapping (import -> database ID):")
+        print("\nResponsibility mapping (import -> database ID):")
         for resp_name, db_id in existing_resp_map.items():
             status = "✓" if db_id else "✗"
-            print(f"  {status} '{resp_name}' -> ID: {db_id}")
+            print("  {} '{}' -> ID: {}".format(status, resp_name, db_id))
 
         # 4. Category analysis
-        print(f"\n4. CATEGORY ANALYSIS")
+        print("\n4. CATEGORY ANALYSIS")
         print("-" * 50)
-        print(f"Import category: '{category['name']}'")
+        print("Import category: '{}'".format(category["name"]))
 
         # Check if category exists
         cursor.execute("SELECT id FROM categories WHERE name = ?", (category["name"],))
         cat_result = cursor.fetchone()
-        print(
-            f"Category exists in database: {'✓' if cat_result else '✗'} (ID: {cat_result[0] if cat_result else 'None'})"
+        cat_exists_msg = "Category exists in database: {} (ID: {})".format(
+            "✓" if cat_result else "✗",
+            cat_result[0] if cat_result else "None",
         )
+        print(cat_exists_msg)
 
         # 5. Amount analysis
-        print(f"\n5. AMOUNT ANALYSIS")
+        print("\n5. AMOUNT ANALYSIS")
         print("-" * 50)
 
         import_amounts = [abs(t["amount"]) for t in transactions]
@@ -130,16 +144,23 @@ def analyze_database_vs_import_data(transactions, category, date_from, date_to):
         db_amounts = [row[0] for row in db_amount_rows]
 
         print(
-            f"Import amounts range: {min(import_amounts):.2f} - {max(import_amounts):.2f}"
+            "Import amounts range: {:.2f} - {:.2f}".format(
+                min(import_amounts),
+                max(import_amounts),
+            )
         )
-        print(
-            f"Database amounts range: {min(db_amounts):.2f} - {max(db_amounts):.2f}"
-            if db_amounts
-            else "No amounts in database"
-        )
+        if db_amounts:
+            print(
+                "Database amounts range: {:.2f} - {:.2f}".format(
+                    min(db_amounts),
+                    max(db_amounts),
+                )
+            )
+        else:
+            print("No amounts in database")
 
         # 6. Potential matches analysis
-        print(f"\n6. POTENTIAL MATCHES ANALYSIS")
+        print("\n6. POTENTIAL MATCHES ANALYSIS")
         print("-" * 50)
 
         matches_found = 0
@@ -159,16 +180,27 @@ def analyze_database_vs_import_data(transactions, category, date_from, date_to):
                 if count > 0:
                     matches_found += 1
                     print(
-                        f"  ✓ Transaction '{transaction['responsibility']}' has {count} potential matches by responsibility"
+                        "  ✓ Transaction '{}' has {} potential matches by responsibility".format(
+                            transaction["responsibility"],
+                            count,
+                        )
                     )
 
-        print(f"\nSUMMARY:")
-        print(f"- Database cases: {total_db_cases}")
-        print(f"- Import transactions: {len(transactions)}")
+        print("\nSUMMARY:")
+        print("- Database cases: {}".format(total_db_cases))
+        print("- Import transactions: {}".format(len(transactions)))
+        resp_matches = sum(1 for v in existing_resp_map.values() if v is not None)
         print(
-            f"- Responsibilities with DB matches: {sum(1 for v in existing_resp_map.values() if v is not None)}/{len(existing_resp_map)}"
+            "- Responsibilities with DB matches: {}/{}".format(
+                resp_matches,
+                len(existing_resp_map),
+            )
         )
-        print(f"- Transactions with potential matches: {matches_found}/5 (sampled)")
+        print(
+            "- Transactions with potential matches: {}/5 (sampled)".format(
+                matches_found
+            )
+        )
 
         if matches_found == 0:
             print("\n⚠️  POTENTIAL ISSUES IDENTIFIED:")

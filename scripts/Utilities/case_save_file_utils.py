@@ -27,7 +27,8 @@ def handle_file_operations(dialog_instance, case: dict) -> dict:
         dialog_instance.lc_status_combo.currentTextChanged.disconnect(
             dialog_instance.on_lc_status_changed
         )
-        dialog_instance.list_combo.currentTextChanged.disconnect()  # Disconnect any list combo signals
+        dialog_instance.list_combo.currentTextChanged.disconnect()
+        # Disconnect any list combo signals
     except TypeError:
         pass  # Signals may not be connected
 
@@ -40,11 +41,21 @@ def handle_file_operations(dialog_instance, case: dict) -> dict:
 
     # Map fields to proper file names
     file_mappings = {
-        "source_document": f"{dialog_instance.base_transaction_no} Source Document.pdf",
-        "supporting_evidence_path": f"{dialog_instance.base_transaction_no} Supporting Evidence.pdf",
-        "minutes": f"{dialog_instance.base_transaction_no} Loss Control Minutes.pdf",
-        "evidence_path": f"{dialog_instance.base_transaction_no} Assessment Evidence.pdf",
-        "recovery_evidence_path": f"{dialog_instance.base_transaction_no} Recovery Evidence.pdf",
+        "source_document": (
+            f"{dialog_instance.base_transaction_no} Source Document.pdf"
+        ),
+        "supporting_evidence_path": (
+            f"{dialog_instance.base_transaction_no} Supporting Evidence.pdf"
+        ),
+        "minutes": (
+            f"{dialog_instance.base_transaction_no} Loss Control Minutes.pdf"
+        ),
+        "evidence_path": (
+            f"{dialog_instance.base_transaction_no} Assessment Evidence.pdf"
+        ),
+        "recovery_evidence_path": (
+            f"{dialog_instance.base_transaction_no} Recovery Evidence.pdf"
+        ),
     }
 
     # Batch file operations for efficiency
@@ -78,7 +89,7 @@ def handle_file_operations(dialog_instance, case: dict) -> dict:
             if os.path.exists(dest_path):
                 try:
                     # Test if we can write to the file
-                    with open(dest_path, "ab") as test_file:
+                    with open(dest_path, "ab"):
                         pass
                 except PermissionError:
                     QMessageBox.critical(
@@ -166,7 +177,8 @@ def handle_file_operations(dialog_instance, case: dict) -> dict:
 
     upload_time = time.time() - upload_start_time
     print(
-        f"LOG: Uploaded evidence for case {dialog_instance.base_transaction_no} in {upload_time:.2f}s"
+        "LOG: Uploaded evidence for case %s in %.2fs"
+        % (dialog_instance.base_transaction_no, upload_time)
     )
 
     return case

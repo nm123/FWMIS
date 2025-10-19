@@ -16,9 +16,15 @@ def check_contacts_schema():
         columns = cursor.fetchall()
         print("Contacts table schema:")
         for col in columns:
-            print(
-                f"  {col[1]}: {col[2]} {'PRIMARY KEY' if col[5] else ''} {'NOT NULL' if col[3] else ''}"
+            column_desc = (
+                "  {}: {} {} {}".format(
+                    col[1],
+                    col[2],
+                    "PRIMARY KEY" if col[5] else "",
+                    "NOT NULL" if col[3] else "",
+                )
             )
+            print(column_desc)
 
         # Check if table has data
         cursor.execute("SELECT COUNT(*) FROM contacts")

@@ -30,7 +30,10 @@ def handle_loss_control_status_change(
     """
 
     print(
-        f"DEBUG: handle_loss_control_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, loss_control_status: {loss_control_status}"
+        "DEBUG: handle_loss_control_status_change called for case_id: {}, "
+        "base_transaction_no: {}, loss_control_status: {}".format(
+            case_id, base_transaction_no, loss_control_status
+        )
     )
 
     conn = sqlite3.connect(DB_PATH)
@@ -45,14 +48,17 @@ def handle_loss_control_status_change(
         current_data = cursor.fetchone()
 
         if not current_data:
-            print(f"DEBUG: Case {case_id} not found")
+            print("DEBUG: Case {} not found".format(case_id))
             return False
 
         assessment_status, current_lc_status, current_suffixes, is_finalized = (
             current_data
         )
         print(
-            f"DEBUG: Case {case_id} assessment_status: {assessment_status}, lc_status: {current_lc_status}, suffixes: {current_suffixes}"
+            "DEBUG: Case {} current assessment_status: {}, lc_status: {}, "
+            "suffixes: {}".format(
+                case_id, assessment_status, current_lc_status, current_suffixes
+            )
         )
 
         # Prevent changes to finalized cases
@@ -61,9 +67,7 @@ def handle_loss_control_status_change(
 
         # Validate that case is in Confirmed status
         if assessment_status != "Confirmed":
-            print(
-                f"ERROR: Cannot change LC status for case not in Confirmed assessment status"
-            )
+            print("ERROR: Cannot change LC status for case not in Confirmed assessment status")
             return False
 
         # Check if evidence is uploaded for LC status changes
@@ -73,13 +77,13 @@ def handle_loss_control_status_change(
             try:
                 evidence_dict = json.loads(evidence_data[0])
                 if not evidence_dict or not any(evidence_dict.values()):
-                    print(f"ERROR: Evidence must be uploaded before changing LC status")
+                    print("ERROR: Evidence must be uploaded before changing LC status")
                     return False
             except json.JSONDecodeError:
-                print(f"ERROR: Invalid evidence data format")
+                print("ERROR: Invalid evidence data format")
                 return False
         else:
-            print(f"ERROR: Evidence must be uploaded before changing LC status")
+            print("ERROR: Evidence must be uploaded before changing LC status")
             return False
 
         # Parse current suffixes
@@ -115,7 +119,7 @@ def handle_loss_control_status_change(
             is_finalized = False
 
         else:
-            print(f"ERROR: Invalid loss control status: {loss_control_status}")
+            print("ERROR: Invalid loss control status: {}".format(loss_control_status))
             return False
 
         # Update the case
@@ -156,11 +160,11 @@ def handle_loss_control_status_change(
 
         save_audit_log("lc_status_change", workflow_data, get_financial_year())
 
-        print(f"DEBUG: LC status change completed for case {base_transaction_no}")
+        print("DEBUG: LC status change completed for case {}".format(base_transaction_no))
         return True
 
     except Exception as e:
-        print(f"Error in handle_loss_control_status_change: {e}")
+        print("Error in handle_loss_control_status_change: {}".format(e))
         conn.rollback()
         return False
     finally:
@@ -183,7 +187,8 @@ def handle_case_status_change(
     Args:
         case_id: Database ID of the case
         base_transaction_no: Base transaction number (without suffixes)
-        new_assessment_status: New assessment status ("Alleged", "Under Assessment", "Valid", "Confirmed")
+        new_assessment_status: New assessment status ("Alleged", "Under Assessment",
+            "Valid", "Confirmed")
         user_id: User making the change (optional)
 
     Returns:
@@ -191,7 +196,10 @@ def handle_case_status_change(
     """
 
     print(
-        f"DEBUG: handle_case_status_change called for case_id: {case_id}, base_transaction_no: {base_transaction_no}, new_assessment_status: {new_assessment_status}"
+        "DEBUG: handle_case_status_change called for case_id: {}, base_transaction_no: {}, "
+        "new_assessment_status: {}".format(
+            case_id, base_transaction_no, new_assessment_status
+        )
     )
 
     conn = sqlite3.connect(DB_PATH)
@@ -206,14 +214,17 @@ def handle_case_status_change(
         current_data = cursor.fetchone()
 
         if not current_data:
-            print(f"DEBUG: Case {case_id} not found")
+            print("DEBUG: Case {} not found".format(case_id))
             return False
 
         current_assessment_status, current_lc_status, current_suffixes, is_finalized = (
             current_data
         )
         print(
-            f"DEBUG: Case {case_id} current assessment_status: {current_assessment_status}, lc_status: {current_lc_status}, suffixes: {current_suffixes}"
+            "DEBUG: Case {} current assessment_status: {}, lc_status: {}, "
+            "suffixes: {}".format(
+                case_id, current_assessment_status, current_lc_status, current_suffixes
+            )
         )
 
         # Prevent changes to finalized cases (except for Valid->Confirmed edge case)
@@ -233,15 +244,17 @@ def handle_case_status_change(
                     evidence_dict = json.loads(evidence_data[0])
                     if not evidence_dict or not any(evidence_dict.values()):
                         print(
-                            f"ERROR: Assessment evidence must be uploaded before marking case as Valid"
+                            "ERROR: Assessment evidence must be uploaded before marking "
+                            "case as Valid"
                         )
                         return False
                 except json.JSONDecodeError:
-                    print(f"ERROR: Invalid evidence data format")
+                    print("ERROR: Invalid evidence data format")
                     return False
             else:
                 print(
-                    f"ERROR: Assessment evidence must be uploaded before marking case as Valid"
+                    "ERROR: Assessment evidence must be uploaded before marking "
+                    "case as Valid"
                 )
                 return False
 
@@ -260,15 +273,17 @@ def handle_case_status_change(
                     evidence_dict = json.loads(evidence_data[0])
                     if not evidence_dict or not any(evidence_dict.values()):
                         print(
-                            f"ERROR: Assessment evidence must be uploaded before marking case as Confirmed"
+                            "ERROR: Assessment evidence must be uploaded before marking "
+                            "case as Confirmed"
                         )
                         return False
                 except json.JSONDecodeError:
-                    print(f"ERROR: Invalid evidence data format")
+                    print("ERROR: Invalid evidence data format")
                     return False
             else:
                 print(
-                    f"ERROR: Assessment evidence must be uploaded before marking case as Confirmed"
+                    "ERROR: Assessment evidence must be uploaded before marking "
+                    "case as Confirmed"
                 )
                 return False
 
@@ -628,7 +643,8 @@ def get_list_filter_query(list_name):
     Get the SQL WHERE clause for filtering cases by list in the single-case model
 
     Args:
-        list_name: Name of the list ("Checklist", "Lead Schedule", "Recovered", "Write-Off Recommended", "Written Off")
+        list_name: Name of the list ("Checklist", "Lead Schedule", "Recovered",
+            "Write-Off Recommended", "Written Off")
 
     Returns:
         str: SQL WHERE clause

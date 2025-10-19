@@ -57,7 +57,16 @@ def get_transaction_summary(transactions):
     credit_count = sum(1 for t in transactions if t["is_credit"])
     debit_count = total_count - credit_count
 
-    return f"📊 Parsed {total_count} transactions: {debit_count} debits, {credit_count} credits | Total: R{total_amount:,.2f}"
+    summary = (
+        "📊 Parsed %s transactions: %s debits, %s credits | Total: R%s"
+        % (
+            total_count,
+            debit_count,
+            credit_count,
+            f"{total_amount:,.2f}",
+        )
+    )
+    return summary
 
 
 def filter_transactions_by_date_range(transactions, date_from, date_to):
@@ -125,7 +134,9 @@ def validate_import_data(transactions, category, date_from, date_to):
     ]
     if transactions_without_case_numbers:
         errors.append(
-            f"{len(transactions_without_case_numbers)} transactions do not have case numbers assigned"
+            "{} transactions do not have case numbers assigned".format(
+                len(transactions_without_case_numbers)
+            )
         )
 
     return errors
@@ -306,7 +317,13 @@ def log_transaction_details(transaction, operation):
     """Log details of a transaction for debugging"""
     log_import_operation(
         operation,
-        f"Transaction: {transaction.get('description', 'N/A')} | Amount: {transaction.get('amount', 0)} | Responsibility: {transaction.get('responsibility', 'N/A')}",
+        (
+            "Transaction: {} | Amount: {} | Responsibility: {}".format(
+                transaction.get("description", "N/A"),
+                transaction.get("amount", 0),
+                transaction.get("responsibility", "N/A"),
+            )
+        ),
     )
 
 

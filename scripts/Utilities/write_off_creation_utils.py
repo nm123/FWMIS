@@ -30,7 +30,7 @@ def get_evidence_status(evidence_paths):
             evidence_types.append("Recovery")
 
         return ", ".join(evidence_types) if evidence_types else "No evidence"
-    except:
+    except Exception:
         return "Invalid evidence data"
 
 
@@ -131,7 +131,7 @@ def generate_pdf_annexure(filepath, group_id, cases, timestamp):
     """Generate a PDF annexure for the write-off submission"""
     try:
         from reportlab.lib import colors
-        from reportlab.lib.pagesizes import A4, letter
+        from reportlab.lib.pagesizes import A4
         from reportlab.lib.styles import getSampleStyleSheet
         from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
                                         Table, TableStyle)
@@ -141,7 +141,7 @@ def generate_pdf_annexure(filepath, group_id, cases, timestamp):
         elements = []
 
         # Title
-        title = Paragraph(f"<b>Write-Off Submission Annexure</b>", styles["Title"])
+        title = Paragraph("<b>Write-Off Submission Annexure</b>", styles["Title"])
         elements.append(title)
         elements.append(Spacer(1, 12))
 
@@ -291,12 +291,12 @@ def generate_excel_annexure(filepath, group_id, cases, timestamp):
                     try:
                         if len(str(cell.value)) > max_length:
                             max_length = len(str(cell.value))
-                    except:
-                        pass
-                adjusted_width = min(
-                    max_length + 2, 50
-                )  # Cap at 50 characters for readability
-                worksheet.column_dimensions[column_letter].width = adjusted_width
+                    except Exception as e:
+                        print(f"Error adjusting column width: {e}")
+                    adjusted_width = min(
+                        max_length + 2, 50
+                    )  # Cap at 50 characters for readability
+                    worksheet.column_dimensions[column_letter].width = adjusted_width
 
             # Add summary information at the top of the worksheet
             worksheet.insert_rows(1)
@@ -308,8 +308,6 @@ def generate_excel_annexure(filepath, group_id, cases, timestamp):
             worksheet["A4"] = f"Total Amount: R {sum(case[3] for case in cases):,.2f}"
 
             # Merge cells for title row spanning all columns
-            from openpyxl.utils import range_boundaries
-
             worksheet.merge_cells("A1:G1")
 
     except ImportError:

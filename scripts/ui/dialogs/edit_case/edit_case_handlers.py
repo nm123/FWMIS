@@ -400,6 +400,26 @@ def view_recovery_evidence(dialog):
         os.startfile(dialog.recovery_evidence_edit.text())
 
 
+def browse_recovery_evidence_rip(dialog):
+    """Handle browsing for recovery evidence in Recovery in Progress group"""
+    file_path, _ = QFileDialog.getOpenFileName(
+        dialog, "Select Recovery Evidence", "", "PDF Files (*.pdf)"
+    )
+    if file_path:
+        dialog.recovery_evidence_rip_edit.setText(file_path)
+
+
+def view_recovery_evidence_rip(dialog):
+    """View recovery evidence file in Recovery in Progress group"""
+    if (
+        hasattr(dialog, "recovery_evidence_rip_edit")
+        and dialog.recovery_evidence_rip_edit.text()
+    ):
+        import os
+
+        os.startfile(dialog.recovery_evidence_rip_edit.text())
+
+
 def view_minutes(dialog):
     """View minutes file"""
     if hasattr(dialog, "minutes_edit") and dialog.minutes_edit.text():
@@ -488,75 +508,483 @@ def update_lc_fields_visibility(dialog, lc_status):
     """
     print(f"LC fields updated for status: {lc_status}")
     
+    # Update recovery group visibility based on LC status
+    if hasattr(dialog, "recovery_group"):
+        if lc_status == "Recovery in Progress":
+            dialog.recovery_group.setVisible(True)
+            # Initialize recovery progress when group becomes visible
+            update_recovery_progress(dialog)
+        else:
+            dialog.recovery_group.setVisible(False)
+    
     # Update recovery fields visibility based on LC status
     if lc_status == "Recovery in Progress":
         # Show recovery fields for installment tracking
-        dialog.debtor_name_edit.setVisible(True)
-        dialog.debt_number_edit.setVisible(True)
-        dialog.latest_installment_amount_edit.setVisible(True)
-        dialog.latest_installment_date_edit.setVisible(True)
-        dialog.latest_installment_date_button.setVisible(True)
-        dialog.total_recovered_amount_edit.setVisible(True)
+        if hasattr(dialog, 'debtor_name_edit'):
+            dialog.debtor_name_edit.setVisible(True)
+        if hasattr(dialog, 'debtor_number_edit'):
+            dialog.debtor_number_edit.setVisible(True)
+        if hasattr(dialog, 'debt_number_edit'):
+            dialog.debt_number_edit.setVisible(True)
         
-        # Show recovery evidence
-        dialog.recovery_evidence_label.setVisible(True)
-        dialog.recovery_evidence_edit.setVisible(True)
-        dialog.recovery_evidence_button.setVisible(True)
-        dialog.recovery_evidence_view_button.setVisible(True)
-        dialog.recovery_evidence_edit.setPlaceholderText(
-            "Recovery Evidence is REQUIRED"
-        )
-        dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+        # Hide Loss Control Committee recovery evidence, show Recovery in Progress recovery evidence
+        if hasattr(dialog, 'recovery_evidence_label'):
+            dialog.recovery_evidence_label.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_edit'):
+            dialog.recovery_evidence_edit.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_button'):
+            dialog.recovery_evidence_button.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_view_button'):
+            dialog.recovery_evidence_view_button.setVisible(False)
+        
+        # Show Recovery in Progress recovery evidence
+        if hasattr(dialog, 'recovery_evidence_rip_label'):
+            dialog.recovery_evidence_rip_label.setVisible(True)
+        if hasattr(dialog, 'recovery_evidence_rip_edit'):
+            dialog.recovery_evidence_rip_edit.setVisible(True)
+            dialog.recovery_evidence_rip_edit.setPlaceholderText("Upload latest Debt Inquiry report")
+        if hasattr(dialog, 'recovery_evidence_rip_button'):
+            dialog.recovery_evidence_rip_button.setVisible(True)
+        if hasattr(dialog, 'recovery_evidence_rip_view_button'):
+            dialog.recovery_evidence_rip_view_button.setVisible(True)
+        
+        if hasattr(dialog, 'minutes_edit'):
+            dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
         
     elif lc_status == "Recovered":
         # Hide installment fields, show only total recovered
-        dialog.debtor_name_edit.setVisible(False)
-        dialog.debt_number_edit.setVisible(False)
-        dialog.latest_installment_amount_edit.setVisible(False)
-        dialog.latest_installment_date_edit.setVisible(False)
-        dialog.latest_installment_date_button.setVisible(False)
-        dialog.total_recovered_amount_edit.setVisible(True)
+        if hasattr(dialog, 'debtor_name_edit'):
+            dialog.debtor_name_edit.setVisible(False)
+        if hasattr(dialog, 'debtor_number_edit'):
+            dialog.debtor_number_edit.setVisible(False)
+        if hasattr(dialog, 'debt_number_edit'):
+            dialog.debt_number_edit.setVisible(False)
         
-        # Show recovery evidence
-        dialog.recovery_evidence_label.setVisible(True)
-        dialog.recovery_evidence_edit.setVisible(True)
-        dialog.recovery_evidence_button.setVisible(True)
-        dialog.recovery_evidence_view_button.setVisible(True)
-        dialog.recovery_evidence_edit.setPlaceholderText(
-            "Recovery Evidence is REQUIRED"
-        )
-        dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+        # Show Loss Control Committee recovery evidence, hide Recovery in Progress recovery evidence
+        if hasattr(dialog, 'recovery_evidence_label'):
+            dialog.recovery_evidence_label.setVisible(True)
+        if hasattr(dialog, 'recovery_evidence_edit'):
+            dialog.recovery_evidence_edit.setVisible(True)
+            dialog.recovery_evidence_edit.setPlaceholderText("Recovery Evidence is REQUIRED")
+        if hasattr(dialog, 'recovery_evidence_button'):
+            dialog.recovery_evidence_button.setVisible(True)
+        if hasattr(dialog, 'recovery_evidence_view_button'):
+            dialog.recovery_evidence_view_button.setVisible(True)
+        
+        # Hide Recovery in Progress recovery evidence
+        if hasattr(dialog, 'recovery_evidence_rip_label'):
+            dialog.recovery_evidence_rip_label.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_rip_edit'):
+            dialog.recovery_evidence_rip_edit.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_rip_button'):
+            dialog.recovery_evidence_rip_button.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_rip_view_button'):
+            dialog.recovery_evidence_rip_view_button.setVisible(False)
+        if hasattr(dialog, 'minutes_edit'):
+            dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
         
     elif lc_status == "Write Off Recommended":
         # Hide all recovery fields
-        dialog.debtor_name_edit.setVisible(False)
-        dialog.debt_number_edit.setVisible(False)
-        dialog.latest_installment_amount_edit.setVisible(False)
-        dialog.latest_installment_date_edit.setVisible(False)
-        dialog.latest_installment_date_button.setVisible(False)
-        dialog.total_recovered_amount_edit.setVisible(False)
+        if hasattr(dialog, 'debtor_name_edit'):
+            dialog.debtor_name_edit.setVisible(False)
+        if hasattr(dialog, 'debtor_number_edit'):
+            dialog.debtor_number_edit.setVisible(False)
+        if hasattr(dialog, 'debt_number_edit'):
+            dialog.debt_number_edit.setVisible(False)
         
-        dialog.recovery_evidence_label.setVisible(False)
-        dialog.recovery_evidence_edit.setVisible(False)
-        dialog.recovery_evidence_button.setVisible(False)
-        dialog.recovery_evidence_view_button.setVisible(False)
-        dialog.recovery_evidence_edit.clear()
-        dialog.recovery_evidence_edit.setPlaceholderText("")
-        dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
+        if hasattr(dialog, 'recovery_evidence_label'):
+            dialog.recovery_evidence_label.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_edit'):
+            dialog.recovery_evidence_edit.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_button'):
+            dialog.recovery_evidence_button.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_view_button'):
+            dialog.recovery_evidence_view_button.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_edit'):
+            dialog.recovery_evidence_edit.clear()
+            dialog.recovery_evidence_edit.setPlaceholderText("")
+        if hasattr(dialog, 'minutes_edit'):
+            dialog.minutes_edit.setPlaceholderText("Loss Control Minutes are REQUIRED")
         
     else:
         # Hide all recovery fields for other statuses
-        dialog.debtor_name_edit.setVisible(False)
-        dialog.debt_number_edit.setVisible(False)
-        dialog.latest_installment_amount_edit.setVisible(False)
-        dialog.latest_installment_date_edit.setVisible(False)
-        dialog.latest_installment_date_button.setVisible(False)
-        dialog.total_recovered_amount_edit.setVisible(False)
+        if hasattr(dialog, 'debtor_name_edit'):
+            dialog.debtor_name_edit.setVisible(False)
+        if hasattr(dialog, 'debtor_number_edit'):
+            dialog.debtor_number_edit.setVisible(False)
+        if hasattr(dialog, 'debt_number_edit'):
+            dialog.debt_number_edit.setVisible(False)
         
-        dialog.recovery_evidence_label.setVisible(False)
-        dialog.recovery_evidence_edit.setVisible(False)
-        dialog.recovery_evidence_button.setVisible(False)
-        dialog.recovery_evidence_view_button.setVisible(False)
-        dialog.recovery_evidence_edit.clear()
-        dialog.recovery_evidence_edit.setPlaceholderText("")
-        dialog.minutes_edit.setPlaceholderText("")
+        if hasattr(dialog, 'recovery_evidence_label'):
+            dialog.recovery_evidence_label.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_edit'):
+            dialog.recovery_evidence_edit.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_button'):
+            dialog.recovery_evidence_button.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_view_button'):
+            dialog.recovery_evidence_view_button.setVisible(False)
+        if hasattr(dialog, 'recovery_evidence_edit'):
+            dialog.recovery_evidence_edit.clear()
+            dialog.recovery_evidence_edit.setPlaceholderText("")
+        if hasattr(dialog, 'minutes_edit'):
+            dialog.minutes_edit.setPlaceholderText("")
+
+
+def select_new_installment_date(dialog):
+    """Handle new installment date selection with calendar popup"""
+    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QCalendarWidget
+    from PyQt5.QtCore import QDate
+
+    calendar_dialog = QDialog(dialog)
+    calendar_dialog.setWindowTitle("Select Installment Date")
+    calendar_dialog.setFixedSize(520, 380)
+
+    layout = QVBoxLayout(calendar_dialog)
+    calendar = QCalendarWidget()
+    layout.addWidget(calendar)
+
+    def on_date_selected():
+        selected_date = calendar.selectedDate()
+        dialog.new_installment_date_edit.setText(selected_date.toString("yyyy-MM-dd"))
+        calendar_dialog.accept()
+
+    calendar.clicked.connect(on_date_selected)
+    calendar_dialog.exec_()
+
+
+def add_new_installment(dialog):
+    """Add a new installment to the recovery tracking"""
+    try:
+        # Validate installment amount
+        amount_text = dialog.new_installment_amount_edit.text().strip()
+        if not amount_text:
+            QMessageBox.warning(dialog, "Validation Error", "Please enter an installment amount.")
+            return
+        
+        try:
+            installment_amount = float(amount_text)
+            if installment_amount <= 0:
+                QMessageBox.warning(dialog, "Validation Error", "Installment amount must be greater than zero.")
+                return
+        except ValueError:
+            QMessageBox.warning(dialog, "Validation Error", "Please enter a valid amount.")
+            return
+
+        # Validate installment date
+        date_text = dialog.new_installment_date_edit.text().strip()
+        if not date_text:
+            QMessageBox.warning(dialog, "Validation Error", "Please select an installment date.")
+            return
+
+        recovery_evidence_path = ""
+        if hasattr(dialog, "recovery_evidence_rip_edit"):
+            recovery_evidence_path = dialog.recovery_evidence_rip_edit.text().strip()
+        elif hasattr(dialog, "recovery_evidence_edit"):
+            recovery_evidence_path = dialog.recovery_evidence_edit.text().strip()
+
+        if not recovery_evidence_path:
+            QMessageBox.warning(
+                dialog,
+                "Recovery Evidence Required",
+                "Recovery evidence must be uploaded before recording installments.",
+            )
+            return
+
+        import os
+
+        if not os.path.exists(recovery_evidence_path):
+            QMessageBox.warning(
+                dialog,
+                "Recovery Evidence Missing",
+                (
+                    "The selected recovery evidence file could not be accessed.\n\n"
+                    "Please ensure the file still exists or re-upload it before recording installments."
+                ),
+            )
+            return
+
+        # Get current recovery data
+        current_amount_paid = get_current_amount_paid(dialog)
+        original_amount = get_original_amount(dialog)
+        
+        # Check if installment would exceed original amount
+        new_total = current_amount_paid + installment_amount
+        if new_total > original_amount:
+            QMessageBox.warning(
+                dialog, 
+                "Validation Error", 
+                f"Installment would exceed original amount.\n"
+                f"Original: R {original_amount:.2f}\n"
+                f"Already paid: R {current_amount_paid:.2f}\n"
+                f"Remaining: R {original_amount - current_amount_paid:.2f}"
+            )
+            return
+
+        # Save installment to database
+        if save_installment_to_database(dialog, installment_amount, date_text):
+            # Update recovery progress
+            update_recovery_progress(dialog)
+            
+            # Clear form
+            dialog.new_installment_amount_edit.clear()
+            dialog.new_installment_date_edit.clear()
+            
+            # Check if fully recovered
+            if new_total >= original_amount:
+                finalize_recovery(dialog)
+            
+            QMessageBox.information(dialog, "Success", f"Installment of R {installment_amount:.2f} added successfully!")
+        else:
+            QMessageBox.critical(dialog, "Error", "Failed to save installment. Please try again.")
+            
+    except Exception as e:
+        QMessageBox.critical(dialog, "Error", f"An error occurred: {str(e)}")
+
+
+def view_installment_history(dialog):
+    """Open installment history dialog"""
+    try:
+        # For now, show a simple message box with installment summary
+        current_amount_paid = get_current_amount_paid(dialog)
+        original_amount = get_original_amount(dialog)
+        remaining_amount = original_amount - current_amount_paid
+        
+        QMessageBox.information(
+            dialog,
+            "Installment History",
+            f"Recovery Progress Summary:\n\n"
+            f"Original Amount: R {original_amount:.2f}\n"
+            f"Amount Paid: R {current_amount_paid:.2f}\n"
+            f"Remaining: R {remaining_amount:.2f}\n\n"
+            f"Progress: {(current_amount_paid/original_amount*100):.1f}%"
+        )
+    except Exception as e:
+        QMessageBox.critical(dialog, "Error", f"Failed to open installment history: {str(e)}")
+
+
+def update_recovery_progress(dialog):
+    """Update recovery progress display"""
+    try:
+        original_amount = get_original_amount(dialog)
+        amount_paid = get_current_amount_paid(dialog)
+        remaining_amount = original_amount - amount_paid
+        
+        # Update labels
+        dialog.original_amount_label.setText(f"R {original_amount:.2f}")
+        dialog.amount_paid_label.setText(f"R {amount_paid:.2f}")
+        dialog.remaining_amount_label.setText(f"R {remaining_amount:.2f}")
+        
+        # Update recovery status
+        if amount_paid == 0:
+            dialog.loss_recovery_status_label.setText("N/A")
+            dialog.loss_recovery_status_label.setStyleSheet(
+                "QLabel { font-weight: bold; color: #666; padding: 5px; border: 1px solid #ddd; background-color: #f9f9f9; }"
+            )
+        elif remaining_amount > 0:
+            dialog.loss_recovery_status_label.setText("In Progress")
+            dialog.loss_recovery_status_label.setStyleSheet(
+                "QLabel { font-weight: bold; color: #ff9800; padding: 5px; border: 1px solid #ddd; background-color: #fff3e0; }"
+            )
+        else:
+            dialog.loss_recovery_status_label.setText("Completed")
+            dialog.loss_recovery_status_label.setStyleSheet(
+                "QLabel { font-weight: bold; color: #4caf50; padding: 5px; border: 1px solid #ddd; background-color: #f1f8e9; }"
+            )
+            
+    except Exception as e:
+        print(f"Error updating recovery progress: {e}")
+
+
+def get_original_amount(dialog):
+    """Get the original case amount"""
+    try:
+        amount_text = dialog.amount_edit.text().strip()
+        if amount_text:
+            return float(amount_text)
+        return 0.0
+    except (ValueError, AttributeError):
+        return 0.0
+
+
+def get_current_amount_paid(dialog):
+    """Get current total amount paid from database"""
+    try:
+        import sqlite3
+        from scripts.Utilities.config import DB_PATH
+        
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Get total from installments table
+        cursor.execute(
+            "SELECT COALESCE(SUM(amount), 0) FROM installments WHERE case_id = ?",
+            (dialog.case_id,)
+        )
+        result = cursor.fetchone()
+        conn.close()
+        
+        return float(result[0]) if result else 0.0
+    except Exception as e:
+        print(f"Error getting current amount paid: {e}")
+        return 0.0
+
+
+def save_installment_to_database(dialog, amount, date):
+    """Save installment to database"""
+    try:
+        import json
+        import os
+        import sqlite3
+        from datetime import datetime
+        from scripts.Utilities.config import DB_PATH
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Prefer evidence selected in the current dialog session
+        ui_recovery_path = ""
+        if hasattr(dialog, "recovery_evidence_rip_edit"):
+            ui_recovery_path = dialog.recovery_evidence_rip_edit.text().strip()
+        if not ui_recovery_path and hasattr(dialog, "recovery_evidence_edit"):
+            ui_recovery_path = dialog.recovery_evidence_edit.text().strip()
+
+        if ui_recovery_path:
+            if not os.path.exists(ui_recovery_path):
+                conn.close()
+                QMessageBox.warning(
+                    dialog,
+                    "Recovery Evidence Missing",
+                    (
+                        "The selected recovery evidence file could not be accessed.\n\n"
+                        "Please ensure the file still exists or re-upload it before recording installments."
+                    ),
+                )
+                return False
+            recovery_path = ui_recovery_path
+        else:
+            # Fall back to evidence already stored on the case record
+            cursor.execute(
+                "SELECT recovery_evidence_path, evidence_paths FROM cases WHERE id = ?",
+                (dialog.case_id,),
+            )
+            case_row = cursor.fetchone()
+
+            recovery_path = ""
+            if case_row:
+                recovery_path = case_row[0] or ""
+                evidence_json = case_row[1]
+                if not recovery_path and evidence_json:
+                    try:
+                        evidence_dict = json.loads(evidence_json)
+                        recovery_path = evidence_dict.get("recovery") or ""
+                    except json.JSONDecodeError:
+                        recovery_path = ""
+
+            if not recovery_path:
+                conn.close()
+                QMessageBox.warning(
+                    dialog,
+                    "Recovery Evidence Required",
+                    "Recovery evidence must be uploaded before recording installments.",
+                )
+                return False
+
+            if not os.path.exists(recovery_path):
+                conn.close()
+                QMessageBox.warning(
+                    dialog,
+                    "Recovery Evidence Missing",
+                    (
+                        "Stored recovery evidence could not be located.\n\n"
+                        "Please re-upload the evidence before recording installments."
+                    ),
+                )
+                return False
+
+        # Create installments table if it doesn't exist
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS installments (
+                id INTEGER PRIMARY KEY,
+                case_id INTEGER,
+                amount REAL,
+                installment_date TEXT,
+                created_at TEXT,
+                FOREIGN KEY (case_id) REFERENCES cases (id)
+            )
+        """)
+        
+        # Insert installment
+        cursor.execute("""
+            INSERT INTO installments (case_id, amount, installment_date, created_at)
+            VALUES (?, ?, ?, ?)
+        """, (
+            dialog.case_id,
+            amount,
+            date,
+            datetime.now().isoformat()
+        ))
+        
+        conn.commit()
+        conn.close()
+        return True
+        
+    except Exception as e:
+        print(f"Error saving installment: {e}")
+        return False
+
+
+def finalize_recovery(dialog):
+    """Finalize recovery when fully paid"""
+    try:
+        # Update case status to Recovered
+        dialog.lc_status_combo.setCurrentText("Recovered")
+        
+        # Update list status
+        dialog.update_list_status_grid("Recovered", "Recovered")
+        dialog.update_list_status_grid("Recovery in Progress", "N/A")
+        
+        # Update workflow - this will add -REC suffix and remove -RIP suffix
+        from scripts.Utilities.workflow_utils import handle_loss_control_status_change
+        success = handle_loss_control_status_change(
+            dialog.case_id,
+            dialog.base_transaction_no,
+            "Recovered"
+        )
+        
+        if success:
+            # Update the dialog's suffixes to reflect the change
+            # dialog.suffixes is already a list, so we work with it directly
+            if isinstance(dialog.suffixes, list):
+                dialog.suffixes = [s for s in dialog.suffixes if s != "-RIP"]
+                if "-REC" not in dialog.suffixes:
+                    dialog.suffixes.append("-REC")
+            else:
+                # If it's a string, convert to list first
+                suffix_list = dialog.suffixes.split(",") if dialog.suffixes else []
+                suffix_list = [s for s in suffix_list if s != "-RIP"]
+                if "-REC" not in suffix_list:
+                    suffix_list.append("-REC")
+                dialog.suffixes = suffix_list
+            
+            # Update the transaction number display
+            from scripts.Utilities.workflow_utils import get_display_transaction_no
+            display_transaction_no = get_display_transaction_no(
+                dialog.base_transaction_no, dialog.suffixes
+            )
+            dialog.trans_no_edit.setText(display_transaction_no)
+            
+            QMessageBox.information(
+                dialog, 
+                "Recovery Completed", 
+                "This case has been fully recovered and moved to the Recovered list!"
+            )
+        else:
+            QMessageBox.warning(
+                dialog, 
+                "Warning", 
+                "Recovery completed but workflow update failed. Please refresh the case."
+            )
+        
+    except Exception as e:
+        print(f"Error finalizing recovery: {e}")
+        QMessageBox.warning(dialog, "Warning", f"Recovery completed but status update failed: {str(e)}")

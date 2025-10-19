@@ -51,127 +51,63 @@ def setup_add_ui(dialog):
     dialog.selected_responsibility_id = None
     dialog.supporting_evidence_compulsory = False
 
-    # Create main layout with reduced margins
+    # Create main layout
     layout = QVBoxLayout(dialog)
-    layout.setContentsMargins(15, 10, 15, 15)
-    layout.setSpacing(10)
 
     # Create scroll area for the form
     scroll_area = QScrollArea()
     scroll_widget = QWidget()
-    main_layout = QVBoxLayout(scroll_widget)
-    main_layout.setContentsMargins(5, 5, 5, 5)
-    main_layout.setSpacing(8)
+    form_layout = QFormLayout(scroll_widget)
 
-    # ===== BASIC CASE INFORMATION GROUP =====
-    basic_group = QGroupBox("Basic Case Information")
-    basic_layout = QFormLayout(basic_group)
-    basic_layout.setContentsMargins(10, 15, 10, 10)
-    basic_layout.setSpacing(8)
-    basic_layout.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)  # Fix label alignment
-
-    # Case Number
+    # Case Number (read-only)
     dialog.trans_no_edit = QLineEdit("To be assigned")
     dialog.trans_no_edit.setReadOnly(True)
-    basic_layout.addRow("Case No:", dialog.trans_no_edit)
-    
-    # Amount
-    dialog.amount_edit = QLineEdit()
-    basic_layout.addRow("Amount:", dialog.amount_edit)
+    form_layout.addRow("Case No:", dialog.trans_no_edit)
 
-    # Responsibility with Select button
-    responsibility_layout = QHBoxLayout()
+    # Responsibility
+    resp_layout = QHBoxLayout()
     dialog.responsibility_edit = QLineEdit()
     dialog.responsibility_edit.setReadOnly(True)
     dialog.responsibility_edit.setPlaceholderText(
         "Click Select to choose responsibility..."
     )
-    responsibility_layout.addWidget(dialog.responsibility_edit)
-    
+    resp_layout.addWidget(dialog.responsibility_edit)
+
     dialog.select_responsibility_button = create_professional_button(
-        "Select", "info"  # Smaller button text
+        "Select", "secondary"
     )
-    dialog.select_responsibility_button.setFixedWidth(80)  # Fixed smaller width
     dialog.select_responsibility_button.clicked.connect(dialog.select_responsibility)
-    responsibility_layout.addWidget(dialog.select_responsibility_button)
-    
-    basic_layout.addRow("Responsibility:", responsibility_layout)
+    resp_layout.addWidget(dialog.select_responsibility_button)
+
+    form_layout.addRow("Responsibility:", resp_layout)
+
+    # Description
+    dialog.description_edit = QTextEdit()
+    dialog.description_edit.setMinimumHeight(60)
+    form_layout.addRow("Description:", dialog.description_edit)
 
     # Category
     dialog.category_combo = NoWheelComboBox()
     if dialog.categories:
         dialog.category_combo.addItems([c["name"] for c in dialog.categories])
-    basic_layout.addRow("Category:", dialog.category_combo)
+    form_layout.addRow("Category:", dialog.category_combo)
 
-    # Description (reduced height)
-    dialog.description_edit = QTextEdit()
-    dialog.description_edit.setMinimumHeight(40)
-    dialog.description_edit.setMaximumHeight(40)
-    basic_layout.addRow("Description:", dialog.description_edit)
-
-    main_layout.addWidget(basic_group)
-
-    # ===== DATE INFORMATION GROUP =====
-    date_group = QGroupBox("Date Information")
-    date_layout = QFormLayout(date_group)
-    date_layout.setContentsMargins(10, 15, 10, 10)
-    date_layout.setSpacing(8)
-    date_layout.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)  # Fix label alignment
-
-    # All dates in one horizontal row with labels to the left
-    dates_layout = QHBoxLayout()
-    
     # Date Incurred
-    incurred_layout = QHBoxLayout()
-    incurred_label = QLabel("Date Incurred:")
-    incurred_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    incurred_layout.addWidget(incurred_label)
     dialog.date_incurred_edit = QDateEdit(QDate.currentDate())
     dialog.date_incurred_edit.setCalendarPopup(True)
-    dialog.date_incurred_edit.setFixedWidth(150)
-    incurred_layout.addWidget(dialog.date_incurred_edit)
-    dates_layout.addLayout(incurred_layout)
-    
+    form_layout.addRow("Date Incurred:", dialog.date_incurred_edit)
+
     # Date Identified
-    identified_layout = QHBoxLayout()
-    identified_label = QLabel("Date Identified:")
-    identified_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    identified_layout.addWidget(identified_label)
     dialog.date_identified_edit = QDateEdit(QDate.currentDate())
     dialog.date_identified_edit.setCalendarPopup(True)
-    dialog.date_identified_edit.setFixedWidth(150)
-    identified_layout.addWidget(dialog.date_identified_edit)
-    dates_layout.addLayout(identified_layout)
-    
+    form_layout.addRow("Date Identified:", dialog.date_identified_edit)
+
     # Date Reported
-    reported_layout = QHBoxLayout()
-    reported_label = QLabel("Date Reported:")
-    reported_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    reported_layout.addWidget(reported_label)
     dialog.date_reported_edit = QDateEdit(QDate.currentDate())
     dialog.date_reported_edit.setCalendarPopup(True)
-    dialog.date_reported_edit.setFixedWidth(150)
-    reported_layout.addWidget(dialog.date_reported_edit)
-    dates_layout.addLayout(reported_layout)
-    
-    date_layout.addRow("", dates_layout)
-    main_layout.addWidget(date_group)
+    form_layout.addRow("Date Reported:", dialog.date_reported_edit)
 
-    # ===== LIST AND STATUS INFORMATION GROUP =====
-    status_evidence_group = QGroupBox("List and Status Information")
-    status_evidence_layout = QFormLayout(status_evidence_group)
-    status_evidence_layout.setContentsMargins(10, 15, 10, 10)
-    status_evidence_layout.setSpacing(8)
-    status_evidence_layout.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)  # Fix label alignment
-
-    # Status field
-    dialog.status_combo = NoWheelComboBox()
-    dialog.status_combo.addItems(["Alleged", "Under Assessment", "Valid", "Confirmed"])
-    dialog.status_combo.setCurrentText("Alleged")
-    dialog.status_combo.setFixedWidth(150)
-    status_evidence_layout.addRow("Status:", dialog.status_combo)
-
-    # List field
+    # List
     dialog.list_combo = NoWheelComboBox()
     system_lists = [
         l["name"]
@@ -183,102 +119,128 @@ def setup_add_ui(dialog):
     if "Checklist" in system_lists:
         dialog.list_combo.setCurrentText("Checklist")
         dialog.list_combo.setEnabled(False)
-    dialog.list_combo.setFixedWidth(150)
-    status_evidence_layout.addRow("List:", dialog.list_combo)
+    form_layout.addRow("List:", dialog.list_combo)
 
-    # Assessment Evidence with Browse button
-    evidence_layout = QHBoxLayout()
+    # Status
+    dialog.status_combo = NoWheelComboBox()
+    dialog.status_combo.addItems(["Alleged", "Under Assessment", "Valid", "Confirmed"])
+    dialog.status_combo.setCurrentText("Alleged")
+    form_layout.addRow("Status:", dialog.status_combo)
+
+    # Amount
+    dialog.amount_edit = QLineEdit()
+    form_layout.addRow("Amount:", dialog.amount_edit)
+
+    # Assessment Evidence
+    file_layout = QHBoxLayout()
     dialog.file_path_edit = QLineEdit()
     dialog.file_path_edit.setPlaceholderText("Select file...")
-    evidence_layout.addWidget(dialog.file_path_edit)
-    
-    browse_button = create_professional_button("Browse", "info")  # Smaller button text
-    browse_button.setFixedWidth(80)  # Fixed smaller width
+    browse_button = create_professional_button("Browse...", "secondary")
     browse_button.clicked.connect(dialog.browse_file)
-    evidence_layout.addWidget(browse_button)
-    
-    status_evidence_layout.addRow("Assessment Evidence:", evidence_layout)
+    file_layout.addWidget(dialog.file_path_edit)
+    file_layout.addWidget(browse_button)
+    form_layout.addRow("Assessment Evidence:", file_layout)
 
-    main_layout.addWidget(status_evidence_group)
+    # Supporting Evidence (To prove Existence)
+    supporting_layout = QHBoxLayout()
+    dialog.supporting_evidence_edit = QLineEdit()
+    dialog.supporting_evidence_edit.setPlaceholderText("Select file (optional)...")
+    supporting_browse_button = create_professional_button("Browse...", "secondary")
+    supporting_browse_button.clicked.connect(dialog.browse_supporting_evidence)
+    supporting_layout.addWidget(dialog.supporting_evidence_edit)
+    supporting_layout.addWidget(supporting_browse_button)
+    form_layout.addRow("Supporting Evidence (To prove Existence):", supporting_layout)
 
-    # ===== ADDITIONAL INFORMATION GROUP =====
-    additional_group = QGroupBox("Additional Information")
-    additional_main_layout = QVBoxLayout(additional_group)
-    additional_main_layout.setContentsMargins(10, 15, 10, 10)
-    additional_main_layout.setSpacing(8)
-
-    # Split into two columns
-    columns_layout = QHBoxLayout()
-    
-    # Left column - BAS Information
-    bas_layout = QFormLayout()
-    bas_layout.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    bas_layout.setSpacing(8)
-    
-    # BAS Payment No
+    # Conditional fields - add them but hide initially
+    dialog.bas_label = QLabel("BAS Payment No:")
     dialog.bas_payment_no_edit = QLineEdit()
-    bas_layout.addRow("BAS Payment No:", dialog.bas_payment_no_edit)
-    
-    # BAS Payment Date
+    dialog.bas_label.setVisible(False)
+    dialog.bas_payment_no_edit.setVisible(False)
+    form_layout.addRow(dialog.bas_label, dialog.bas_payment_no_edit)
+
+    dialog.bas_date_label = QLabel("BAS Payment Date:")
     dialog.bas_payment_date_edit = QDateEdit(QDate.currentDate())
     dialog.bas_payment_date_edit.setCalendarPopup(True)
-    dialog.bas_payment_date_edit.setFixedWidth(200)
-    bas_layout.addRow("BAS Payment Date:", dialog.bas_payment_date_edit)
+    dialog.bas_date_label.setVisible(False)
+    dialog.bas_payment_date_edit.setVisible(False)
+    form_layout.addRow(dialog.bas_date_label, dialog.bas_payment_date_edit)
 
-    # BAS Journal No
+    dialog.bas_journal_label = QLabel("BAS Journal No:")
     dialog.bas_journal_no_edit = QLineEdit()
-    bas_layout.addRow("BAS Journal No:", dialog.bas_journal_no_edit)
-    
-    # BAS Journal Date
+    dialog.bas_journal_label.setVisible(False)
+    dialog.bas_journal_no_edit.setVisible(False)
+    form_layout.addRow(dialog.bas_journal_label, dialog.bas_journal_no_edit)
+
+    dialog.bas_journal_date_label = QLabel("BAS Journal Date:")
     dialog.bas_journal_date_edit = QDateEdit(QDate.currentDate())
     dialog.bas_journal_date_edit.setCalendarPopup(True)
-    dialog.bas_journal_date_edit.setFixedWidth(200)
-    bas_layout.addRow("BAS Journal Date:", dialog.bas_journal_date_edit)
-    
-    columns_layout.addLayout(bas_layout)
-    
-    # Right column - Personnel Information
-    personnel_layout = QFormLayout()
-    personnel_layout.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    personnel_layout.setSpacing(8)
-    
-    # Persal No field
+    dialog.bas_journal_date_label.setVisible(False)
+    dialog.bas_journal_date_edit.setVisible(False)
+    form_layout.addRow(dialog.bas_journal_date_label, dialog.bas_journal_date_edit)
+
+    dialog.persal_label = QLabel("Persal No:")
     dialog.persal_no_edit = QLineEdit()
-    personnel_layout.addRow("Persal No:", dialog.persal_no_edit)
+    dialog.persal_label.setVisible(False)
+    dialog.persal_no_edit.setVisible(False)
+    form_layout.addRow(dialog.persal_label, dialog.persal_no_edit)
 
-    # Criminal Charges Laid
-    dialog.criminal_charges_combo = NoWheelComboBox()
-    dialog.criminal_charges_combo.addItems(["N/A", "Yes", "No"])
-    dialog.criminal_charges_combo.setCurrentText("N/A")
-    personnel_layout.addRow("Criminal Charges Laid:", dialog.criminal_charges_combo)
-    
-    # Disciplinary Process
-    dialog.disciplinary_combo = NoWheelComboBox()
-    dialog.disciplinary_combo.addItems(["N/A", "Yes", "No"])
-    dialog.disciplinary_combo.setCurrentText("N/A")
-    personnel_layout.addRow("Disciplinary Process:", dialog.disciplinary_combo)
-    
-    columns_layout.addLayout(personnel_layout)
-    
-    additional_main_layout.addLayout(columns_layout)
-
-    # Prevention steps (reduced height) - spans full width
-    prevention_layout = QFormLayout()
-    prevention_layout.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-    prevention_layout.setSpacing(8)
-    
+    # Prevention steps
     dialog.prevention_steps_edit = QTextEdit()
     dialog.prevention_steps_edit.setMinimumHeight(40)
-    dialog.prevention_steps_edit.setMaximumHeight(40)
-    prevention_layout.addRow(
+    form_layout.addRow(
         "Steps taken to prevent future occurrence of F&W expenditure:",
         dialog.prevention_steps_edit,
     )
-    
-    additional_main_layout.addLayout(prevention_layout)
 
-    main_layout.addWidget(additional_group)
+    # Assessment fields - add them but hide initially
+    dialog.source_doc_label = QLabel("Source Document:")
+    dialog.source_doc_edit = QLineEdit()
+    dialog.source_doc_button = create_professional_button("Browse", "secondary")
+    dialog.source_doc_button.clicked.connect(dialog.browse_source_doc)
+    source_doc_layout = QHBoxLayout()
+    source_doc_layout.addWidget(dialog.source_doc_edit)
+    source_doc_layout.addWidget(dialog.source_doc_button)
+    dialog.source_doc_label.setVisible(False)
+    dialog.source_doc_edit.setVisible(False)
+    dialog.source_doc_button.setVisible(False)
+    form_layout.addRow(dialog.source_doc_label, source_doc_layout)
 
+    dialog.minutes_label = QLabel("Loss Control Minutes:")
+    dialog.minutes_edit = QLineEdit()
+    dialog.minutes_button = create_professional_button("Browse", "secondary")
+    dialog.minutes_button.clicked.connect(dialog.browse_minutes)
+    minutes_layout = QHBoxLayout()
+    minutes_layout.addWidget(dialog.minutes_edit)
+    minutes_layout.addWidget(dialog.minutes_button)
+    dialog.minutes_label.setVisible(False)
+    dialog.minutes_edit.setVisible(False)
+    dialog.minutes_button.setVisible(False)
+    form_layout.addRow(dialog.minutes_label, minutes_layout)
+
+    dialog.evidence_label = QLabel("Assessment Evidence:")
+    dialog.evidence_edit = QLineEdit()
+    dialog.evidence_button = create_professional_button("Browse", "secondary")
+    dialog.evidence_button.clicked.connect(dialog.browse_evidence)
+    evidence_layout = QHBoxLayout()
+    evidence_layout.addWidget(dialog.evidence_edit)
+    evidence_layout.addWidget(dialog.evidence_button)
+    dialog.evidence_label.setVisible(False)
+    dialog.evidence_edit.setVisible(False)
+    dialog.evidence_button.setVisible(False)
+    form_layout.addRow(dialog.evidence_label, evidence_layout)
+
+    dialog.assessed_by_label = QLabel("Assessed By:")
+    dialog.assessed_by_edit = QLineEdit()
+    dialog.assessed_by_label.setVisible(False)
+    dialog.assessed_by_edit.setVisible(False)
+    form_layout.addRow(dialog.assessed_by_label, dialog.assessed_by_edit)
+
+    dialog.assessment_date_label = QLabel("Assessment Date:")
+    dialog.assessment_date_edit = QDateEdit(QDate.currentDate())
+    dialog.assessment_date_edit.setCalendarPopup(True)
+    dialog.assessment_date_label.setVisible(False)
+    dialog.assessment_date_edit.setVisible(False)
+    form_layout.addRow(dialog.assessment_date_label, dialog.assessment_date_edit)
 
     # Set up scroll area
     scroll_area.setWidget(scroll_widget)
@@ -296,7 +258,6 @@ def setup_add_ui(dialog):
 
     # Buttons
     button_layout = QHBoxLayout()
-    button_layout.setContentsMargins(10, 10, 10, 10)
     dialog.save_button = create_professional_button("Save & Continue", "primary")
     dialog.save_button.clicked.connect(dialog.save_case)
 
@@ -313,20 +274,6 @@ def setup_add_ui(dialog):
     # Connect category and list change signals for conditional field updates
     dialog.category_combo.currentTextChanged.connect(dialog.update_conditional_fields)
     dialog.list_combo.currentTextChanged.connect(dialog.update_conditional_fields)
-
-    # Force form layout alignment after theme is applied
-    def fix_form_alignment():
-        """Fix form layout alignment after theme is applied"""
-        try:
-            # Find all form layouts and set their alignment
-            for widget in dialog.findChildren(QFormLayout):
-                widget.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        except Exception as e:
-            print(f"Warning: Could not fix form alignment: {e}")
-
-    # Apply alignment fix after a short delay to ensure theme is applied
-    from PyQt5.QtCore import QTimer
-    QTimer.singleShot(100, fix_form_alignment)
 
 
 class AssessmentDialog(QDialog):

@@ -31,17 +31,23 @@ def import_cases(dialog):
         QMessageBox.warning(
             dialog,
             "Case Numbers Required",
-            f"{len(transactions_without_case_numbers)} transactions do not have case numbers assigned.\n\n"
-            "Please click 'Assign Case Numbers' before importing cases.",
+            (
+                f"{len(transactions_without_case_numbers)} transactions do not have "
+                "case numbers assigned.\n\n"
+                "Please click 'Assign Case Numbers' before importing cases."
+            ),
         )
         return
 
     reply = QMessageBox.question(
         dialog,
         "Confirm Import",
-        f"Import {len(transactions_to_import)} transactions as cases?\n\n"
-        f"Date Range: {dialog.date_from.strftime('%d/%m/%Y')} to {dialog.date_to.strftime('%d/%m/%Y')}\n"
-        "This will create new cases in the system.",
+        (
+            f"Import {len(transactions_to_import)} transactions as cases?\n\n"
+            f"Date Range: {dialog.date_from.strftime('%d/%m/%Y')} to "
+            f"{dialog.date_to.strftime('%d/%m/%Y')}\n"
+            "This will create new cases in the system."
+        ),
         QMessageBox.Yes | QMessageBox.No,
     )
 
@@ -59,7 +65,10 @@ def import_cases(dialog):
         data_size = len(transactions_to_import)
         
         # Auto-enable optimizations for large datasets
-        optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(data_size, "import")
+        optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(
+            data_size,
+            "import",
+        )
         
         if optimizations_enabled:
             # Use optimized worker for large datasets

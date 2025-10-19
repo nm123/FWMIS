@@ -1,6 +1,5 @@
 import os
 import sqlite3
-import sys
 
 # Define DB_PATH directly
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -27,7 +26,10 @@ def check_database():
         print(f"Responsibilities table columns: {[col[1] for col in resp_columns]}")
 
         cursor.execute(
-            "SELECT id, name, parent_id, is_posting_level FROM responsibilities"
+            (
+                "SELECT id, name, parent_id, is_posting_level "
+                "FROM responsibilities"
+            )
         )
         responsibilities = cursor.fetchall()
         print(f"Responsibilities ({len(responsibilities)}): {responsibilities}")
@@ -63,7 +65,10 @@ def check_database():
         print(f"Cases table full info: {case_columns}")
 
         cursor.execute(
-            "SELECT id, transaction_no, bas_payment_no, category, responsibility_id, amount, status FROM cases"
+            (
+                "SELECT id, transaction_no, bas_payment_no, category, "
+                "responsibility_id, amount, status FROM cases"
+            )
         )
         cases = cursor.fetchall()
         print(f"Cases ({len(cases)}): {cases}")

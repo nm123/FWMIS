@@ -14,7 +14,7 @@ except ImportError:
         os.path.join(os.path.dirname(__file__), "..", "..", "data")
     )
     DB_PATH = os.path.join(BASE_DIR, "fruitless.db")
-    print(f"Warning: config.py not found, using fallback paths")
+    print("Warning: config.py not found, using fallback paths")
 except Exception as e:
     print(f"Error loading config: {e}")
     sys.exit(1)

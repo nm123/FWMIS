@@ -115,7 +115,8 @@ def find_duplicates(transaction, category):
         fy_id = fy_result[0] if fy_result else None
 
         print(
-            f"DEBUG: Duplicate checking - Current FY: {fy}, start_year: {start_year}, end_year: {end_year}, fy_id: {fy_id}"
+            "DEBUG: Duplicate checking - FY %s | start %s | end %s | fy_id %s"
+            % (fy, start_year, end_year, fy_id)
         )
 
         # Check what FY 149 actually represents
@@ -125,16 +126,14 @@ def find_duplicates(transaction, category):
         """
         )
         fy_149_info = cursor.fetchone()
-        print(f"DEBUG: FY 149 represents: {fy_149_info}")
+        print("DEBUG: FY 149 represents: %s" % (fy_149_info,))
 
         # If FY 149 doesn't exist, this is the root cause!
         if fy_149_info is None:
-            print(f"DEBUG: *** DATABASE INTEGRITY ISSUE DETECTED ***")
-            print(
-                f"DEBUG: Cases exist with fy_id=149 but no financial year record exists!"
-            )
-            print(f"DEBUG: This explains why duplicate checking can't find the cases.")
-            print(f"DEBUG: The cases are 'orphaned' in a non-existent financial year.")
+            print("DEBUG: *** DATABASE INTEGRITY ISSUE DETECTED ***")
+            print("DEBUG: Cases exist with fy_id=149 but no financial year record exists!")
+            print("DEBUG: This explains why duplicate checking can't find the cases.")
+            print("DEBUG: The cases are 'orphaned' in a non-existent financial year.")
 
             # Check what the orphaned cases look like
             cursor.execute(
@@ -144,7 +143,7 @@ def find_duplicates(transaction, category):
             """
             )
             orphaned_cases = cursor.fetchall()
-            print(f"DEBUG: Sample orphaned cases: {orphaned_cases}")
+            print("DEBUG: Sample orphaned cases: %s" % (orphaned_cases,))
 
         # Also check what FY the existing cases are actually in
         cursor.execute(
@@ -156,7 +155,7 @@ def find_duplicates(transaction, category):
         """
         )
         all_fy_cases = cursor.fetchall()
-        print(f"DEBUG: All cases by FY ID: {all_fy_cases}")
+        print("DEBUG: All cases by FY ID: %s" % (all_fy_cases,))
 
         # Show details of all FYs with cases
         for fy_id_check, count in all_fy_cases:
@@ -167,7 +166,9 @@ def find_duplicates(transaction, category):
                 (fy_id_check,),
             )
             fy_details = cursor.fetchone()
-            print(f"DEBUG: FY ID {fy_id_check}: {fy_details} has {count} cases")
+            print(
+                "DEBUG: FY ID %s: %s has %s cases" % (fy_id_check, fy_details, count)
+            )
 
         # Check for orphaned cases in non-existent financial years
         orphaned_fy_ids = []
@@ -181,12 +182,16 @@ def find_duplicates(transaction, category):
             fy_details = cursor.fetchone()
             if fy_details is None and count > 0:
                 orphaned_fy_ids.append(fy_id_check)
-                print(f"DEBUG: Found orphaned FY ID {fy_id_check} with {count} cases")
+                print(
+                    "DEBUG: Found orphaned FY ID %s with %s cases"
+                    % (fy_id_check, count)
+                )
 
         # If no cases in current FY, try to find cases in other FYs that match the transaction dates
         if fy_id and not any(row[0] == fy_id for row in all_fy_cases):
             print(
-                f"DEBUG: No cases found in current FY {fy} (ID: {fy_id}), checking other FYs..."
+                "DEBUG: No cases in FY %s (ID: %s), checking other FYs"
+                % (fy, fy_id)
             )
             # Look for cases that might match the transaction date range
             trans_date = transaction["date"]
@@ -204,16 +209,18 @@ def find_duplicates(transaction, category):
             matching_fys = cursor.fetchall()
             if matching_fys:
                 print(
-                    f"DEBUG: Transaction date {trans_date} matches FYs: {matching_fys}"
+                    "DEBUG: Transaction date %s matches FYs: %s"
+                    % (trans_date, matching_fys)
                 )
                 # Use the first matching FY for duplicate checking
                 if fy_id != matching_fys[0][0]:
                     print(
-                        f"DEBUG: Switching to FY ID {matching_fys[0][0]} for duplicate checking"
+                        "DEBUG: Switching to FY ID %s for duplicate checking"
+                        % matching_fys[0][0]
                     )
                     fy_id = matching_fys[0][0]
 
-        print(f"DEBUG: Current FY: {fy} (ID: {fy_id})")
+        print("DEBUG: Current FY: %s (ID: %s)" % (fy, fy_id))
 
         # First, let's see what cases exist in the database for this FY
         cursor.execute(
@@ -224,7 +231,7 @@ def find_duplicates(transaction, category):
             (fy_id,),
         )
         total_cases = cursor.fetchone()[0]
-        print(f"DEBUG: Total cases in database for FY {fy}: {total_cases}")
+        print("DEBUG: Total cases in FY %s: %s" % (fy, total_cases))
 
         # Show a sample of existing cases
         cursor.execute(
@@ -237,7 +244,10 @@ def find_duplicates(transaction, category):
             (fy_id,),
         )
         sample_cases = cursor.fetchall()
-        print(f"DEBUG: Sample existing cases in FY {fy} (ID: {fy_id}): {sample_cases}")
+        print(
+            "DEBUG: Sample cases FY %s (ID: %s): %s"
+            % (fy, fy_id, sample_cases)
+        )
 
         # Also check if there are cases in other financial years
         cursor.execute(
@@ -248,7 +258,7 @@ def find_duplicates(transaction, category):
         """
         )
         fy_counts = cursor.fetchall()
-        print(f"DEBUG: Cases by financial year: {fy_counts}")
+        print("DEBUG: Cases by financial year: %s" % (fy_counts,))
 
         # Check all cases regardless of FY
         cursor.execute(
@@ -258,7 +268,10 @@ def find_duplicates(transaction, category):
         """
         )
         total_all_cases = cursor.fetchone()[0]
-        print(f"DEBUG: Total cases in all FYs (excluding deleted): {total_all_cases}")
+        print(
+            "DEBUG: Total cases across FYs (excluding deleted): %s"
+            % total_all_cases
+        )
 
         # Search for cases with same responsibility, category, amount, and financial year
         # First, find responsibility ID by name
@@ -271,10 +284,16 @@ def find_duplicates(transaction, category):
         resp_id = resp_result[0] if resp_result else None
 
         print(
-            f"DEBUG: Looking for responsibility '{transaction['responsibility']}' - found ID: {resp_id}"
+            "DEBUG: Looking for responsibility '%s' - found ID: %s"
+            % (transaction["responsibility"], resp_id)
         )
         print(
-            f"DEBUG: Transaction details: responsibility='{transaction['responsibility']}', category='{category['name']}', amount={abs(transaction['amount']):.2f}"
+            "DEBUG: Transaction details:",
+            {
+                "responsibility": transaction["responsibility"],
+                "category": category["name"],
+                "amount": f"{abs(transaction['amount']):.2f}",
+            },
         )
 
         # Debug: Check what cases exist for this responsibility in the database
@@ -288,10 +307,14 @@ def find_duplicates(transaction, category):
             )
             resp_count, resp_cases = cursor.fetchone()
             print(
-                f"DEBUG: Cases for responsibility ID {resp_id} in FY {fy}: {resp_count} cases"
+                "DEBUG: Cases for responsibility %s in FY %s: %s"
+                % (resp_id, fy, resp_count)
             )
             if resp_cases:
-                print(f"DEBUG: Sample case numbers: {resp_cases[:200]}...")
+                print(
+                    "DEBUG: Sample case numbers: %s..."
+                    % resp_cases[:200]
+                )
 
             # Check cases for this responsibility in ALL financial years
             cursor.execute(
@@ -304,7 +327,8 @@ def find_duplicates(transaction, category):
             )
             all_fy_resp_cases = cursor.fetchall()
             print(
-                f"DEBUG: Cases for responsibility ID {resp_id} in ALL FYs: {all_fy_resp_cases}"
+                "DEBUG: Responsibility %s in all FYs: %s"
+                % (resp_id, all_fy_resp_cases)
             )
 
             # Check what lists the cases are in
@@ -318,7 +342,8 @@ def find_duplicates(transaction, category):
             )
             list_counts = cursor.fetchall()
             print(
-                f"DEBUG: Cases for responsibility ID {resp_id} by list in FY {fy}: {list_counts}"
+                "DEBUG: Responsibility %s by list in FY %s: %s"
+                % (resp_id, fy, list_counts)
             )
 
             # Check the actual responsibility names in existing cases
@@ -334,20 +359,22 @@ def find_duplicates(transaction, category):
             )
             resp_names_in_cases = cursor.fetchall()
             print(
-                f"DEBUG: Responsibility names in existing cases (FY {fy}): {resp_names_in_cases}"
+                "DEBUG: Responsibility names in FY %s: %s"
+                % (fy, resp_names_in_cases)
             )
 
             # Debug: Check category matching
             cursor.execute(
-                """
-                SELECT COUNT(*) FROM cases
-                WHERE responsibility_id = ? AND category = ? AND fy_id = ? AND list != 'Deleted Cases'
-            """,
+                (
+                    "SELECT COUNT(*) FROM cases WHERE responsibility_id = ? "
+                    "AND category = ? AND fy_id = ? AND list != 'Deleted Cases'"
+                ),
                 (resp_id, category["name"], fy_id),
             )
             cat_count = cursor.fetchone()[0]
             print(
-                f"DEBUG: Cases with matching category '{category['name']}': {cat_count}"
+                "DEBUG: Category '%s' match count: %s"
+                % (category["name"], cat_count)
             )
 
             # Debug: Check amount matching (broader range)
@@ -364,16 +391,19 @@ def find_duplicates(transaction, category):
             # Handle None values for min/max amounts when no cases exist
             min_amt_str = f"{min_amt:.2f}" if min_amt is not None else "N/A"
             max_amt_str = f"{max_amt:.2f}" if max_amt is not None else "N/A"
-            print(
-                f"DEBUG: Amount range for responsibility: {min_amt_str} - {max_amt_str} (transaction: {transaction_amount:.2f})"
-            )
+            amount_range_msg = (
+                "DEBUG: Amount range for responsibility: {} - {} "
+                "(transaction: {:.2f})"
+            ).format(min_amt_str, max_amt_str, transaction_amount)
+            print(amount_range_msg)
 
         if resp_id:
             # Only return exact matches (same responsibility, category, amount, FY)
             # Debug: Check the transaction amount type and value
-            print(
-                f"DEBUG: Transaction amount raw: {transaction['amount']} (type: {type(transaction['amount'])})"
-            )
+            raw_amount_msg = (
+                "DEBUG: Transaction amount raw: {} (type: {})"
+            ).format(transaction["amount"], type(transaction["amount"]))
+            print(raw_amount_msg)
 
             # Ensure amount is numeric
             try:
@@ -450,7 +480,8 @@ def find_duplicates(transaction, category):
                 # If no matches in current FY, check orphaned FYs
                 for orphaned_fy_id in orphaned_fy_ids:
                     print(
-                        f"DEBUG: Checking orphaned FY {orphaned_fy_id} for duplicates"
+                        "DEBUG: Checking orphaned FY %s for duplicates"
+                        % orphaned_fy_id
                     )
                     cursor.execute(
                         """
@@ -465,14 +496,16 @@ def find_duplicates(transaction, category):
                     )
 
                     orphaned_rows = cursor.fetchall()
-                    print(
-                        f"DEBUG: Exact match in orphaned FY {orphaned_fy_id} found {len(orphaned_rows)} duplicates"
-                    )
-                    if len(orphaned_rows) > 0:
-                        print(
-                            f"DEBUG: Orphaned FY match sample: {orphaned_rows[0][1]} | {orphaned_rows[0][9]} | {orphaned_rows[0][11]:.2f}"
-                        )
-                        # Convert orphaned rows to dictionaries too
+                    orphaned_count_msg = (
+                        "DEBUG: Exact match in orphaned FY %s found %s duplicates"
+                    ) % (orphaned_fy_id, len(orphaned_rows))
+                    print(orphaned_count_msg)
+                    if orphaned_rows:
+                        sample_row = orphaned_rows[0]
+                        orphaned_sample_msg = (
+                            "DEBUG: Orphaned FY match sample: {} | {} | {:.2f}"
+                        ).format(sample_row[1], sample_row[9], sample_row[11])
+                        print(orphaned_sample_msg)
                         for row in orphaned_rows:
                             case_dict = {
                                 "id": row[0],
@@ -509,7 +542,9 @@ def find_duplicates(transaction, category):
 
                 if not duplicates:
                     print(
-                        f"DEBUG: No exact matches found for: resp_id={resp_id}, category='{category['name']}', amount={transaction_amount:.2f}, fy_id={fy_id} or orphaned FYs"
+                        "DEBUG: No exact matches found for: resp_id=%s, "
+                        "category='%s', amount=%.2f, fy_id=%s or orphaned FYs"
+                        % (resp_id, category["name"], transaction_amount, fy_id)
                     )
 
             print(f"DEBUG: Total exact duplicates found: {len(duplicates)}")
@@ -518,7 +553,8 @@ def find_duplicates(transaction, category):
             return duplicates
         else:
             print(
-                f"DEBUG: No responsibility ID found for '{transaction['responsibility']}' - cannot search for duplicates"
+                "DEBUG: No responsibility ID found for '%s' - cannot search "
+                "for duplicates" % transaction["responsibility"]
             )
             conn.close()
             return []

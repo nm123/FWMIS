@@ -1,21 +1,39 @@
-import os
 import json
+import os
 from typing import List, Optional
-from reportlab.lib.pagesizes import letter, A4
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
-from reportlab.platypus.flowables import Image
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.platypus import (
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 from PyPDF2 import PdfReader, PdfWriter
+
 from scripts.Utilities.annexure_utils import get_annexure_details
 
-def export_annexure_to_pdf(annexure_ids: List[Optional[int]], file_path: str, include_lc_minutes: bool = False):
+
+def export_annexure_to_pdf(
+    annexure_ids: List[Optional[int]],
+    file_path: str,
+    include_lc_minutes: bool = False,
+) -> None:
     """Export annexures to PDF format."""
-    doc = SimpleDocTemplate(file_path, pagesize=A4, 
-                          rightMargin=72, leftMargin=72, 
-                          topMargin=72, bottomMargin=18)
+    doc = SimpleDocTemplate(
+        file_path,
+        pagesize=A4,
+        rightMargin=72,
+        leftMargin=72,
+        topMargin=72,
+        bottomMargin=18,
+    )
     
     # Get styles
     styles = getSampleStyleSheet()
@@ -68,7 +86,10 @@ def add_annexure_content(story, annexure, title_style, subtitle_style, styles):
     story.append(title)
     
     # Subtitle
-    subtitle = Paragraph(f"Approval Authority: {anneure['role']}", subtitle_style)
+    subtitle = Paragraph(
+        f"Approval Authority: {annexure['role']}",
+        subtitle_style,
+    )
     story.append(subtitle)
     
     # Summary information
@@ -168,10 +189,12 @@ def add_lc_minutes_content(story, annexure):
             if lc_minutes_path.lower().endswith('.pdf'):
                 try:
                     embed_pdf_minutes(story, lc_minutes_path)
-                except Exception as e:
+                except Exception:
                     # Fallback to text message
-                    error_msg = Paragraph(f"LC Minutes available at: {lc_minutes_path}", 
-                                        getSampleStyleSheet()['Normal'])
+                    error_msg = Paragraph(
+                        f"LC Minutes available at: {lc_minutes_path}",
+                        getSampleStyleSheet()["Normal"],
+                    )
                     story.append(error_msg)
             else:
                 # For non-PDF files, just show the path
@@ -206,18 +229,22 @@ def embed_pdf_minutes(story, pdf_path):
             writer.write(output_file)
         
         # Add reference to the minutes
-        minutes_ref = Paragraph(f"LC Minutes embedded (see attached PDF)", 
-                               getSampleStyleSheet()['Normal'])
+        minutes_ref = Paragraph(
+            "LC Minutes embedded (see attached PDF)",
+            getSampleStyleSheet()['Normal'],
+        )
         story.append(minutes_ref)
         
         # Clean up temporary file
         if os.path.exists(temp_pdf):
             os.remove(temp_pdf)
             
-    except Exception as e:
+    except Exception:
         # Fallback to simple text reference
-        fallback_msg = Paragraph(f"LC Minutes available at: {pdf_path}", 
-                                getSampleStyleSheet()['Normal'])
+        fallback_msg = Paragraph(
+            f"LC Minutes available at: {pdf_path}",
+            getSampleStyleSheet()["Normal"],
+        )
         story.append(fallback_msg)
 
 def get_lc_minutes_path(evidence_paths: str) -> Optional[str]:

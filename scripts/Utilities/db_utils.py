@@ -1,9 +1,12 @@
+import contextlib
+import logging
 import sqlite3
 from typing import Iterator
-import contextlib
 
 from .config import DB_PATH
 
+
+logger = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def get_db_connection() -> Iterator[sqlite3.Connection]:
@@ -40,8 +43,8 @@ def get_current_delegation():
             """)
             row = cursor.fetchone()
             return {'cfo_limit': row[0], 'effective_date': row[1]} if row else None
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
+    except sqlite3.Error:
+        logger.exception("Database error while fetching current delegation")
         return None
 
 
@@ -55,6 +58,6 @@ def save_delegation(cfo_limit, effective_date):
                 VALUES (?, ?)
             """, (cfo_limit, effective_date))
             return True
-    except sqlite3.Error as e:
-        print(f"Error saving delegation: {e}")
+    except sqlite3.Error:
+        logger.exception("Error saving delegation")
         return False

@@ -4,7 +4,7 @@ from datetime import datetime
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox
 from scripts.Utilities.financial_utils import get_financial_year
-from scripts.Utilities.optimized_excel_utils import StreamingExcelExporter, create_optimized_excel_export
+from scripts.Utilities.optimized_excel_utils import StreamingExcelExporter
 from scripts.Utilities.performance_profiler import memory_profiler
 from scripts.Utilities.optimization_manager import get_optimization_manager
 
@@ -22,10 +22,12 @@ class ViewCasesUtils:
             # Get optimization manager and auto-enable for large exports
             optimization_manager = get_optimization_manager()
             data_size = dialog.case_table.rowCount()
-            
+
             # Auto-enable optimizations for large exports
-            optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(data_size, "export")
-            
+            optimizations_enabled = optimization_manager.auto_enable_for_large_dataset(
+                data_size, "export"
+            )
+
             if optimizations_enabled:
                 # Show optimization notification
                 QMessageBox.information(
@@ -59,7 +61,7 @@ class ViewCasesUtils:
             def extract_table_data():
                 """Generator to extract table data without loading everything into memory."""
                 headers = []
-                
+
                 # Get headers from table horizontal header
                 for col in range(dialog.case_table.columnCount()):
                     header_item = dialog.case_table.horizontalHeaderItem(col)
@@ -75,7 +77,7 @@ class ViewCasesUtils:
                     for col in range(dialog.case_table.columnCount()):
                         item = dialog.case_table.item(row, col)
                         if item:
-                            # Handle special case for Case No (extract transaction number from Qt.UserRole)
+                            # Handle case number stored in `Qt.UserRole`
                             if col == 0:  # Case No column
                                 transaction_no = item.data(Qt.UserRole)
                                 row_data[headers[col]] = (
@@ -98,18 +100,13 @@ class ViewCasesUtils:
             
             # Convert generator to iterator for streaming export
             def cases_iterator():
-                headers = None
                 for item in extract_table_data():
-                    if item["type"] == "headers":
-                        headers = item["data"]
-                    elif item["type"] == "row":
+                    if item["type"] == "row":
                         yield item["data"]
 
             # Export using streaming
-            exported_file = exporter.export_cases_to_excel_streaming(
-                cases_iterator(), 
-                filepath, 
-                f"{current_list} Cases"
+            exporter.export_cases_to_excel_streaming(
+                cases_iterator(), filepath, f"{current_list} Cases"
             )
 
             # Take memory snapshot after export
@@ -318,8 +315,8 @@ class ViewCasesUtils:
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(str(cell.value))
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error occurred while formatting Excel worksheet: {str(e)}")
             adjusted_width = min(max_length + 2, 50)
             worksheet.column_dimensions[column_letter].width = adjusted_width
 

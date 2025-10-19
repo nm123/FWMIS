@@ -1,5 +1,4 @@
 import logging
-import sqlite3
 
 from PyQt5.QtWidgets import QMessageBox
 from scripts.Utilities.db_utils import get_db_connection
@@ -61,13 +60,24 @@ def assign_case_numbers(dialog):
         dialog.assign_case_numbers_button.setEnabled(False)
         dialog.assign_case_numbers_button.setText("Case Numbers Assigned")
 
+        next_available = current_counter + len(transactions_to_assign) + 1
+        summary_message = (
+            "✅ Case numbers have been assigned to %s transactions "
+            "(out of %s total).\n\n"
+            "Next available case number: %s%05d\n\n"
+            "You can now proceed with importing the cases."
+            % (
+                len(transactions_to_assign),
+                len(dialog.transactions),
+                fy_end_year,
+                next_available,
+            )
+        )
+
         QMessageBox.information(
             dialog,
             "Case Numbers Assigned",
-            f"✅ Case numbers have been assigned to {len(transactions_to_assign)} transactions "
-            f"(out of {len(dialog.transactions)} total).\n\n"
-            f"Next available case number: {fy_end_year}{(current_counter + len(transactions_to_assign) + 1):05d}\n\n"
-            "You can now proceed with importing the cases.",
+            summary_message,
         )
 
     except Exception as e:

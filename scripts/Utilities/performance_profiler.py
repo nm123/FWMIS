@@ -159,8 +159,17 @@ class MemoryProfiler:
             process = psutil.Process()
             process_memory = process.memory_info()
             
-            logger.info(f"System Memory: {memory.percent}% used ({memory.used / 1024 / 1024 / 1024:.1f}GB / {memory.total / 1024 / 1024 / 1024:.1f}GB)")
-            logger.info(f"Process Memory: RSS={process_memory.rss / 1024 / 1024:.1f}MB, VMS={process_memory.vms / 1024 / 1024:.1f}MB")
+            logger.info(
+                "System Memory: %s%% used (%sGB / %sGB)",
+                memory.percent,
+                memory.used / 1024 / 1024 / 1024,
+                memory.total / 1024 / 1024 / 1024,
+            )
+            logger.info(
+                "Process Memory: RSS=%sMB, VMS=%sMB",
+                process_memory.rss / 1024 / 1024,
+                process_memory.vms / 1024 / 1024,
+            )
             
         except ImportError:
             logger.warning("psutil not available for memory logging")

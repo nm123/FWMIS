@@ -76,14 +76,20 @@ def check_qt_compatibility():
     qt_major, qt_minor = map(int, QT_VERSION_STR.split(".")[:2])
     if qt_major < 5 or (qt_major == 5 and qt_minor < 12):
         issues.append(
-            f"Qt version {QT_VERSION_STR} may have compatibility issues. Consider upgrading to 5.12+"
+            (
+                "Qt version {} may have compatibility issues. "
+                "Consider upgrading to 5.12+"
+            ).format(QT_VERSION_STR)
         )
 
     # Check PyQt version
     pyqt_major, pyqt_minor = map(int, PYQT_VERSION_STR.split(".")[:2])
     if pyqt_major < 5 or (pyqt_major == 5 and pyqt_minor < 12):
         issues.append(
-            f"PyQt version {PYQT_VERSION_STR} may have compatibility issues. Consider upgrading to 5.12+"
+            (
+                "PyQt version {} may have compatibility issues. "
+                "Consider upgrading to 5.12+"
+            ).format(PYQT_VERSION_STR)
         )
 
     # Check environment variables

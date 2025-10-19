@@ -38,16 +38,16 @@ from .edit_case_assessment_ui import setup_assessment_ui_components
 from .edit_case_attachments_ui import setup_attachments_ui_components
 from .edit_case_basic_ui import setup_basic_ui_components
 from .edit_case_data_init import initialize_case_data
-from .edit_case_handlers import (browse_assessment_evidence, browse_evidence,
-                                 browse_minutes, browse_recovery_evidence,
+from .edit_case_handlers import (add_new_installment, browse_assessment_evidence, browse_evidence,
+                                 browse_minutes, browse_recovery_evidence, browse_recovery_evidence_rip,
                                  browse_source_doc, browse_supporting_evidence,
                                  on_assessment_status_changed,
                                  on_lc_status_changed, select_bas_journal_date,
                                  select_bas_payment_date, select_latest_installment_date,
-                                 update_conditional_fields,
-                                 update_list_status_grid,
-                                 view_assessment_evidence, view_minutes,
-                                 view_recovery_evidence, view_source_doc,
+                                 select_new_installment_date, update_conditional_fields,
+                                 update_list_status_grid, update_recovery_progress,
+                                 view_assessment_evidence, view_installment_history, view_minutes,
+                                 view_recovery_evidence, view_recovery_evidence_rip, view_source_doc,
                                  view_supporting_evidence)
 from .edit_case_list_status_ui import setup_list_status_ui_components
 from .edit_case_load_data import load_case_data_components
@@ -170,6 +170,12 @@ class EditCaseDialog(QDialog):
     def view_recovery_evidence(self):
         view_recovery_evidence(self)
 
+    def browse_recovery_evidence_rip(self):
+        browse_recovery_evidence_rip(self)
+
+    def view_recovery_evidence_rip(self):
+        view_recovery_evidence_rip(self)
+
     def select_bas_payment_date(self):
         select_bas_payment_date(self)
 
@@ -187,3 +193,15 @@ class EditCaseDialog(QDialog):
 
     def update_determination_button_visibility(self):
         update_determination_button_visibility(self)
+
+    def select_new_installment_date(self):
+        select_new_installment_date(self)
+
+    def add_new_installment(self):
+        add_new_installment(self)
+
+    def view_installment_history(self):
+        view_installment_history(self)
+
+    def update_recovery_progress(self):
+        update_recovery_progress(self)

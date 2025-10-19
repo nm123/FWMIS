@@ -33,6 +33,12 @@
 4. **Escalate**: Only if free models hit limitations
 5. **Document**: Update guidelines based on learnings
 
+## Quality Tooling
+- **Linting**: `ruff check scripts tests` (formatting fixes with `ruff check --select I --fix scripts tests` to autofix imports).
+- **Type Checking**: `mypy scripts` using the repo configuration.
+- **Test Suite**: `pytest` for unit/performance smoke tests.
+- **Environment**: Install dev extras with `uv pip install .[dev]` (or `pip install .[dev]`).
+
 ## Emergency Escalation Criteria
 - Free models consistently fail to solve the problem
 - Complex architectural decisions required

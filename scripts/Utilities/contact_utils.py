@@ -13,7 +13,10 @@ def get_effective_contacts(responsibility_id):
         current_id = responsibility_id
         while current_id:
             cursor.execute(
-                "SELECT title, initials, names, surname, job_title, telephone, email FROM contacts WHERE responsibility_id = ?",
+                (
+                    "SELECT title, initials, names, surname, job_title, telephone, "
+                    "email FROM contacts WHERE responsibility_id = ?"
+                ),
                 (current_id,),
             )
             contacts.extend(cursor.fetchall())

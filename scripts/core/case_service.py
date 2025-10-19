@@ -1,17 +1,20 @@
 import logging
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Sequence
 
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.db_utils import get_db_connection
-from scripts.Utilities.financial_utils import (generate_transaction_no,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    generate_transaction_no,
+    get_financial_year,
+)
 
 
 class CaseService:
     """Service class for case management operations"""
 
     @staticmethod
-    def create_case(case_data):
+    def create_case(case_data: Dict[str, Any]) -> int:
         """Create a new case in the database"""
         try:
             with get_db_connection() as conn:
@@ -21,13 +24,66 @@ class CaseService:
             cursor.execute(
                 """
                 INSERT INTO cases (
-                    transaction_no, date_incurred, date_identified, date_reported,
-                    description, bas_payment_no, bas_payment_date, bas_journal_no, bas_journal_date,
-                    persal_no, category, responsibility_id, amount, source_document,
-                    minutes, evidence_path, attachments, status, list, assessment_assessed_by,
-                    assessment_date, assessment_result, fy_id, period_id, prevention_steps,
-                    original_list, criminal_charges, disciplinary_process, loss_recovery
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    transaction_no,
+                    date_incurred,
+                    date_identified,
+                    date_reported,
+                    description,
+                    bas_payment_no,
+                    bas_payment_date,
+                    bas_journal_no,
+                    bas_journal_date,
+                    persal_no,
+                    category,
+                    responsibility_id,
+                    amount,
+                    source_document,
+                    minutes,
+                    evidence_path,
+                    attachments,
+                    status,
+                    list,
+                    assessment_assessed_by,
+                    assessment_date,
+                    assessment_result,
+                    fy_id,
+                    period_id,
+                    prevention_steps,
+                    original_list,
+                    criminal_charges,
+                    disciplinary_process,
+                    loss_recovery
+                ) VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
             """,
                 (
                     case_data.get("transaction_no"),
@@ -78,12 +134,12 @@ class CaseService:
 
             return case_id
 
-        except Exception as e:
+        except Exception:
             logging.getLogger(__name__).exception("Error creating case")
             raise
 
     @staticmethod
-    def update_case(case_id, case_data):
+    def update_case(case_id: int, case_data: Dict[str, Any]) -> bool:
         """Update an existing case"""
         try:
             with get_db_connection() as conn:
@@ -93,13 +149,32 @@ class CaseService:
             cursor.execute(
                 """
                 UPDATE cases SET
-                    date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
-                    bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?,
-                    persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
-                    source_document = ?, minutes = ?, evidence_path = ?, attachments = ?,
-                    status = ?, list = ?, assessment_assessed_by = ?, assessment_date = ?,
-                    assessment_result = ?, criminal_charges = ?, disciplinary_process = ?,
-                    loss_recovery = ?, prevention_steps = ?, original_list = ?
+                    date_incurred = ?,
+                    date_identified = ?,
+                    date_reported = ?,
+                    description = ?,
+                    bas_payment_no = ?,
+                    bas_payment_date = ?,
+                    bas_journal_no = ?,
+                    bas_journal_date = ?,
+                    persal_no = ?,
+                    category = ?,
+                    responsibility_id = ?,
+                    amount = ?,
+                    source_document = ?,
+                    minutes = ?,
+                    evidence_path = ?,
+                    attachments = ?,
+                    status = ?,
+                    list = ?,
+                    assessment_assessed_by = ?,
+                    assessment_date = ?,
+                    assessment_result = ?,
+                    criminal_charges = ?,
+                    disciplinary_process = ?,
+                    loss_recovery = ?,
+                    prevention_steps = ?,
+                    original_list = ?
                 WHERE id = ?
             """,
                 (
@@ -147,12 +222,12 @@ class CaseService:
 
             return True
 
-        except Exception as e:
+        except Exception:
             logging.getLogger(__name__).exception("Error updating case")
             raise
 
     @staticmethod
-    def delete_case(case_id, transaction_no):
+    def delete_case(case_id: int, transaction_no: str) -> bool:
         """Delete case by moving it to Deleted Cases"""
         try:
             with get_db_connection() as conn:
@@ -188,12 +263,12 @@ class CaseService:
 
             return True
 
-        except Exception as e:
+        except Exception:
             logging.getLogger(__name__).exception("Error deleting case")
             raise
 
     @staticmethod
-    def get_case_by_id(case_id):
+    def get_case_by_id(case_id: int) -> Optional[Dict[str, Any]]:
         """Get case data by ID"""
         try:
             with get_db_connection() as conn:
@@ -207,12 +282,12 @@ class CaseService:
                 return dict(zip(columns, case_data))
             return None
 
-        except Exception as e:
+        except Exception:
             logging.getLogger(__name__).exception("Error getting case by id")
             return None
 
     @staticmethod
-    def get_case_by_transaction_no(transaction_no):
+    def get_case_by_transaction_no(transaction_no: str) -> Optional[Dict[str, Any]]:
         """Get case data by transaction number"""
         try:
             with get_db_connection() as conn:
@@ -228,12 +303,12 @@ class CaseService:
                 return dict(zip(columns, case_data))
             return None
 
-        except Exception as e:
+        except Exception:
             logging.getLogger(__name__).exception("Error getting case by transaction number")
             return None
 
     @staticmethod
-    def validate_case_data(case_data):
+    def validate_case_data(case_data: Dict[str, Any]) -> List[str]:
         """Validate case data before saving"""
         errors = []
 
@@ -259,14 +334,18 @@ class CaseService:
         return errors
 
     @staticmethod
-    def generate_case_number():
+    def generate_case_number() -> str:
         """Generate a new case number"""
         return generate_transaction_no(get_financial_year())
 
     @staticmethod
     def find_duplicate_cases(
-        responsibility_id, category, amount, fy_id, exclude_case_id=None
-    ):
+        responsibility_id: int,
+        category: str,
+        amount: float,
+        fy_id: int,
+        exclude_case_id: Optional[int] = None,
+    ) -> Sequence[Sequence[Any]]:
         """Find potential duplicate cases"""
         try:
             with get_db_connection() as conn:
@@ -291,6 +370,6 @@ class CaseService:
 
             return duplicates
 
-        except Exception as e:
+        except Exception:
             logging.getLogger(__name__).exception("Error finding duplicates")
             return []

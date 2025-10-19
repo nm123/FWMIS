@@ -1,21 +1,20 @@
 """
 FWMIS Professional UI Theme - Implementation Example
 
-This file demonstrates how to apply the professional UI theme to any dialog in the FWMIS application.
-Follow this pattern for consistent styling across all dialogs.
+This file demonstrates how to apply the professional UI theme to any dialog in
+the FWMIS application. Follow this pattern for consistent styling across all
+dialogs.
 
 EXAMPLE USAGE:
 """
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QDialog, QGridLayout, QGroupBox, QHBoxLayout,
-                             QLabel, QLineEdit, QMessageBox, QPushButton,
-                             QTableWidget, QVBoxLayout)
+from PyQt5.QtWidgets import (QDialog, QGridLayout, QHBoxLayout, QLabel,
+                             QLineEdit, QMessageBox, QTableWidget,
+                             QVBoxLayout)
 from scripts.Utilities.ui_theme import (COLORS, apply_theme,
                                         create_professional_button,
                                         create_professional_groupbox,
-                                        create_status_label, get_button_style,
-                                        get_groupbox_style,
+                                        create_status_label,
                                         setup_professional_table)
 
 

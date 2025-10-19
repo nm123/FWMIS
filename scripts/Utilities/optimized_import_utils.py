@@ -5,10 +5,8 @@ Designed for low-end hardware (4-8GB RAM, old CPUs).
 
 import csv
 import logging
-import sqlite3
 from typing import Iterator, List, Dict, Any, Optional
 from contextlib import contextmanager
-import os
 import gc
 
 logger = logging.getLogger(__name__)
@@ -94,10 +92,13 @@ class OptimizedBASParser:
         self.chunk_size = chunk_size or get_optimal_chunk_size()
         self.transactions = []
         
-    def parse_file_streaming(self, file_path: str, date_from=None, date_to=None) -> Iterator[List[Dict]]:
+    def parse_file_streaming(
+        self,
+        file_path: str,
+        date_from=None,
+        date_to=None,
+    ) -> Iterator[List[Dict]]:
         """Parse BAS file in streaming fashion to avoid loading entire file into memory."""
-        import re
-        
         current_responsibility = None
         current_item = None
         chunk = []
@@ -108,13 +109,23 @@ class OptimizedBASParser:
                     line = line.rstrip()
                     
                     # Process line and extract transaction if valid
-                    transaction = self._process_line(line, current_responsibility, current_item, date_from, date_to)
+                    transaction = self._process_line(
+                        line,
+                        current_responsibility,
+                        current_item,
+                        date_from,
+                        date_to,
+                    )
                     
                     if transaction:
                         chunk.append(transaction)
                     
                     # Update context variables
-                    current_responsibility, current_item = self._update_context(line, current_responsibility, current_item)
+                    current_responsibility, current_item = self._update_context(
+                        line,
+                        current_responsibility,
+                        current_item,
+                    )
                     
                     # Yield chunk when it reaches optimal size
                     if len(chunk) >= self.chunk_size:
@@ -130,7 +141,14 @@ class OptimizedBASParser:
             logger.error(f"Error parsing BAS file: {e}")
             raise
     
-    def _process_line(self, line: str, current_responsibility: str, current_item: str, date_from, date_to) -> Optional[Dict]:
+    def _process_line(
+        self,
+        line: str,
+        current_responsibility: str,
+        current_item: str,
+        date_from,
+        date_to,
+    ) -> Optional[Dict]:
         """Process a single line and return transaction if valid."""
         import re
         from datetime import datetime
@@ -212,17 +230,20 @@ class BatchDatabaseInserter:
                 cursor = conn.cursor()
                 
                 # Use prepared statement for better performance
-                insert_sql = """
-                    INSERT INTO cases (
-                        transaction_no, base_transaction_no, date_incurred, date_identified, date_reported,
-                        description, bas_payment_no, bas_payment_date, persal_no, category,
-                        responsibility_id, amount, source_document, minutes, evidence_path,
-                        status, list, assessment_assessed_by, assessment_date, assessment_result,
-                        fy_id, period_id, criminal_charges, disciplinary_process, loss_recovery,
-                        prevention_steps, original_list, attachments, shared_document_id, 
-                        bas_journal_no, bas_journal_date
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """
+                column_list = (
+                    "    transaction_no, base_transaction_no, date_incurred,\n"
+                    "    date_identified, date_reported, description, bas_payment_no,\n"
+                    "    bas_payment_date, persal_no, category, responsibility_id, amount,\n"
+                    "    source_document, minutes, evidence_path, status, list,\n"
+                    "    assessment_assessed_by, assessment_date, assessment_result, fy_id,\n"
+                    "    period_id, criminal_charges, disciplinary_process, loss_recovery,\n"
+                    "    prevention_steps, original_list, attachments, shared_document_id,\n"
+                    "    bas_journal_no, bas_journal_date\n"
+                )
+                placeholders = ", ".join(["?"] * 31)
+                insert_sql = (
+                    "INSERT INTO cases (\n" + column_list + f") VALUES (\n    {placeholders}\n)"
+                )
                 
                 # Process in batches
                 for i in range(0, len(cases), self.batch_size):

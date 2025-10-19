@@ -78,7 +78,14 @@ def create_annexure_sheet(workbook: Workbook, annexure: dict):
         cell.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
     
     # Column headers
-    headers = ["Case No", "Responsibility", "Amount", "Description", "LC Recommendation", "LC Minutes"]
+    headers = [
+        "Case No",
+        "Responsibility",
+        "Amount",
+        "Description",
+        "LC Recommendation",
+        "LC Minutes",
+    ]
     for col, header in enumerate(headers, 1):
         cell = worksheet.cell(row=6, column=col, value=header)
         cell.font = header_font

@@ -21,7 +21,10 @@ def load_categories():
             )
         conn.commit()
         cursor.execute(
-            "SELECT id, name, parent_id, persal_compulsory, bas_payment_compulsory FROM categories"
+            (
+                "SELECT id, name, parent_id, persal_compulsory, "
+                "bas_payment_compulsory FROM categories"
+            )
         )
         categories = [
             {
@@ -55,7 +58,11 @@ def save_categories(categories):
         cursor.execute("DELETE FROM categories")
         for category in categories:
             cursor.execute(
-                "INSERT INTO categories (id, name, parent_id, persal_compulsory, bas_payment_compulsory) VALUES (?, ?, ?, ?, ?)",
+                (
+                    "INSERT INTO categories (id, name, parent_id, "
+                    "persal_compulsory, bas_payment_compulsory)"
+                    " VALUES (?, ?, ?, ?, ?)"
+                ),
                 (
                     category["id"],
                     category["name"],

@@ -1,13 +1,13 @@
 import sqlite3
 from collections import defaultdict
 
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import QEvent, Qt, pyqtSignal
 from PyQt5.QtGui import QWheelEvent
 from PyQt5.QtWidgets import (QComboBox, QDialog, QHBoxLayout, QHeaderView,
                              QLabel, QLineEdit, QMessageBox, QPushButton,
-                             QSplitter, QTableWidget, QTableWidgetItem,
+                             QSplitter, QTabBar, QTableWidget, QTableWidgetItem,
                              QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-                             QWidget)
+                             QWidget, QSizePolicy)
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.case_data_refresh_utils import refresh_cases
 from scripts.Utilities.case_filter_utils import (
@@ -24,7 +24,7 @@ from scripts.Utilities.utils import format_currency_amount
 from scripts.ui.dialogs.edit_case import EditCaseDialog
 
 from .case_table_utils import (create_table_button, populate_case_table,
-                               setup_case_table_columns)
+                               setup_case_table_columns, create_totals_widget)
 
 
 class NoWheelComboBox(QComboBox):
@@ -37,6 +37,45 @@ class NoWheelComboBox(QComboBox):
         else:
             # Ignore wheel event when not focused
             event.ignore()
+
+
+class CaseListTabWidget(QWidget):
+    currentTextChanged = pyqtSignal(str)
+
+    def __init__(self, list_names, parent=None):
+        super().__init__(parent)
+        self._list_names = list_names
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        self._tab_bar = QTabBar()
+        self._tab_bar.setExpanding(False)
+        self._tab_bar.setMovable(False)
+        self._tab_bar.setDrawBase(False)
+        self._tab_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        for name in list_names:
+            self._tab_bar.addTab(name)
+        layout.addWidget(self._tab_bar)
+        self._tab_bar.currentChanged.connect(self._on_current_changed)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        tab_height = self._tab_bar.sizeHint().height()
+        if tab_height <= 0:
+            tab_height = self.fontMetrics().height() * 2
+        self.setFixedHeight(tab_height)
+
+    def _on_current_changed(self, index):
+        if 0 <= index < self._tab_bar.count():
+            self.currentTextChanged.emit(self._tab_bar.tabText(index))
+
+    def currentText(self):
+        index = self._tab_bar.currentIndex()
+        if 0 <= index < self._tab_bar.count():
+            return self._tab_bar.tabText(index)
+        return ""
+
+    def setCurrentText(self, text):
+        if text in self._list_names:
+            self._tab_bar.setCurrentIndex(self._list_names.index(text))
 
 
 class EditCasesDialog(QDialog):
@@ -133,32 +172,6 @@ class EditCasesDialog(QDialog):
         # Separator
         search_layout.addSpacing(20)
 
-        # List filter
-        list_label = QLabel("List:")
-        list_label.setFixedWidth(30)
-        self.list_filter_combo = NoWheelComboBox()
-        self.list_filter_combo.addItems(
-            [
-                "Checklist",
-                "Lead Schedule",
-                "Recovery in Progress",
-                "Recovered",
-                "Write-Off Recommended",
-                "Written Off",
-            ]
-        )
-        self.list_filter_combo.setCurrentText("Checklist")
-        self.list_filter_combo.setFixedWidth(150)
-        self.list_filter_combo.currentTextChanged.connect(
-            lambda: (
-                print("DEBUG: list_filter_combo triggered refresh_cases"),
-                refresh_cases(self),
-            )
-        )
-
-        search_layout.addWidget(list_label)
-        search_layout.addWidget(self.list_filter_combo)
-
         search_layout.addStretch()
         layout.addLayout(search_layout)
 
@@ -223,8 +236,38 @@ class EditCasesDialog(QDialog):
         # Set row height for better button display and wrapped text
         self.case_table.verticalHeader().setDefaultSectionSize(80)
 
-        splitter.addWidget(self.case_table)
-        print("DEBUG: case_table added to splitter")
+        # Create a container for the table and totals
+        table_container = QWidget()
+        table_layout = QVBoxLayout(table_container)
+        table_layout.setContentsMargins(0, 0, 0, 0)
+
+        list_names = [
+            "Checklist",
+            "Lead Schedule",
+            "Recovery in Progress",
+            "Recovered",
+            "Write-Off Recommended",
+            "Written Off",
+        ]
+        self.list_filter_combo = CaseListTabWidget(list_names)
+        self.list_filter_combo.setCurrentText("Checklist")
+        self.list_filter_combo.currentTextChanged.connect(
+            lambda: (
+                print("DEBUG: list_filter_combo triggered refresh_cases"),
+                refresh_cases(self),
+            )
+        )
+        table_layout.addWidget(self.list_filter_combo)
+
+        # Add the table
+        table_layout.addWidget(self.case_table)
+
+        # Add totals widget
+        self.totals_widget = create_totals_widget("Checklist")
+        table_layout.addWidget(self.totals_widget)
+        
+        splitter.addWidget(table_container)
+        print("DEBUG: table_container with totals added to splitter")
 
         splitter.setSizes([300, 700])
         content_layout.addWidget(splitter)

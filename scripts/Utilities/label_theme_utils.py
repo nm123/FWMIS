@@ -27,8 +27,8 @@ COLORS = {
 def get_status_style(status_type="info"):
     """Get status message style"""
     if status_type == "success":
-        return f"""
-            QLabel {{
+        return """
+            QLabel {
                 background-color: #d4edda;
                 border: 2px solid #28a745;
                 border-radius: 6px;
@@ -37,11 +37,11 @@ def get_status_style(status_type="info"):
                 font-weight: bold;
                 font-size: 13px;
                 line-height: 1.4;
-            }}
+            }
         """
     elif status_type == "warning":
-        return f"""
-            QLabel {{
+        return """
+            QLabel {
                 background-color: #fff3cd;
                 border: 2px solid #ffc107;
                 border-radius: 6px;
@@ -50,11 +50,11 @@ def get_status_style(status_type="info"):
                 font-weight: bold;
                 font-size: 13px;
                 line-height: 1.4;
-            }}
+            }
         """
     elif status_type == "error":
-        return f"""
-            QLabel {{
+        return """
+            QLabel {
                 background-color: #f8d7da;
                 border: 2px solid #dc3545;
                 border-radius: 6px;
@@ -63,11 +63,11 @@ def get_status_style(status_type="info"):
                 font-weight: bold;
                 font-size: 13px;
                 line-height: 1.4;
-            }}
+            }
         """
     else:  # info
-        return f"""
-            QLabel {{
+        return """
+            QLabel {
                 background-color: #d1ecf1;
                 border: 2px solid #17a2b8;
                 border-radius: 6px;
@@ -76,7 +76,7 @@ def get_status_style(status_type="info"):
                 font-weight: bold;
                 font-size: 13px;
                 line-height: 1.4;
-            }}
+            }
         """
 
 

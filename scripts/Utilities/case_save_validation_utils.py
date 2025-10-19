@@ -10,6 +10,52 @@ from PyQt5.QtWidgets import QMessageBox
 from scripts.Utilities.config import DB_PATH
 
 
+def _get_installment_summary(dialog_instance) -> tuple[int, float]:
+    """Return (count, total_paid) of installments for the current case."""
+
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Ensure installments table exists before querying
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='installments'"
+        )
+        if not cursor.fetchone():
+            return 0, 0.0
+
+        case_id = getattr(dialog_instance, "case_id", None)
+        base_transaction_no = getattr(dialog_instance, "base_transaction_no", None)
+
+        if not case_id and base_transaction_no:
+            cursor.execute(
+                "SELECT id FROM cases WHERE base_transaction_no = ? OR transaction_no = ?",
+                (base_transaction_no, base_transaction_no),
+            )
+            row = cursor.fetchone()
+            if row:
+                case_id = row[0]
+
+        if not case_id:
+            return 0, 0.0
+
+        cursor.execute(
+            "SELECT COUNT(*), COALESCE(SUM(amount), 0) FROM installments WHERE case_id = ?",
+            (case_id,),
+        )
+        result = cursor.fetchone() or (0, 0.0)
+        count = int(result[0] or 0)
+        total_paid = float(result[1] or 0.0)
+        return count, total_paid
+
+    except sqlite3.Error:
+        return 0, 0.0
+    finally:
+        if conn is not None:
+            conn.close()
+
+
 def validate_case_data(dialog_instance) -> bool:
     """Validate BAS, amount, and evidence requirements."""
     # Check if case is finalized
@@ -112,16 +158,48 @@ def validate_case_data(dialog_instance) -> bool:
         )
         return False
 
+    if loss_control_status == "Recovered":
+        installment_count, total_paid = _get_installment_summary(dialog_instance)
+        if installment_count == 0:
+            QMessageBox.warning(
+                dialog_instance,
+                "Installments Required",
+                (
+                    "At least one recovery installment must be captured before "
+                    "marking a case as 'Recovered'.\n\nUse the Recovery in Progress "
+                    "workflow to record the payment, then finalize the case."
+                ),
+            )
+            return False
+
+        # Allow minor rounding differences when comparing totals
+        if amount and (amount - total_paid) > 0.01:
+            QMessageBox.warning(
+                dialog_instance,
+                "Outstanding Balance",
+                (
+                    "Recorded installments total R %.2f, which is less than the "
+                    "case amount of R %.2f.\n\nCapture the remaining balance "
+                    "before finalizing as 'Recovered'."
+                )
+                % (total_paid, amount),
+            )
+            return False
+
     # Validate LC Minutes for Recovered or Write Off Recommended
     if (
         loss_control_status in ["Recovered", "Write Off Recommended"]
         and not dialog_instance.minutes_edit.text().strip()
     ):
+        warning_msg = (
+            "Loss Control Minutes are required when status is '%s'.\n\n"
+            "Please select a Loss Control Minutes file before saving."
+            % loss_control_status
+        )
         QMessageBox.warning(
             dialog_instance,
             "Loss Control Minutes Required",
-            f"Loss Control Minutes are required when status is '{loss_control_status}'.\n\n"
-            "Please select a Loss Control Minutes file before saving.",
+            warning_msg,
         )
         return False
 
@@ -136,49 +214,75 @@ def validate_case_data(dialog_instance) -> bool:
         if hasattr(dialog_instance, 'case_id') and dialog_instance.case_id:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT evidence_paths FROM cases WHERE id = ?", (dialog_instance.case_id,))
+            cursor.execute(
+                "SELECT evidence_paths FROM cases WHERE id = ?",
+                (dialog_instance.case_id,),
+            )
             evidence_data = cursor.fetchone()
             conn.close()
             
             if evidence_data and evidence_data[0]:
                 try:
                     evidence_dict = json.loads(evidence_data[0])
-                    if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                    if evidence_dict and (
+                        evidence_dict.get("assessment_evidence")
+                        or evidence_dict.get("assessment")
+                    ):
                         existing_evidence = True
                 except json.JSONDecodeError:
                     pass
         else:
             # Fallback: check by transaction_no if case_id not available
-            if hasattr(dialog_instance, 'base_transaction_no') and dialog_instance.base_transaction_no:
+            if (
+                hasattr(dialog_instance, "base_transaction_no")
+                and dialog_instance.base_transaction_no
+            ):
                 conn = sqlite3.connect(DB_PATH)
                 cursor = conn.cursor()
-                cursor.execute("SELECT evidence_paths FROM cases WHERE base_transaction_no = ?", (dialog_instance.base_transaction_no,))
+                cursor.execute(
+                    "SELECT evidence_paths FROM cases WHERE base_transaction_no = ?",
+                    (dialog_instance.base_transaction_no,),
+                )
                 evidence_data = cursor.fetchone()
                 conn.close()
                 
                 if evidence_data and evidence_data[0]:
                     try:
                         evidence_dict = json.loads(evidence_data[0])
-                        if evidence_dict and (evidence_dict.get("assessment_evidence") or evidence_dict.get("assessment")):
+                        if evidence_dict and (
+                            evidence_dict.get("assessment_evidence")
+                            or evidence_dict.get("assessment")
+                        ):
                             existing_evidence = True
                     except json.JSONDecodeError:
                         pass
 
         # Require evidence if not in current session AND not in database
-        if (not current_evidence_path or not os.path.exists(current_evidence_path)) and not existing_evidence:
+        missing_current = not current_evidence_path or not os.path.exists(
+            current_evidence_path
+        )
+        if missing_current and not existing_evidence:
             QMessageBox.warning(
                 dialog_instance,
                 "Cannot Save",
-                f"Cannot save: Assessment evidence required for {selected_assessment_status} status.\n\n"
-                "Please upload assessment evidence before saving.",
+                (
+                    "Cannot save: Assessment evidence required for %s status.\n\n"
+                    "Please upload assessment evidence before saving."
+                    % selected_assessment_status
+                ),
             )
             print(
-                f"LOG: Blocked save for case {dialog_instance.base_transaction_no} due to missing assessment evidence"
+                "LOG: Blocked save for case %s due to missing assessment evidence"
+                % dialog_instance.base_transaction_no
             )
             return False
 
         print(
-            f"LOG: Found assessment evidence for case {dialog_instance.base_transaction_no}: {current_evidence_path or 'existing in database'}"
+            "LOG: Found assessment evidence for case %s: %s"
+            % (
+                dialog_instance.base_transaction_no,
+                current_evidence_path or "existing in database",
+            )
         )
 
     # Validate LC evidence for LC statuses
@@ -195,10 +299,14 @@ def validate_case_data(dialog_instance) -> bool:
             )
             return False
         if not dialog_instance.minutes_edit.text().strip():
+            lc_msg = (
+                "Loss Control Minutes are required when status is '%s'."
+                % selected_lc_status
+            )
             QMessageBox.warning(
                 dialog_instance,
                 "Loss Control Minutes Required",
-                f"Loss Control Minutes are required when status is '{selected_lc_status}'.",
+                lc_msg,
             )
             return False
 

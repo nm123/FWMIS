@@ -41,7 +41,11 @@ def load_posting_responsibilities():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, name, parent_id, is_posting_level FROM responsibilities WHERE is_posting_level = 1"
+            (
+                "SELECT id, name, parent_id, is_posting_level "
+                "FROM responsibilities "
+                "WHERE is_posting_level = 1"
+            )
         )
         responsibilities = [
             {

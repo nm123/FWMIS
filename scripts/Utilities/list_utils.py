@@ -186,20 +186,6 @@ def load_lists():
             cursor.execute("ALTER TABLE cases ADD COLUMN recovery_evidence_path TEXT")
         if "supporting_evidence_path" not in case_columns:
             cursor.execute("ALTER TABLE cases ADD COLUMN supporting_evidence_path TEXT")
-        
-        # Add recovery-related columns
-        if "debtor_name" not in case_columns:
-            cursor.execute("ALTER TABLE cases ADD COLUMN debtor_name TEXT")
-        if "debt_number" not in case_columns:
-            cursor.execute("ALTER TABLE cases ADD COLUMN debt_number TEXT")
-        if "total_recovered_amount" not in case_columns:
-            cursor.execute("ALTER TABLE cases ADD COLUMN total_recovered_amount REAL DEFAULT 0.0")
-        if "latest_installment_amount" not in case_columns:
-            cursor.execute("ALTER TABLE cases ADD COLUMN latest_installment_amount REAL DEFAULT 0.0")
-        if "latest_installment_date" not in case_columns:
-            cursor.execute("ALTER TABLE cases ADD COLUMN latest_installment_date TEXT")
-        if "recovery_status" not in case_columns:
-            cursor.execute("ALTER TABLE cases ADD COLUMN recovery_status TEXT DEFAULT 'Not Started'")
 
         conn.commit()
 
@@ -208,7 +194,6 @@ def load_lists():
             ("Checklist", True, True),  # name, is_default, is_system
             ("Lead Schedule", False, True),
             ("Deleted Cases", False, True),
-            ("Recovery in Progress", False, True),
             ("Recovered", False, True),
             ("Write-Off Recommended", False, True),
             ("Written Off", False, True),
@@ -255,7 +240,10 @@ def save_lists(lists):
         cursor.execute("DELETE FROM lists")
         for list_item in lists:
             cursor.execute(
-                "INSERT INTO lists (id, name, parent_id, is_default, is_system) VALUES (?, ?, ?, ?, ?)",
+                (
+                    "INSERT INTO lists (id, name, parent_id, is_default, "
+                    "is_system) VALUES (?, ?, ?, ?, ?)"
+                ),
                 (
                     list_item["id"],
                     list_item["name"],

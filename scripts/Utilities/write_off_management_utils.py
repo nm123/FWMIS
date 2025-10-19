@@ -3,6 +3,7 @@ Utilities for managing write-off submissions.
 """
 
 import sqlite3
+from datetime import datetime
 
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
@@ -28,7 +29,7 @@ def get_evidence_status(evidence_paths):
             evidence_types.append("Recovery")
 
         return ", ".join(evidence_types) if evidence_types else "No evidence"
-    except:
+    except Exception:
         return "Invalid evidence data"
 
 
@@ -89,7 +90,7 @@ def load_group_details(group_id):
         return summary_text, case_list
 
     except Exception as e:
-        raise e
+        raise RuntimeError("Error loading write-off group details") from e
     finally:
         conn.close()
 
@@ -100,7 +101,15 @@ def approve_write_off(group_id, notes=""):
         success = approve_write_off_submission(group_id)
         if success and notes:
             # Save audit log with notes
-            save_audit_log(f"Write-off submission {group_id} approved. Notes: {notes}")
+            save_audit_log(
+                "write_off_approved",
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "group_id": group_id,
+                    "notes": notes,
+                },
+                None,
+            )
         return success
     except Exception as e:
-        raise e
+        raise RuntimeError("Error approving write-off submission") from e

@@ -3,7 +3,6 @@ Optimization Manager for FWMIS.
 Provides easy enable/disable of performance optimizations.
 """
 
-import os
 import logging
 from typing import Dict, Any, Optional
 
@@ -38,7 +37,11 @@ class OptimizationManager:
         for optimization, enabled in optimizations.items():
             if optimization in self.optimization_config:
                 self.optimization_config[optimization] = enabled
-                logger.info(f"Optimization '{optimization}': {'enabled' if enabled else 'disabled'}")
+                logger.info(
+                    "Optimization '%s': %s",
+                    optimization,
+                    "enabled" if enabled else "disabled",
+                )
             else:
                 logger.warning(f"Unknown optimization: {optimization}")
     
@@ -50,7 +53,11 @@ class OptimizationManager:
         for optimization, enabled in optimizations.items():
             if optimization in self.optimization_config:
                 self.optimization_config[optimization] = not enabled
-                logger.info(f"Optimization '{optimization}': {'disabled' if not enabled else 'enabled'}")
+                logger.info(
+                    "Optimization '%s': %s",
+                    optimization,
+                    "disabled" if not enabled else "enabled",
+                )
             else:
                 logger.warning(f"Unknown optimization: {optimization}")
     
@@ -119,18 +126,14 @@ class OptimizationManager:
         except ImportError:
             return 1000
     
-    def should_use_streaming(self, data_size: int) -> bool:
-        """Determine if streaming should be used based on data size and settings."""
-        if not self.is_optimization_enabled("memory_efficient_imports"):
-            return False
-        
-        # Use streaming for datasets larger than 1000 items
-        return data_size > 1000
-    
     def auto_enable_for_large_dataset(self, data_size: int, operation_type: str = "import"):
         """Automatically enable optimizations for large datasets."""
         if data_size > 1000:
-            logger.info(f"Large dataset detected ({data_size} items), enabling optimizations for {operation_type}")
+            logger.info(
+                "Large dataset detected (%s items), enabling optimizations for %s",
+                data_size,
+                operation_type,
+            )
             
             # Enable relevant optimizations
             optimizations_to_enable = {
@@ -171,27 +174,6 @@ class OptimizationManager:
                 "psutil_available": False
             }
     
-    def should_use_streaming(self, data_size: int) -> bool:
-        """Determine if streaming should be used based on data size."""
-        return data_size > 1000
-    
-    def get_optimal_chunk_size(self) -> int:
-        """Get optimal chunk size based on current system resources."""
-        try:
-            import psutil
-            memory = psutil.virtual_memory()
-            available_gb = memory.available / (1024**3)
-            
-            # Adjust chunk size based on available memory
-            if available_gb > 4:
-                return 1000
-            elif available_gb > 2:
-                return 500
-            else:
-                return 250
-        except ImportError:
-            return 500  # Default chunk size
-    
     def _get_memory_status(self, memory_percent: float) -> str:
         """Get memory status based on usage percentage."""
         if memory_percent < 50:
@@ -212,9 +194,19 @@ class OptimizationManager:
         
         for optimization, enabled in status["config"].items():
             status_icon = "[OK]" if enabled else "[OFF]"
-            logger.info(f"{status_icon} {optimization}: {'enabled' if enabled else 'disabled'}")
+            logger.info(
+                "%s %s: %s",
+                status_icon,
+                optimization,
+                "enabled" if enabled else "disabled",
+            )
         
-        logger.info(f"\nOverall Status: {'All optimizations enabled' if status['all_enabled'] else 'Some optimizations disabled'}")
+        overall_msg = (
+            "All optimizations enabled"
+            if status["all_enabled"]
+            else "Some optimizations disabled"
+        )
+        logger.info("\nOverall Status: %s", overall_msg)
     
     def create_performance_summary(self) -> str:
         """Create a performance summary report."""
@@ -233,7 +225,12 @@ class OptimizationManager:
             if not enabled:
                 summary += f"  • {optimization} (Disabled)\n"
         
-        summary += f"\nOverall Status: {'All optimizations active' if status['all_enabled'] else 'Mixed optimization status'}\n"
+        overall_summary = (
+            "All optimizations active"
+            if status["all_enabled"]
+            else "Mixed optimization status"
+        )
+        summary += f"\nOverall Status: {overall_summary}\n"
         
         return summary
 

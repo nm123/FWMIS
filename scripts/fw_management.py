@@ -1,62 +1,90 @@
-
+import logging
 import os
-import sqlite3
 import sys
 from datetime import datetime
 
-# Qt Graphics/Platform Configuration for crash prevention
-os.environ["QT_QPA_PLATFORM"] = "windows"
-os.environ["QT_OPENGL"] = (
-    "software"  # Force software rendering to avoid graphics driver issues
-)
-os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "0"  # Disable auto scaling
-os.environ["QT_SCALE_FACTOR"] = "1"  # Fixed scale factor
-os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"  # Disable high DPI scaling
-os.environ["QT_LOGGING_RULES"] = "qt.qpa.plugin=false"  # Reduce plugin logging
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# Import PyQt5 modules
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QAction, QApplication, QHBoxLayout, QLabel,
-                             QListWidgetItem, QMainWindow, QMessageBox,
-                             QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QAction,
+    QApplication,
+    QGridLayout,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+)
 
-# Set Qt attributes BEFORE creating QApplication
-QApplication.setAttribute(Qt.AA_UseSoftwareOpenGL, True)  # Force software OpenGL
-QApplication.setAttribute(
-    Qt.AA_DontCreateNativeWidgetSiblings, True
-)  # Prevent native widget issues
-QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, False)  # Disable high DPI pixmaps
-from scripts.case_management import (AddNewCaseDialog, EditCasesDialog,
-                                     ToDoListDialog, ViewCasesDialog,
-                                     ViewDeletedCasesDialog)
-from scripts.case_management_modules.write_off_management_dialog import \
-    WriteOffManagementDialog
-from scripts.case_management_modules.write_off_submission_dialog import \
-    WriteOffSubmissionDialog
+from scripts.case_management import (
+    AddNewCaseDialog,
+    EditCasesDialog,
+    ToDoListDialog,
+    ViewCasesDialog,
+    ViewDeletedCasesDialog,
+)
+from scripts.case_management_modules.write_off_management_dialog import (
+    WriteOffManagementDialog,
+)
+from scripts.case_management_modules.write_off_submission_dialog import (
+    WriteOffSubmissionDialog,
+)
 from scripts.category_management import ManageCategoriesDialog
 from scripts.email_template_management import ManageEmailTemplatesDialog
 from scripts.financial_year_management import FinancialYearManagementDialog
 from scripts.list_management import ManageListsDialog
+from scripts.optimization_management import open_optimization_management
 from scripts.report_management import ReportManagementDialog
 from scripts.responsibility_management_ui import ResponsibilityManagementDialog
-from scripts.ui.dialogs.checklist_dialog import ChecklistDialog
-from scripts.ui.dialogs.import_cases_dialog import import_undisclosed_cases
-from scripts.ui.dialogs.import_cases_dialog_core import \
-    ImportUndisclosedCasesDialog
 from scripts.ui.dialogs.admin.delegation_manager import DelegationManagerDialog
 from scripts.ui.dialogs.annexure_preparation_dialog import AnnexurePreparationDialog
-from scripts.Utilities.config import DB_PATH, initialize_shared_documents_table
+from scripts.ui.dialogs.checklist_dialog import ChecklistDialog
+from scripts.ui.dialogs.import_cases_dialog import import_undisclosed_cases
+from scripts.Utilities.config import initialize_shared_documents_table
 from scripts.Utilities.financial_utils import get_active_period_display
-from scripts.Utilities.qt_diagnostics import (apply_qt_fixes,
-                                              check_qt_compatibility,
-                                              print_qt_diagnostics)
-from scripts.Utilities.ui_theme import apply_theme, create_status_label
 from scripts.Utilities.logging_utils import configure_logging
+from scripts.Utilities.optimization_manager import enable_all_optimizations
+from scripts.Utilities.performance_profiler import (
+    log_performance_report,
+    memory_profiler,
+    performance_profiler,
+)
+from scripts.Utilities.qt_diagnostics import (
+    apply_qt_fixes,
+    check_qt_compatibility,
+)
+from scripts.Utilities.ui_theme import apply_theme, create_professional_button
 from scripts.wipe_cases_dialog import WipeCasesDialog
-from scripts.optimization_management import open_optimization_management
 
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
+
+def _configure_qt_environment() -> None:
+    # Qt Graphics/Platform Configuration for crash prevention
+    os.environ["QT_QPA_PLATFORM"] = "windows"
+    os.environ["QT_OPENGL"] = (
+        "software"  # Force software rendering to avoid graphics driver issues
+    )
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "0"  # Disable auto scaling
+    os.environ["QT_SCALE_FACTOR"] = "1"  # Fixed scale factor
+    os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"  # Disable high DPI scaling
+    os.environ["QT_LOGGING_RULES"] = "qt.qpa.plugin=false"  # Reduce plugin logging
+
+
+_configure_qt_environment()
+
+def _set_qt_application_attributes() -> None:
+    # Set Qt attributes BEFORE creating QApplication
+    QApplication.setAttribute(Qt.AA_UseSoftwareOpenGL, True)  # Force software OpenGL
+    QApplication.setAttribute(
+        Qt.AA_DontCreateNativeWidgetSiblings, True
+    )  # Prevent native widget issues
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, False)  # Disable high DPI pixmaps
+
+
+_set_qt_application_attributes()
 
 class FWManagementApp(QMainWindow):
     def __init__(self):
@@ -113,6 +141,14 @@ class FWManagementApp(QMainWindow):
         layout.setSpacing(20)
         layout.setContentsMargins(30, 30, 30, 30)
 
+        self._add_welcome_header(layout)
+        self._add_subtitle(layout)
+        self._add_quick_actions(layout)
+
+        # Add stretch to push everything to the top
+        layout.addStretch()
+
+    def _add_welcome_header(self, layout):
         # Welcome header
         active_period_text = get_active_period_display()
         if active_period_text:
@@ -136,6 +172,7 @@ class FWManagementApp(QMainWindow):
         )
         layout.addWidget(welcome_label, alignment=Qt.AlignCenter)
 
+    def _add_subtitle(self, layout):
         # Subtitle
         subtitle_label = QLabel(
             "Fruitless and Wasteful Expenditure Management Information System"
@@ -153,6 +190,7 @@ class FWManagementApp(QMainWindow):
         )
         layout.addWidget(subtitle_label, alignment=Qt.AlignCenter)
 
+    def _add_quick_actions(self, layout):
         # Quick actions section
         actions_group = QWidget()
         actions_layout = QVBoxLayout(actions_group)
@@ -173,9 +211,6 @@ class FWManagementApp(QMainWindow):
         actions_layout.addWidget(actions_title, alignment=Qt.AlignCenter)
 
         # Action buttons in a grid
-        from PyQt5.QtWidgets import QGridLayout, QPushButton
-        from scripts.Utilities.ui_theme import create_professional_button
-
         buttons_layout = QGridLayout()
         buttons_layout.setSpacing(15)
 
@@ -202,10 +237,6 @@ class FWManagementApp(QMainWindow):
 
         actions_layout.addLayout(buttons_layout)
         layout.addWidget(actions_group)
-
-
-        # Add stretch to push everything to the top
-        layout.addStretch()
 
     def refresh_cases(self):
         """Refresh cases display - placeholder for future implementation"""
@@ -537,20 +568,18 @@ def exception_handler(exctype, value, traceback):
     import traceback as tb
 
     error_msg = "".join(tb.format_exception(exctype, value, traceback))
-    print(f"CRITICAL: Unhandled exception: {error_msg}")
+    print("CRITICAL: Unhandled exception: {}".format(error_msg))
 
     # Try to save emergency recovery information
     try:
         with open("emergency_recovery.log", "w") as f:
-            f.write(f"Emergency Recovery Log\n")
-            f.write(f"Timestamp: {datetime.now().isoformat()}\n")
-            f.write(f"Exception: {exctype.__name__}: {value}\n")
-            f.write(f"Traceback:\n{error_msg}\n")
-        print(
-            "CRITICAL: Emergency recovery information saved to emergency_recovery.log"
-        )
-    except:
-        print("CRITICAL: Could not save emergency recovery information")
+            f.write("Emergency Recovery Log\n")
+            f.write("Timestamp: {}\n".format(datetime.now().isoformat()))
+            f.write("Exception: {}: {}\n".format(exctype.__name__, value))
+            f.write("Traceback:\n{}\n".format(error_msg))
+        print("CRITICAL: Emergency recovery information saved to emergency_recovery.log")
+    except Exception as e:
+        print("CRITICAL: Could not save emergency recovery information: {}".format(e))
 
     # Show error dialog if QApplication exists
     try:
@@ -592,29 +621,22 @@ def exception_handler(exctype, value, traceback):
     sys.exit(1)
 
 
-if __name__ == "__main__":
+def main():
     # Install global exception handler
     sys.excepthook = exception_handler
 
     # Run Qt diagnostics and apply fixes
     # Initialize structured logging
     try:
-        from scripts.Utilities.logging_utils import configure_logging
-
         configure_logging()
     except Exception:
         pass
 
     # Initialize performance monitoring and optimizations
     try:
-        from scripts.Utilities.performance_profiler import (
-            performance_profiler, memory_profiler, log_performance_report
-        )
-        from scripts.Utilities.optimization_manager import enable_all_optimizations
-        
         # Enable all optimizations
         enable_all_optimizations()
-        
+
         # Start performance monitoring
         memory_profiler.take_snapshot("app_start")
         performance_profiler.start_timer("app_initialization")
@@ -646,7 +668,7 @@ if __name__ == "__main__":
         # Run the application with error handling
         try:
             exit_code = app.exec_()
-        except Exception as event_error:
+        except Exception:
             import traceback
 
             traceback.print_exc()
@@ -654,8 +676,12 @@ if __name__ == "__main__":
 
         sys.exit(exit_code)
 
-    except Exception as e:
+    except Exception:
         import traceback
 
         traceback.print_exc()
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

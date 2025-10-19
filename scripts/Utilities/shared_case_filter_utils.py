@@ -20,11 +20,22 @@ def get_list_filter_conditions(selected_list):
     """
     conditions = {
         "Checklist": "1=1",  # All cases appear in Checklist
-        "Lead Schedule": "assessment_status = 'Confirmed' AND suffixes LIKE '%-LS%' AND suffixes NOT LIKE '%-REC%' AND suffixes NOT LIKE '%-RIP%' AND suffixes NOT LIKE '%-WO'",
+        "Lead Schedule": (
+            "assessment_status = 'Confirmed' "
+            "AND suffixes LIKE '%-LS%' "
+            "AND suffixes NOT LIKE '%-REC%' "
+            "AND suffixes NOT LIKE '%-WO'"
+        ),
         "Recovery in Progress": "suffixes LIKE '%-RIP%'",
         "Write-Off Recommended": "suffixes LIKE '%-WOR%'",
-        "Recovered": "suffixes LIKE '%-REC%'",
-        "Written Off": "suffixes LIKE '%-WO' AND suffixes NOT LIKE '%-WOR%'"
+        "Recovered": (
+            "suffixes LIKE '%-REC%' OR EXISTS (SELECT 1 FROM installments "
+            "WHERE installments.case_id = cases.id)"
+        ),
+        "Written Off": (
+            "suffixes LIKE '%-WO' "
+            "AND suffixes NOT LIKE '%-WOR%'"
+        ),
     }
     
     return conditions.get(selected_list, "1=1")
@@ -113,8 +124,6 @@ def get_responsibilities_with_cases(fy_filter_combo, list_filter_combo):
     Returns:
         set: Set of responsibility IDs that have cases
     """
-    responsibilities_with_cases = set()
-    
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -124,8 +133,12 @@ def get_responsibilities_with_cases(fy_filter_combo, list_filter_combo):
         
         # Modify query to only select responsibility_id
         responsibility_query = query.replace(
-            "SELECT transaction_no, date_reported, category, amount, assessment_status, lc_status, suffixes, bas_payment_no, bas_journal_no",
-            "SELECT DISTINCT responsibility_id"
+            (
+                "SELECT transaction_no, date_reported, category, amount, "
+                "assessment_status, lc_status, suffixes, bas_payment_no, "
+                "bas_journal_no"
+            ),
+            "SELECT DISTINCT responsibility_id",
         )
         
         cursor.execute(responsibility_query, params)

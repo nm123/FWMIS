@@ -18,12 +18,16 @@ class StreamingExcelExporter:
     def __init__(self, chunk_size: int = 1000):
         self.chunk_size = chunk_size
         
-    def export_cases_to_excel_streaming(self, cases: Iterator[Dict], filepath: str, sheet_name: str = "Cases") -> str:
+    def export_cases_to_excel_streaming(
+        self,
+        cases: Iterator[Dict],
+        filepath: str,
+        sheet_name: str = "Cases",
+    ) -> str:
         """Export cases to Excel using streaming to avoid memory issues."""
         try:
             from openpyxl import Workbook
             from openpyxl.styles import NamedStyle
-            from openpyxl.utils import get_column_letter
             
             wb = Workbook()
             ws = wb.active
@@ -76,7 +80,7 @@ class StreamingExcelExporter:
             
             # Save file
             wb.save(filepath)
-            logger.info(f"Exported {case_count} cases to {filepath}")
+            logger.info("Exported %s cases to %s", case_count, filepath)
             
             return filepath
             
@@ -114,7 +118,7 @@ class StreamingExcelExporter:
         # Insert rows at the top
         ws.insert_rows(1, 4)
         
-        ws['A1'] = f"Cases Export Summary"
+        ws['A1'] = "Cases Export Summary"
         ws['A2'] = f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         ws['A3'] = f"Total Cases: {case_count}"
         ws['A4'] = f"Total Amount: R {total_amount:,.2f}"
@@ -135,7 +139,7 @@ class StreamingExcelExporter:
                 try:
                     if len(str(row.value)) > max_length:
                         max_length = len(str(row.value))
-                except:
+                except Exception:
                     pass
             
             adjusted_width = min(max_length + 2, 50)
@@ -166,7 +170,7 @@ class StreamingExcelExporter:
                     'Description': case.get('description', '')
                 })
         
-        logger.info(f"Exported to CSV fallback: {csv_path}")
+        logger.info("Exported to CSV fallback: %s", csv_path)
         return csv_path
 
 class OptimizedReportGenerator:
@@ -359,8 +363,13 @@ def validate_memory_for_export(cases_count: int) -> bool:
         # Estimate memory needed (rough calculation)
         estimated_memory_mb = cases_count * 0.001  # ~1KB per case
         
-        if estimated_memory_mb > available_memory_gb * 1024 * 0.5:  # Use max 50% of available memory
-            logger.warning(f"Large export detected: {cases_count} cases, {estimated_memory_mb:.1f}MB estimated")
+        threshold_mb = available_memory_gb * 1024 * 0.5
+        if estimated_memory_mb > threshold_mb:  # Use max 50% of available memory
+            logger.warning(
+                "Large export detected: %s cases, %.1fMB estimated",
+                cases_count,
+                estimated_memory_mb,
+            )
             return False
         
         return True

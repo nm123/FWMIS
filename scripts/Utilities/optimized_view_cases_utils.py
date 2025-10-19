@@ -6,7 +6,7 @@ Replaces Pandas-based Excel exports with streaming alternatives.
 import os
 import logging
 from datetime import datetime
-from typing import List, Dict, Any, Iterator
+from typing import List, Dict, Any
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox
 
@@ -55,7 +55,10 @@ class OptimizedViewCasesUtils:
                         if item:
                             if col == 0:  # Case No column
                                 transaction_no = item.data(Qt.UserRole)
-                                row_data[f"col_{col}"] = transaction_no if transaction_no else item.text()
+                                if transaction_no:
+                                    row_data[f"col_{col}"] = transaction_no
+                                else:
+                                    row_data[f"col_{col}"] = item.text()
                             else:
                                 row_data[f"col_{col}"] = item.text()
                         else:
@@ -85,19 +88,25 @@ class OptimizedViewCasesUtils:
                     yield formatted_case
 
             # Export using streaming
-            exported_file = exporter.export_cases_to_excel_streaming(
+            exporter.export_cases_to_excel_streaming(
                 formatted_cases_generator(),
                 filepath,
-                f"{current_list} Cases"
+                f"{current_list} Cases",
             )
 
             # Take memory snapshot after export
             memory_profiler.take_snapshot("after_export")
             
             # Compare memory usage
-            memory_diff = memory_profiler.compare_snapshots("before_export", "after_export")
+            memory_diff = memory_profiler.compare_snapshots(
+                "before_export",
+                "after_export",
+            )
             if memory_diff:
-                logger.info(f"Memory usage during export: {memory_diff['rss_diff'] / 1024 / 1024:.1f}MB")
+                logger.info(
+                    "Memory usage during export: %.1fMB",
+                    memory_diff["rss_diff"] / 1024 / 1024,
+                )
 
             # Show success message
             QMessageBox.information(
@@ -144,19 +153,28 @@ class OptimizedViewCasesUtils:
             if 'categories' in report_data:
                 report += "Categories:\n"
                 for cat in report_data['categories'][:10]:  # Top 10
-                    report += f"  {cat['category']}: {cat['count']} cases, R {cat['amount']:,.2f}\n"
+                    report += (
+                        f"  {cat['category']}: {cat['count']} cases, "
+                        f"R {cat['amount']:,.2f}\n"
+                    )
                 report += "\n"
             
             if 'statuses' in report_data:
                 report += "Statuses:\n"
                 for stat in report_data['statuses'][:10]:  # Top 10
-                    report += f"  {stat['status']}: {stat['count']} cases, R {stat['amount']:,.2f}\n"
+                    report += (
+                        f"  {stat['status']}: {stat['count']} cases, "
+                        f"R {stat['amount']:,.2f}\n"
+                    )
                 report += "\n"
             
             if 'responsibilities' in report_data:
                 report += "Top Responsibilities:\n"
                 for resp in report_data['responsibilities'][:10]:  # Top 10
-                    report += f"  {resp['name']}: {resp['case_count']} cases, R {resp['total_amount']:,.2f}\n"
+                    report += (
+                        f"  {resp['name']}: {resp['case_count']} cases, "
+                        f"R {resp['total_amount']:,.2f}\n"
+                    )
             
             return report
             
@@ -226,7 +244,11 @@ class OptimizedViewCasesUtils:
         return filtered_cases
 
     @staticmethod
-    def sort_cases_efficiently(cases: List[Dict], sort_by: str = "date_reported", ascending: bool = True) -> List[Dict]:
+    def sort_cases_efficiently(
+        cases: List[Dict],
+        sort_by: str = "date_reported",
+        ascending: bool = True,
+    ) -> List[Dict]:
         """Sort cases efficiently using built-in sort with key function."""
         def sort_key(case):
             value = case.get(sort_by)
@@ -294,8 +316,13 @@ class OptimizedViewCasesUtils:
             # Estimate memory needed (conservative estimate)
             estimated_memory_mb = cases_count * 0.002  # ~2KB per case for Excel processing
             
-            if estimated_memory_mb > available_memory_gb * 1024 * 0.3:  # Use max 30% of available memory
-                logger.warning(f"Large export may cause memory issues: {cases_count} cases, {estimated_memory_mb:.1f}MB estimated")
+            threshold_mb = available_memory_gb * 1024 * 0.3
+            if estimated_memory_mb > threshold_mb:
+                logger.warning(
+                    "Large export may cause memory issues: %s cases, %.1fMB estimated",
+                    cases_count,
+                    estimated_memory_mb,
+                )
                 return False
             
             return True
@@ -307,10 +334,19 @@ class OptimizedViewCasesUtils:
     @staticmethod
     def log_export_performance(cases_count: int, export_time: float, file_size: int):
         """Log export performance metrics."""
-        logger.info(f"Export Performance: {cases_count} cases in {export_time:.2f}s, {file_size/1024/1024:.1f}MB file")
+        logger.info(
+            "Export Performance: %s cases in %.2fs, %.1fMB file",
+            cases_count,
+            export_time,
+            file_size / 1024 / 1024,
+        )
         
         # Calculate performance metrics
         cases_per_second = cases_count / export_time if export_time > 0 else 0
         mb_per_second = (file_size / 1024 / 1024) / export_time if export_time > 0 else 0
         
-        logger.info(f"Performance Metrics: {cases_per_second:.0f} cases/sec, {mb_per_second:.1f} MB/sec")
+        logger.info(
+            "Performance Metrics: %.0f cases/sec, %.1f MB/sec",
+            cases_per_second,
+            mb_per_second,
+        )

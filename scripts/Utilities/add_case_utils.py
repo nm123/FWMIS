@@ -235,9 +235,9 @@ def reset_form_fields(dialog):
 
     # Always reset list combo to Checklist
     if "Checklist" in [
-        l["name"]
-        for l in dialog.lists
-        if l.get("is_system", False) and l["name"] != "Deleted Cases"
+        case_list["name"]
+        for case_list in dialog.lists
+        if case_list.get("is_system", False) and case_list["name"] != "Deleted Cases"
     ]:
         dialog.list_combo.setCurrentText("Checklist")
 
@@ -269,7 +269,12 @@ def assign_case_numbers(dialog):
     cursor.execute("SELECT MAX(CAST(SUBSTR(transaction_no, -5) AS INTEGER)) FROM cases")
     max_id = cursor.fetchone()[0] or 0
     # Assign to imported cases only (assume they have a flag or are in a temp state)
-    cursor.execute("SELECT id FROM cases WHERE transaction_no IS NULL OR transaction_no = ''")  # Imported without numbers
+    cursor.execute(
+        (
+            "SELECT id FROM cases WHERE transaction_no IS NULL OR "
+            "transaction_no = ''"
+        )
+    )
     imported_ids = [row[0] for row in cursor.fetchall()]
     for i, case_id in enumerate(imported_ids, start=max_id + 1):
         new_no = f"FW-{fy_end_year}{i:05d}"  # Adjust format with FW- prefix

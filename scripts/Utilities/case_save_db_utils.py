@@ -10,7 +10,9 @@ from PyQt5.QtWidgets import QMessageBox
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.workflow_utils import (
-    handle_case_status_change, handle_loss_control_status_change)
+    handle_case_status_change,
+    handle_loss_control_status_change,
+)
 
 
 def update_database_and_workflow(dialog_instance, case: dict) -> bool:
@@ -21,7 +23,8 @@ def update_database_and_workflow(dialog_instance, case: dict) -> bool:
         cursor = conn.cursor()
         cursor.execute("BEGIN TRANSACTION")
         print(
-            f"LOG: Started transaction for case {dialog_instance.base_transaction_no} save"
+            "LOG: Started transaction for case %s save"
+            % dialog_instance.base_transaction_no
         )
 
         # Build evidence paths JSON
@@ -41,19 +44,23 @@ def update_database_and_workflow(dialog_instance, case: dict) -> bool:
 
         assessment_status_text = case.get("assessment_status")
         lc_status_text = case.get("lc_status")
-        print(
-            f"DEBUG: assessment_status_text={assessment_status_text}, lc_status_text={lc_status_text}"
+        debug_status_msg = (
+            "DEBUG: assessment_status_text=%s, lc_status_text=%s"
+            % (assessment_status_text, lc_status_text)
         )
+        print(debug_status_msg)
 
         cursor.execute(
-            """
-            UPDATE cases SET
-                date_incurred = ?, date_identified = ?, date_reported = ?, description = ?,
-                bas_payment_no = ?, bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, persal_no = ?, category = ?, responsibility_id = ?, amount = ?,
-                base_transaction_no = ?, evidence_paths = ?, evidence_path = ?, transaction_no = ?, suffixes = ?, assessment_status = ?, lc_status = ?, criminal_charges = ?, disciplinary_process = ?,
-                loss_recovery = ?, prevention_steps = ?
-            WHERE id = ?
-        """,
+            (
+                "UPDATE cases SET date_incurred = ?, date_identified = ?, "
+                "date_reported = ?, description = ?, bas_payment_no = ?, "
+                "bas_payment_date = ?, bas_journal_no = ?, bas_journal_date = ?, "
+                "persal_no = ?, category = ?, responsibility_id = ?, amount = ?, "
+                "base_transaction_no = ?, evidence_paths = ?, evidence_path = ?, "
+                "transaction_no = ?, suffixes = ?, assessment_status = ?, "
+                "lc_status = ?, criminal_charges = ?, disciplinary_process = ?, "
+                "loss_recovery = ?, prevention_steps = ? WHERE id = ?"
+            ),
             (
                 case["date_incurred"],
                 case["date_identified"],
@@ -83,12 +90,14 @@ def update_database_and_workflow(dialog_instance, case: dict) -> bool:
         )
 
         print(
-            f"LOG: Saved case {dialog_instance.base_transaction_no} with assessment_status='{assessment_status_text}', evidence_paths updated"
+            "LOG: Saved case %s with assessment_status='%s', evidence_paths updated"
+            % (dialog_instance.base_transaction_no, assessment_status_text)
         )
 
         conn.commit()
         print(
-            f"LOG: Committed transaction for case {dialog_instance.base_transaction_no} save"
+            "LOG: Committed transaction for case %s save"
+            % dialog_instance.base_transaction_no
         )
         case_id = dialog_instance.case_data[0]
         conn.close()
@@ -120,14 +129,22 @@ def update_database_and_workflow(dialog_instance, case: dict) -> bool:
                 dialog_instance.base_transaction_no,
                 selected_assessment_status,
             ):
+                warning_msg = (
+                    "Case saved but workflow status update failed for %s"
+                    % selected_assessment_status
+                )
                 QMessageBox.warning(
                     dialog_instance,
                     "Warning",
-                    f"Case saved but workflow status update failed for {selected_assessment_status}",
+                    warning_msg,
                 )
             else:
                 print(
-                    f"LOG: Updated workflow status to {selected_assessment_status} for case {dialog_instance.base_transaction_no}"
+                    "LOG: Updated workflow status to %s for case %s"
+                    % (
+                        selected_assessment_status,
+                        dialog_instance.base_transaction_no,
+                    )
                 )
 
         # Add LC workflow handling (new)
@@ -142,14 +159,22 @@ def update_database_and_workflow(dialog_instance, case: dict) -> bool:
                 dialog_instance.base_transaction_no,
                 selected_lc_status,
             ):
+                warning_msg = (
+                    "Case saved but LC workflow status update failed for %s"
+                    % selected_lc_status
+                )
                 QMessageBox.warning(
                     dialog_instance,
                     "Warning",
-                    f"Case saved but LC workflow status update failed for {selected_lc_status}",
+                    warning_msg,
                 )
             else:
                 print(
-                    f"LOG: Updated LC workflow status to {selected_lc_status} for case {dialog_instance.base_transaction_no}"
+                    "LOG: Updated LC workflow status to %s for case %s"
+                    % (
+                        selected_lc_status,
+                        dialog_instance.base_transaction_no,
+                    )
                 )
 
         QMessageBox.information(

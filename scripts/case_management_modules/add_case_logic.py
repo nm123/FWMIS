@@ -1,26 +1,27 @@
-import os
 import sqlite3
 from datetime import datetime
+from typing import Any
 
 import win32com.client
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox
+
 from scripts.ui.components.add_case_ui import AssessmentDialog
 from scripts.Utilities.audit_utils import save_audit_log
 from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.contact_utils import get_effective_contacts
-from scripts.Utilities.financial_utils import (create_year_folder,
-                                               generate_transaction_no,
-                                               get_current_open_financial_year,
-                                               get_financial_year)
+from scripts.Utilities.financial_utils import (
+    generate_transaction_no,
+    get_current_open_financial_year,
+)
 from scripts.Utilities.validation_utils import is_valid_email
 
 
 class AddCaseLogic:
-    def __init__(self, dialog):
+    def __init__(self, dialog: Any) -> None:
         self.dialog = dialog
 
-    def browse_file(self):
+    def browse_file(self) -> None:
         """Browse for a file to attach to the case."""
         from PyQt5.QtWidgets import QFileDialog
 
@@ -30,7 +31,7 @@ class AddCaseLogic:
         if file_path:
             self.dialog.file_path_edit.setText(file_path)
 
-    def browse_source_doc(self):
+    def browse_source_doc(self) -> None:
         """Browse for source document file."""
         from PyQt5.QtWidgets import QFileDialog
 
@@ -40,7 +41,7 @@ class AddCaseLogic:
         if file_path:
             self.dialog.source_doc_edit.setText(file_path)
 
-    def browse_minutes(self):
+    def browse_minutes(self) -> None:
         """Browse for minutes file."""
         from PyQt5.QtWidgets import QFileDialog
 
@@ -50,7 +51,7 @@ class AddCaseLogic:
         if file_path:
             self.dialog.minutes_edit.setText(file_path)
 
-    def browse_evidence(self):
+    def browse_evidence(self) -> None:
         """Browse for evidence file."""
         from PyQt5.QtWidgets import QFileDialog
 
@@ -60,7 +61,7 @@ class AddCaseLogic:
         if file_path:
             self.dialog.evidence_edit.setText(file_path)
 
-    def browse_supporting_evidence(self):
+    def browse_supporting_evidence(self) -> None:
         """Browse for supporting evidence file."""
         from PyQt5.QtWidgets import QFileDialog
 
@@ -70,9 +71,10 @@ class AddCaseLogic:
         if file_path:
             self.dialog.supporting_evidence_edit.setText(file_path)
 
-    def select_responsibility(self):
-        from scripts.case_management_modules.responsibility_selection import \
-            ResponsibilitySelectionDialog
+    def select_responsibility(self) -> None:
+        from scripts.case_management_modules.responsibility_selection import (
+            ResponsibilitySelectionDialog,
+        )
 
         dialog = ResponsibilitySelectionDialog(self.dialog)
         if dialog.exec_():
@@ -81,7 +83,7 @@ class AddCaseLogic:
                 self.dialog.responsibility_edit.setText(selected["name"])
                 self.dialog.selected_responsibility_id = selected["id"]
 
-    def on_status_changed(self, status):
+    def on_status_changed(self, status: str) -> None:
         """Handle status selection change with special logic for Valid and Confirmed statuses"""
         if status == "Valid":
             # Show warning dialog for Valid status
@@ -136,7 +138,7 @@ class AddCaseLogic:
             self.dialog.supporting_evidence_compulsory = False
             self.dialog.file_path_edit.setPlaceholderText("Select file...")
 
-    def update_conditional_fields(self):
+    def update_conditional_fields(self) -> None:
         """Update visibility of conditional fields based on list and status selection"""
         # Ensure list combo has items before accessing currentText
         if self.dialog.list_combo.count() == 0:
@@ -184,13 +186,85 @@ class AddCaseLogic:
         # Get the selected status after updating options
         selected_status = self.dialog.status_combo.currentText()
 
-        # All fields are now always visible - no more conditional hiding
-        # This prevents screen jumping and provides a consistent experience
+        # Show assessment fields only for Lead Schedule + Valid/Confirmed status
+        show_assessment_fields = (
+            selected_list == "Lead Schedule"
+            and selected_status in ["Valid", "Confirmed"]
+        )
+
+        # Update visibility of assessment-related fields
+        self.dialog.source_doc_label.setVisible(show_assessment_fields)
+        self.dialog.source_doc_edit.setVisible(show_assessment_fields)
+        self.dialog.source_doc_button.setVisible(show_assessment_fields)
+
+        self.dialog.minutes_label.setVisible(show_assessment_fields)
+        self.dialog.minutes_edit.setVisible(show_assessment_fields)
+        self.dialog.minutes_button.setVisible(show_assessment_fields)
+
+        self.dialog.evidence_label.setVisible(show_assessment_fields)
+        self.dialog.evidence_edit.setVisible(show_assessment_fields)
+        self.dialog.evidence_button.setVisible(show_assessment_fields)
+
+        self.dialog.assessed_by_label.setVisible(show_assessment_fields)
+        self.dialog.assessed_by_edit.setVisible(show_assessment_fields)
+
+        self.dialog.assessment_date_label.setVisible(show_assessment_fields)
+        self.dialog.assessment_date_edit.setVisible(show_assessment_fields)
+
+        # Update compulsory fields based on category
+        selected_category = (
+            self.dialog.category_combo.currentText()
+            if self.dialog.category_combo.count() > 0
+            else ""
+        )
+        if selected_category:
+            category = next(
+                (c for c in self.dialog.categories if c["name"] == selected_category),
+                None,
+            )
+            if category:
+                bas_comp = category.get("bas_payment_compulsory", False)
+                persal_comp = category.get("persal_compulsory", False)
+            else:
+                bas_comp = False
+                persal_comp = False
+        else:
+            bas_comp = False
+            persal_comp = False
+
+        # Update BAS fields
+        self.dialog.bas_label.setText("BAS Payment No:" + (" *" if bas_comp else ""))
+        self.dialog.bas_label.setVisible(bas_comp)
+        self.dialog.bas_payment_no_edit.setVisible(bas_comp)
+        self.dialog.bas_date_label.setText(
+            "BAS Payment Date:" + (" *" if bas_comp else "")
+        )
+        self.dialog.bas_date_label.setVisible(bas_comp)
+        self.dialog.bas_payment_date_edit.setVisible(bas_comp)
+
+        # Update BAS Journal fields
+        self.dialog.bas_journal_label.setText(
+            "BAS Journal No:" + (" *" if bas_comp else "")
+        )
+        self.dialog.bas_journal_label.setVisible(bas_comp)
+        self.dialog.bas_journal_no_edit.setVisible(bas_comp)
+        self.dialog.bas_journal_date_label.setText(
+            "BAS Journal Date:" + (" *" if bas_comp else "")
+        )
+        self.dialog.bas_journal_date_label.setVisible(bas_comp)
+        self.dialog.bas_journal_date_edit.setVisible(bas_comp)
+
+        # Update Persal field
+        self.dialog.persal_label.setText("Persal No:" + (" *" if persal_comp else ""))
+        self.dialog.persal_label.setVisible(persal_comp)
+        self.dialog.persal_no_edit.setVisible(persal_comp)
 
     def save_case(self):
-        from scripts.Utilities.add_case_utils import (get_case_data,
-                                                      handle_file_operations,
-                                                      validate_add_data)
+        from scripts.Utilities.add_case_utils import (
+            get_case_data,
+            handle_file_operations,
+            validate_add_data,
+        )
 
         try:
             # Validate data
@@ -259,13 +333,70 @@ class AddCaseLogic:
             cursor.execute(
                 """
                 INSERT INTO cases (
-                    transaction_no, base_transaction_no, date_incurred, date_identified, date_reported,
-                    description, bas_payment_no, bas_payment_date, persal_no, category,
-                    responsibility_id, amount, source_document, minutes, evidence_path,
-                    status, list, assessment_assessed_by, assessment_date, assessment_result,
-                    fy_id, period_id, criminal_charges, disciplinary_process, loss_recovery,
-                    prevention_steps, original_list, attachments, shared_document_id, bas_journal_no, bas_journal_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    transaction_no,
+                    base_transaction_no,
+                    date_incurred,
+                    date_identified,
+                    date_reported,
+                    description,
+                    bas_payment_no,
+                    bas_payment_date,
+                    persal_no,
+                    category,
+                    responsibility_id,
+                    amount,
+                    source_document,
+                    minutes,
+                    evidence_path,
+                    status,
+                    list,
+                    assessment_assessed_by,
+                    assessment_date,
+                    assessment_result,
+                    fy_id,
+                    period_id,
+                    criminal_charges,
+                    disciplinary_process,
+                    loss_recovery,
+                    prevention_steps,
+                    original_list,
+                    attachments,
+                    shared_document_id,
+                    bas_journal_no,
+                    bas_journal_date
+                ) VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
             """,
                 (
                     case["transaction_no"],
@@ -316,8 +447,11 @@ class AddCaseLogic:
                 QMessageBox.warning(
                     self.dialog,
                     "Supporting Evidence Missing",
-                    "Case saved successfully, but Supporting Evidence (To prove Existence) is missing.\n\n"
-                    "This case has been added to the To-Do List for follow-up.",
+                    (
+                        "Case saved successfully, but Supporting Evidence "
+                        "(To prove Existence) is missing.\n\nThis case has been added "
+                        "to the To-Do List for follow-up."
+                    ),
                 )
             else:
                 QMessageBox.information(
@@ -368,9 +502,9 @@ class AddCaseLogic:
         self.dialog.prevention_steps_edit.clear()
         # Always reset list combo to Checklist
         if "Checklist" in [
-            l["name"]
-            for l in self.dialog.lists
-            if l.get("is_system", False) and l["name"] != "Deleted Cases"
+            item["name"]
+            for item in self.dialog.lists
+            if item.get("is_system", False) and item["name"] != "Deleted Cases"
         ]:
             self.dialog.list_combo.setCurrentText("Checklist")
 
@@ -437,19 +571,28 @@ class AddCaseLogic:
         dialog = AssessmentDialog(self.dialog)
         if dialog.exec_():
             assessment_data = dialog.get_assessment_data()
+            case_id = dialog.case_id
+
             conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute("SELECT MAX(id) FROM cases")
-            max_id = cursor.fetchone()[0]
-            case_id = (max_id or 0) + 1
-            cursor.execute(
-                "UPDATE cases SET assessment_assessed_by = ?, assessment_date = ?, assessment_result = ?, status = ?, list = ? WHERE transaction_no = ?",
+            conn.execute(
                 (
+                    "UPDATE cases SET description = ?, category = ?, "
+                    "responsibility_id = ?, amount = ?, status = ?, list = ?, "
+                    "assessment_assessed_by = ?, assessment_date = ?, assessment_result = ?, "
+                    "status = ?, list = ? WHERE transaction_no = ?"
+                ),
+                (
+                    assessment_data["description"],
+                    assessment_data["category"],
+                    assessment_data["responsibility_id"],
+                    assessment_data["amount"],
+                    assessment_data["status"],
+                    assessment_data["list"],
                     assessment_data["assessed_by"],
                     assessment_data["assessment_date"],
-                    assessment_data["result"],
-                    assessment_data["result"],
-                    "Lead Schedule",
+                    assessment_data["assessment_result"],
+                    assessment_data["status"],
+                    assessment_data["list"],
                     self.dialog.transaction_no,
                 ),
             )

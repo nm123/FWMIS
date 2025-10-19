@@ -37,4 +37,5 @@ def search_case_by_number(
     from scripts.Utilities.shared_case_filter_utils import search_case_by_number as shared_search
     
     return shared_search(case_no, fy_filter_combo, list_filter_combo)
-# Suggested index: CREATE INDEX IF NOT EXISTS idx_cases_filters ON cases (fy_id, list, lc_status, is_finalized);
+
+# Suggested index: CREATE INDEX idx_cases_filters ON cases (fy_id, list, lc_status)

@@ -8,7 +8,10 @@ def load_cases():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, transaction_no, bas_payment_no, persal_no, amount, category, responsibility_id, status FROM cases"
+            (
+                "SELECT id, transaction_no, bas_payment_no, persal_no, amount, "
+                "category, responsibility_id, status FROM cases"
+            )
         )
         cases = [
             {

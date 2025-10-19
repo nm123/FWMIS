@@ -134,6 +134,7 @@ def parse_bas_file(file_path: str) -> tuple[list[dict], date | None, date | None
                     continue
 
                 # Create transaction record
+                # Use the actual user name instead of system-generated number
                 transaction = {
                     "responsibility": current_responsibility,
                     "item": current_item,
@@ -141,7 +142,7 @@ def parse_bas_file(file_path: str) -> tuple[list[dict], date | None, date | None
                     "number": trans_number,
                     "description": description,
                     "date": date_obj,
-                    "user_id": user_name,  # Use the actual user name instead of system-generated number
+                    "user_id": user_name,
                     "amount": amount,
                     "is_credit": amount < 0,
                 }

@@ -22,27 +22,14 @@ def setup_basic_ui_components(dialog_instance):
     basic_group = QGroupBox("Basic Case Information")
     basic_layout = QFormLayout(basic_group)
 
-    # Case Number and Amount in one row
-    case_amount_layout = QHBoxLayout()
-    
     # Case Number (read-only) - show base number + current suffixes
     display_transaction_no = get_display_transaction_no(
         dialog_instance.base_transaction_no, dialog_instance.suffixes
     )
     dialog_instance.trans_no_edit = QLineEdit(display_transaction_no)
     dialog_instance.trans_no_edit.setReadOnly(True)
-    case_amount_layout.addWidget(dialog_instance.trans_no_edit)
-    
-    # Amount
-    dialog_instance.amount_edit = QLineEdit()
-    case_amount_layout.addWidget(QLabel("Amount:"))
-    case_amount_layout.addWidget(dialog_instance.amount_edit)
-    
-    basic_layout.addRow("Case No:", case_amount_layout)
+    basic_layout.addRow("Case No:", dialog_instance.trans_no_edit)
 
-    # Responsibility and Category in one row
-    resp_category_layout = QHBoxLayout()
-    
     # Responsibility
     resp_layout = QHBoxLayout()
     dialog_instance.responsibility_edit = QLineEdit()
@@ -57,22 +44,12 @@ def setup_basic_ui_components(dialog_instance):
         dialog_instance.select_responsibility
     )
     resp_layout.addWidget(dialog_instance.select_responsibility_button)
-    
-    resp_category_layout.addLayout(resp_layout)
 
-    # Category
-    dialog_instance.category_combo = NoWheelComboBox()
-    dialog_instance.category_combo.addItems(
-        [c["name"] for c in dialog_instance.categories]
-    )
-    # Connect category change to update conditional fields
-    dialog_instance.category_combo.currentTextChanged.connect(
-        lambda: dialog_instance.update_conditional_fields()
-    )
-    resp_category_layout.addWidget(QLabel("Category:"))
-    resp_category_layout.addWidget(dialog_instance.category_combo)
-    
-    basic_layout.addRow("Responsibility:", resp_category_layout)
+    basic_layout.addRow("Responsibility:", resp_layout)
+
+    # Amount (moved here as it's crucial information)
+    dialog_instance.amount_edit = QLineEdit()
+    basic_layout.addRow("Amount:", dialog_instance.amount_edit)
 
     # Date fields (improved grid layout for better alignment)
     date_group = QWidget()
@@ -109,11 +86,81 @@ def setup_basic_ui_components(dialog_instance):
 
     basic_layout.addRow("Dates:", date_group)
 
-    # Description (reduced height for better space efficiency)
+    # Description (larger for paragraphs)
     dialog_instance.description_edit = QTextEdit()
-    dialog_instance.description_edit.setMinimumHeight(40)
-    dialog_instance.description_edit.setMaximumHeight(40)  # Force height to prevent overrides
+    dialog_instance.description_edit.setMinimumHeight(80)
     basic_layout.addRow("Description:", dialog_instance.description_edit)
+
+    # Evidence
+    dialog_instance.evidence_edit = QLineEdit()
+    dialog_instance.evidence_edit.setPlaceholderText("Select Evidence File")
+    basic_layout.addRow("Evidence:", dialog_instance.evidence_edit)
+
+    # Category and List
+    category_list_layout = QHBoxLayout()
+    dialog_instance.category_combo = NoWheelComboBox()
+    dialog_instance.category_combo.addItems(
+        [c["name"] for c in dialog_instance.categories]
+    )
+    category_list_layout.addWidget(QLabel("Category:"))
+    category_list_layout.addWidget(dialog_instance.category_combo)
+
+    category_list_layout.addSpacing(20)
+
+    dialog_instance.list_combo = NoWheelComboBox()
+    system_lists = [
+        l["name"] for l in dialog_instance.lists if l.get("is_system", False)
+    ]
+    dialog_instance.list_combo.addItems(system_lists)
+    # Select default list
+    if system_lists:
+        default_list = next(
+            (l for l in dialog_instance.lists if l.get("is_default", False)), None
+        )
+        if default_list and default_list["name"] in system_lists:
+            dialog_instance.list_combo.setCurrentText(default_list["name"])
+    # Make list combo read-only since lists are managed by workflow
+    dialog_instance.list_combo.setEnabled(False)
+    category_list_layout.addWidget(QLabel("List:"))
+    category_list_layout.addWidget(dialog_instance.list_combo)
+
+    # Add visual indicator for list context
+    current_list = dialog_instance.list_combo.currentText()
+    if current_list == "Lead Schedule":
+        context_label = QLabel("Appears in Loss Control Committee Review")
+        context_label.setStyleSheet(
+            "color: #2196F3; font-weight: bold; font-size: 12px;"
+        )
+        category_list_layout.addSpacing(20)
+        category_list_layout.addWidget(context_label)
+    elif current_list == "Write-Off Recommended":
+        context_label = QLabel("Write-Off Approval Pending")
+        context_label.setStyleSheet(
+            "color: #FF9800; font-weight: bold; font-size: 12px;"
+        )
+        category_list_layout.addSpacing(20)
+        category_list_layout.addWidget(context_label)
+
+    basic_layout.addRow("", category_list_layout)
+
+    # List and Status display
+    dialog_instance.list_display_label = QLabel("List:")
+    dialog_instance.list_display_value = QLabel(
+        dialog_instance.selected_list or "Checklist"
+    )
+    list_status_layout = QHBoxLayout()
+    list_status_layout.addWidget(dialog_instance.list_display_label)
+    list_status_layout.addWidget(dialog_instance.list_display_value)
+    list_status_layout.addStretch()
+    basic_layout.addRow("", list_status_layout)
+
+    dialog_instance.status_display_label = QLabel("Status:")
+    dialog_instance.status_display_value = QLabel()
+    status_layout = QHBoxLayout()
+    status_layout.addWidget(dialog_instance.status_display_label)
+    status_layout.addWidget(dialog_instance.status_display_value)
+    status_layout.addStretch()
+    basic_layout.addRow("", status_layout)
 
     dialog_instance.main_layout.addWidget(basic_group)
 

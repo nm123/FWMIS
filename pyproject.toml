@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fwmis2"
+version = "1.0.0"
+description = "Fruitless and Wasteful Expenditure Management Information System"
+authors = [
+    {name = "Unknown", email = "unknown@example.com"},
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "PyQt5>=5.15.0",
+    "psutil>=5.8.0",
+    "openpyxl>=3.0.0",
+    "pytest>=6.0.0",
+    "pytest-benchmark>=3.4.0",
+    "pyinstaller>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6.9",
+    "mypy>=1.11.2",
+]
+
+[project.scripts]
+fwmis2 = "scripts.fw_management:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scripts*"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+python_version = "3.13"
+warn_unused_ignores = true
+ignore_missing_imports = true
+strict_optional = false
+plugins = []

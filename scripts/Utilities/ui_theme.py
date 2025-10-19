@@ -1,24 +1,17 @@
 """
 FWMIS Professional UI Theme Configuration
 
-This module provides centralized styling and layout patterns for consistent UI across the entire application.
-All dialogs and components should import and use these styles for a professional, cohesive user experience.
+This module centralizes styling helpers so dialogs can share a consistent,
+professional look. Import the utilities exposed here to apply the theme and to
+obtain components with standardized styling.
 
-Usage:
-    from scripts.Utilities.ui_theme import apply_theme, get_button_style, get_groupbox_style
+Example::
 
-    # Apply theme to dialog
+    from scripts.Utilities.ui_theme import apply_theme, get_button_style
+
     apply_theme(dialog)
-
-    # Get specific styles
-    button_style = get_button_style('primary')
-    group_style = get_groupbox_style('blue')
+    button_style = get_button_style("primary")
 """
-
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QComboBox, QDateEdit, QDialog, QGroupBox, QLabel,
-                             QLineEdit, QProgressBar, QPushButton,
-                             QTableWidget, QTableWidgetItem)
 
 # Import from utility modules
 from .button_theme_utils import create_professional_button, get_button_style
@@ -27,6 +20,21 @@ from .label_theme_utils import create_status_label, get_status_style
 from .theme_components_utils import (create_action_button_row, create_form_row,
                                      create_professional_groupbox)
 from .theme_styles_utils import get_groupbox_style, get_main_stylesheet
+
+__all__ = [
+    "COLORS",
+    "apply_theme",
+    "create_professional_button",
+    "create_professional_groupbox",
+    "create_status_label",
+    "create_action_button_row",
+    "create_form_row",
+    "get_button_style",
+    "get_status_style",
+    "setup_professional_table",
+    "get_groupbox_style",
+    "get_main_stylesheet",
+]
 
 # Corporate Professional Color Palette
 COLORS = {

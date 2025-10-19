@@ -1,8 +1,5 @@
-import sqlite3
 import json
-from datetime import datetime
 from typing import List, Dict, Tuple, Optional
-from scripts.Utilities.config import DB_PATH
 from scripts.Utilities.db_utils import get_db_connection, get_current_delegation
 
 def get_write_off_recommended_cases() -> List[Dict]:
@@ -205,7 +202,10 @@ def get_lc_minutes_path(case_id: int) -> Optional[str]:
             if row and row[0]:
                 evidence_data = json.loads(row[0])
                 # Look for LC minutes in evidence paths
-                lc_minutes = evidence_data.get('lc_minutes') or evidence_data.get('loss_control_minutes')
+                lc_minutes = (
+                    evidence_data.get("lc_minutes")
+                    or evidence_data.get("loss_control_minutes")
+                )
                 if lc_minutes and isinstance(lc_minutes, str):
                     return lc_minutes
             return None

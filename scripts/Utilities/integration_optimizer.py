@@ -98,7 +98,10 @@ class IntegrationOptimizer:
             
             # Replace import statement
             old_import = "from scripts.Utilities.view_cases_utils import ViewCasesUtils"
-            new_import = "from scripts.Utilities.optimized_view_cases_utils import OptimizedViewCasesUtils as ViewCasesUtils"
+            new_import = (
+                "from scripts.Utilities.optimized_view_cases_utils "
+                "import OptimizedViewCasesUtils as ViewCasesUtils"
+            )
             
             if old_import in content:
                 content = content.replace(old_import, new_import)

@@ -38,7 +38,7 @@ def save_case(dialog_instance) -> bool:
         status_text = dialog_instance.lc_status_combo.currentText()
         criminal_charges_text = dialog_instance.criminal_charges_combo.currentText()
         disciplinary_text = dialog_instance.disciplinary_combo.currentText()
-        loss_recovery_text = dialog_instance.loss_recovery_combo.currentText()
+        # loss_recovery_text is now handled by the recovery progress system
 
         # Get existing fy_id and period_id from case data, or set defaults if missing
         existing_fy_id = (
@@ -54,14 +54,16 @@ def save_case(dialog_instance) -> bool:
 
         # If fy_id is missing, get current open financial year
         if existing_fy_id is None:
-            from scripts.Utilities.financial_utils import \
-                get_current_open_financial_year
+            from scripts.Utilities.financial_utils import (
+                get_current_open_financial_year,
+            )
 
             current_fy = get_current_open_financial_year()
             if current_fy:
                 existing_fy_id = current_fy[0]
                 print(
-                    f"DEBUG: Fixed NULL fy_id for case {dialog_instance.base_transaction_no}, set to {existing_fy_id}"
+                    "DEBUG: Fixed NULL fy_id for case %s -> %s"
+                    % (dialog_instance.base_transaction_no, existing_fy_id)
                 )
             else:
                 from PyQt5.QtWidgets import QMessageBox
@@ -180,7 +182,7 @@ def save_case(dialog_instance) -> bool:
             "recovery_evidence_path": dialog_instance.recovery_evidence_edit.text().strip(),
             "criminal_charges": criminal_charges_text,
             "disciplinary_process": disciplinary_text,
-            "loss_recovery": loss_recovery_text,
+            "loss_recovery": "N/A",  # Now handled by recovery progress system
             "assessment_status": assessment_status_text,
             "lc_status": lc_status_text,
             "prevention_steps": dialog_instance.prevention_steps_edit.toPlainText().strip(),
